@@ -1,1 +1,1 @@
-export type UserRole = "system_admin" | "diocesan_youth_chaplain" | "dyc_executive" | "coordinator"
+export type UserRole = "system_admin" | "diocesan_youth_chaplain" | "dyc_executive" | "coordinator" | "member"

@@ -76,13 +76,14 @@ export const auth = betterAuth({
 export type Session = typeof auth.$Infer.Session
 export type User = typeof auth.$Infer.Session.user
 
-export type UserRole = "system_admin" | "diocesan_youth_chaplain" | "dyc_executive" | "coordinator"
+export type UserRole = "system_admin" | "diocesan_youth_chaplain" | "dyc_executive" | "coordinator" | "member"
 
 export const ROLE_HIERARCHY: Record<UserRole, number> = {
   system_admin: 4,
   diocesan_youth_chaplain: 3,
   dyc_executive: 2,
   coordinator: 1,
+  member: 0,
 }
 
 export function hasPermission(userRole: UserRole | null, requiredRole: UserRole): boolean {

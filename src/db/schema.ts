@@ -7,15 +7,16 @@ export const user = sqliteTable('user', {
   email: text('email').notNull().unique(),
   emailVerified: integer('email_verified', { mode: 'boolean' }).notNull().default(false),
   image: text('image'),
-  createdAt: text('created_at').notNull(),
-  updatedAt: text('updated_at').notNull(),
-  role: text('role', { 
-    enum: ['system_admin', 'diocesan_youth_chaplain', 'dyc_executive', 'coordinator'] 
-  }).notNull().default('coordinator'),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+  role: text('role', {
+    enum: ['system_admin', 'diocesan_youth_chaplain', 'dyc_executive', 'coordinator', 'member']
+  }).notNull().default('member'),
   phone: text('phone'),
   parishId: integer('parish_id'),
   deaneryId: integer('deanery_id'),
   isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
+  banned: integer('banned', { mode: 'boolean' }).notNull().default(false),
 })
 
 export const session = sqliteTable('session', {
@@ -224,12 +225,14 @@ export const programmeReviews = sqliteTable('programme_reviews', {
 export const news = sqliteTable('news', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   title: text('title').notNull(),
+  slug: text('slug').unique(),
   body: text('body').notNull(),
   scope: text('scope', { 
     enum: ['diocese', 'deanery', 'parish'] 
   }).notNull().default('diocese'),
   scopeId: integer('scope_id'),
   coverImageUrl: text('cover_image_url'),
+  images: text('images'),
   isFeatured: integer('is_featured', { mode: 'boolean' }).notNull().default(false),
   status: text('status', { 
     enum: ['draft', 'published', 'archived'] 
@@ -248,8 +251,9 @@ export const newsSubmissions = sqliteTable('news_submissions', {
   title: text('title').notNull(),
   body: text('body').notNull(),
   imageUrl: text('image_url'),
-  status: text('status', { 
-    enum: ['pending', 'approved', 'rejected'] 
+  images: text('images'),
+  status: text('status', {
+    enum: ['pending', 'approved', 'rejected']
   }).notNull().default('pending'),
   reviewedBy: text('reviewed_by').references(() => user.id),
   reviewedAt: text('reviewed_at'),

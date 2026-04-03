@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 
-export const Route = createFileRoute("/_app/dashboard")({
+export const Route = createFileRoute("/_app/dashboard/")({
   head: () => ({
     meta: [{ title: "Dashboard | DYC Koforidua" }],
   }),

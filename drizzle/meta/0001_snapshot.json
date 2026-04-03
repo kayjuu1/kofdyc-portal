@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "f53d6f1c-7d90-429b-a9be-7b9ededbe725",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "db01b9b6-fb09-42a0-b6e6-cbe377118ca1",
+  "prevId": "f53d6f1c-7d90-429b-a9be-7b9ededbe725",
   "tables": {
     "account": {
       "name": "account",
@@ -1788,6 +1788,14 @@
           "notNull": true,
           "autoincrement": false,
           "default": true
+        },
+        "banned": {
+          "name": "banned",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
         }
       },
       "indexes": {

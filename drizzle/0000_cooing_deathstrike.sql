@@ -127,10 +127,12 @@ CREATE TABLE `events` (
 CREATE TABLE `news` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`title` text NOT NULL,
+	`slug` text,
 	`body` text NOT NULL,
 	`scope` text DEFAULT 'diocese' NOT NULL,
 	`scope_id` integer,
 	`cover_image_url` text,
+	`images` text,
 	`is_featured` integer DEFAULT false NOT NULL,
 	`status` text DEFAULT 'draft' NOT NULL,
 	`published_at` text,
@@ -140,6 +142,7 @@ CREATE TABLE `news` (
 	FOREIGN KEY (`author_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `news_slug_unique` ON `news` (`slug`);--> statement-breakpoint
 CREATE TABLE `news_submissions` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`submitter_name` text NOT NULL,
@@ -148,6 +151,7 @@ CREATE TABLE `news_submissions` (
 	`title` text NOT NULL,
 	`body` text NOT NULL,
 	`image_url` text,
+	`images` text,
 	`status` text DEFAULT 'pending' NOT NULL,
 	`reviewed_by` text,
 	`reviewed_at` text,
@@ -247,7 +251,7 @@ CREATE TABLE `user` (
 	`image` text,
 	`created_at` text NOT NULL,
 	`updated_at` text NOT NULL,
-	`role` text DEFAULT 'coordinator' NOT NULL,
+	`role` text DEFAULT 'member' NOT NULL,
 	`phone` text,
 	`parish_id` integer,
 	`deanery_id` integer,
