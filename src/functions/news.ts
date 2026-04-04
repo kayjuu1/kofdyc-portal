@@ -43,7 +43,7 @@ export const getPublishedNews = createServerFn({ method: "GET" })
           scope: news.scope,
           scopeId: news.scopeId,
           coverImageUrl: news.coverImageUrl,
-          isFeatured: news.isFeatured,
+          isPinned: news.isPinned,
           publishedAt: news.publishedAt,
           createdAt: news.createdAt,
           authorName: user.name,
@@ -52,7 +52,7 @@ export const getPublishedNews = createServerFn({ method: "GET" })
         .from(news)
         .leftJoin(user, eq(news.authorId, user.id))
         .where(where)
-        .orderBy(desc(news.isFeatured), desc(news.publishedAt))
+        .orderBy(desc(news.isPinned), desc(news.publishedAt))
         .limit(limit)
         .offset(offset),
       db
@@ -81,7 +81,7 @@ export const getNewsArticle = createServerFn({ method: "GET" })
         scope: news.scope,
         scopeId: news.scopeId,
         coverImageUrl: news.coverImageUrl,
-        isFeatured: news.isFeatured,
+        isPinned: news.isPinned,
         status: news.status,
         publishedAt: news.publishedAt,
         createdAt: news.createdAt,
@@ -124,7 +124,7 @@ export const getNewsForAdmin = createServerFn({ method: "GET" })
           slug: news.slug,
           scope: news.scope,
           status: news.status,
-          isFeatured: news.isFeatured,
+          isPinned: news.isPinned,
           publishedAt: news.publishedAt,
           createdAt: news.createdAt,
           authorName: user.name,
@@ -194,7 +194,7 @@ export const updateNewsArticle = createServerFn({ method: "POST" })
       scopeId?: number
       coverImageUrl?: string
       status?: "draft" | "published" | "archived"
-      isFeatured?: boolean
+      isPinned?: boolean
     }) => input
   )
   .handler(async ({ data }) => {
@@ -209,7 +209,7 @@ export const updateNewsArticle = createServerFn({ method: "POST" })
     if (data.scope !== undefined) updates.scope = data.scope
     if (data.scopeId !== undefined) updates.scopeId = data.scopeId
     if (data.coverImageUrl !== undefined) updates.coverImageUrl = data.coverImageUrl
-    if (data.isFeatured !== undefined) updates.isFeatured = data.isFeatured
+    if (data.isPinned !== undefined) updates.isPinned = data.isPinned
     if (data.status !== undefined) {
       updates.status = data.status
       if (data.status === "published") {

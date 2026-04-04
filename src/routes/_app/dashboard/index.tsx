@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, Link } from "@tanstack/react-router"
 import {
   Users,
   Calendar,
@@ -147,9 +147,9 @@ function DashboardPage() {
                 { label: "Upload Document", icon: FileText, href: "/dashboard/documents/upload" },
                 { label: "View Members", icon: Users, href: "/dashboard/members" },
               ].map((action, i) => (
-                <a
+                <Link
                   key={i}
-                  href={action.href}
+                  to={action.href}
                   className="flex items-center gap-3 p-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors"
                 >
                   <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
@@ -157,7 +157,7 @@ function DashboardPage() {
                   </div>
                   {action.label}
                   <ChevronRight className="w-3.5 h-3.5 ml-auto text-muted-foreground" />
-                </a>
+                </Link>
               ))}
             </CardContent>
           </Card>

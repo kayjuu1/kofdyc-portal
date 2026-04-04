@@ -23,7 +23,7 @@ interface NewsArticle {
   coverImageUrl: string | null
   publishedAt: string | null
   authorName: string | null
-  isFeatured: boolean | null
+  isPinned: boolean | null
 }
 
 export const Route = createFileRoute("/news/")({

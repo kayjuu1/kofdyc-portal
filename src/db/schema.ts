@@ -54,14 +54,7 @@ export const verification = sqliteTable('verification', {
   createdAt: integer('created_at', { mode: 'timestamp' }),
 })
 
-export const userRelations = relations(user, ({ many }) => ({
-  sessions: many(session),
-  accounts: many(account),
-  registrations: many(registrations),
-  events: many(events),
-  news: many(news),
-  programmeReviews: many(programmeReviews),
-}))
+// userRelations defined below after all tables
 
 export const sessionRelations = relations(session, ({ one }) => ({
   user: one(user, {
@@ -152,9 +145,9 @@ export const registrations = sqliteTable('registrations', {
   dietaryRequirements: text('dietary_requirements'),
   medicalConditions: text('medical_conditions'),
   tshirtSize: text('tshirt_size'),
-  paymentStatus: text('payment_status', { 
-    enum: ['free', 'pending', 'paid', 'failed', 'refunded'] 
-  }).notNull().default('free'),
+  paymentStatus: text('payment_status', {
+    enum: ['not_required', 'pending', 'paid', 'refunded']
+  }).notNull().default('not_required'),
   registrationStatus: text('registration_status', { 
     enum: ['pending', 'confirmed', 'cancelled', 'waitlisted'] 
   }).notNull().default('pending'),
@@ -168,8 +161,8 @@ export const registrations = sqliteTable('registrations', {
 export const documents = sqliteTable('documents', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   title: text('title').notNull(),
-  category: text('category', { 
-    enum: ['minutes', 'circular', 'pastoral_letter', 'report', 'constitution', 'pastoral_programme', 'other'] 
+  category: text('category', {
+    enum: ['meeting_minutes', 'circulars', 'pastoral_letters', 'reports', 'constitution_guidelines', 'pastoral_programmes', 'other']
   }).notNull().default('other'),
   scope: text('scope', { 
     enum: ['diocese', 'deanery', 'parish'] 
@@ -192,7 +185,7 @@ export const programmes = sqliteTable('programmes', {
   status: text('status', { 
     enum: ['draft', 'submitted', 'under_review', 'approved', 'returned'] 
   }).notNull().default('draft'),
-  submittingOfficer: text('submitting_officer'),
+  submittingOfficer: text('submitting_officer').references(() => user.id),
   submissionDate: text('submission_date'),
   finalApprovalDate: text('final_approval_date'),
   pdfUrl: text('pdf_url'),
@@ -233,7 +226,7 @@ export const news = sqliteTable('news', {
   scopeId: integer('scope_id'),
   coverImageUrl: text('cover_image_url'),
   images: text('images'),
-  isFeatured: integer('is_featured', { mode: 'boolean' }).notNull().default(false),
+  isPinned: integer('is_pinned', { mode: 'boolean' }).notNull().default(false),
   status: text('status', { 
     enum: ['draft', 'published', 'archived'] 
   }).notNull().default('draft'),
@@ -273,36 +266,48 @@ export const dycExecutive = sqliteTable('dyc_executive', {
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 })
 
-export const elections = sqliteTable('elections', {
+export const chaplainConversations = sqliteTable('chaplain_conversations', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  title: text('title').notNull(),
-  description: text('description'),
-  nominationStart: text('nomination_start').notNull(),
-  nominationEnd: text('nomination_end').notNull(),
-  votingStart: text('voting_start').notNull(),
-  votingEnd: text('voting_end').notNull(),
-  status: text('status', { 
-    enum: ['draft', 'nominations', 'voting', 'closed'] 
-  }).notNull().default('draft'),
-  createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
-})
-
-export const electionCandidates = sqliteTable('election_candidates', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  electionId: integer('election_id').references(() => elections.id).notNull(),
   userId: text('user_id').references(() => user.id).notNull(),
-  portfolio: text('portfolio').notNull(),
-  bio: text('bio'),
-  photoUrl: text('photo_url'),
-  votes: integer('votes').notNull().default(0),
+  alias: text('alias', { length: 20 }),
+  isAnonymous: integer('is_anonymous', { mode: 'boolean' }).notNull().default(false),
+  status: text('status', {
+    enum: ['active', 'resolved']
+  }).notNull().default('active'),
+  createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
+  updatedAt: text('updated_at').notNull().default('CURRENT_TIMESTAMP'),
+})
+
+export const chaplainMessages = sqliteTable('chaplain_messages', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  conversationId: integer('conversation_id').references(() => chaplainConversations.id).notNull(),
+  senderRole: text('sender_role', {
+    enum: ['member', 'chaplain']
+  }).notNull(),
+  body: text('body').notNull(),
+  sentAt: text('sent_at').notNull().default('CURRENT_TIMESTAMP'),
+  readAt: text('read_at'),
+})
+
+export const payments = sqliteTable('payments', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  registrationId: integer('registration_id').references(() => registrations.id).notNull(),
+  paystackReference: text('paystack_reference').unique(),
+  amountGhs: real('amount_ghs').notNull(),
+  status: text('status', {
+    enum: ['initiated', 'successful', 'failed']
+  }).notNull().default('initiated'),
+  webhookPayload: text('webhook_payload'),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 })
 
-export const electionVotes = sqliteTable('election_votes', {
+export const auditLog = sqliteTable('audit_log', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  electionId: integer('election_id').references(() => elections.id).notNull(),
-  candidateId: integer('candidate_id').references(() => electionCandidates.id).notNull(),
-  voterId: text('voter_id').references(() => user.id).notNull(),
+  userId: text('user_id'),
+  action: text('action').notNull(),
+  resourceType: text('resource_type'),
+  resourceId: text('resource_id'),
+  metadata: text('metadata'),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 })
 
@@ -329,6 +334,8 @@ export const parishesRelations = relations(parishes, ({ one, many }) => ({
 }))
 
 export const usersRelations = relations(user, ({ one, many }) => ({
+  sessions: many(session),
+  accounts: many(account),
   parish: one(parishes, {
     fields: [user.parishId],
     references: [parishes.id],
@@ -337,6 +344,7 @@ export const usersRelations = relations(user, ({ one, many }) => ({
   events: many(events),
   news: many(news),
   programmeReviews: many(programmeReviews),
+  chaplainConversations: many(chaplainConversations),
 }))
 
 export const eventsRelations = relations(events, ({ one, many }) => ({
@@ -347,7 +355,7 @@ export const eventsRelations = relations(events, ({ one, many }) => ({
   registrations: many(registrations),
 }))
 
-export const registrationsRelations = relations(registrations, ({ one }) => ({
+export const registrationsRelations = relations(registrations, ({ one, many }) => ({
   event: one(events, {
     fields: [registrations.eventId],
     references: [events.id],
@@ -356,6 +364,7 @@ export const registrationsRelations = relations(registrations, ({ one }) => ({
     fields: [registrations.userId],
     references: [user.id],
   }),
+  payments: many(payments),
 }))
 
 export const documentsRelations = relations(documents, ({ one }) => ({
@@ -369,6 +378,10 @@ export const programmesRelations = relations(programmes, ({ one, many }) => ({
   parish: one(parishes, {
     fields: [programmes.parishId],
     references: [parishes.id],
+  }),
+  submitter: one(user, {
+    fields: [programmes.submittingOfficer],
+    references: [user.id],
   }),
   activities: many(programmeActivities),
   reviews: many(programmeReviews),
@@ -403,5 +416,27 @@ export const newsSubmissionsRelations = relations(newsSubmissions, ({ one }) => 
   reviewer: one(user, {
     fields: [newsSubmissions.reviewedBy],
     references: [user.id],
+  }),
+}))
+
+export const chaplainConversationsRelations = relations(chaplainConversations, ({ one, many }) => ({
+  user: one(user, {
+    fields: [chaplainConversations.userId],
+    references: [user.id],
+  }),
+  messages: many(chaplainMessages),
+}))
+
+export const chaplainMessagesRelations = relations(chaplainMessages, ({ one }) => ({
+  conversation: one(chaplainConversations, {
+    fields: [chaplainMessages.conversationId],
+    references: [chaplainConversations.id],
+  }),
+}))
+
+export const paymentsRelations = relations(payments, ({ one }) => ({
+  registration: one(registrations, {
+    fields: [payments.registrationId],
+    references: [registrations.id],
   }),
 }))

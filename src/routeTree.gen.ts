@@ -13,8 +13,10 @@ import { Route as PastoralLettersRouteImport } from './routes/pastoral-letters'
 import { Route as AppRouteRouteImport } from './routes/_app/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as NewsIndexRouteImport } from './routes/news/index'
+import { Route as EventsIndexRouteImport } from './routes/events/index'
 import { Route as NewsSubmitRouteImport } from './routes/news/submit'
 import { Route as NewsSlugRouteImport } from './routes/news/$slug'
+import { Route as EventsIdRouteImport } from './routes/events/$id'
 import { Route as ApiUploadRouteImport } from './routes/api/upload'
 import { Route as AuthSignInRouteImport } from './routes/_auth/sign-in'
 import { Route as AuthInitAdminRouteImport } from './routes/_auth/init-admin'
@@ -22,6 +24,9 @@ import { Route as AppDashboardIndexRouteImport } from './routes/_app/dashboard/i
 import { Route as ApiMediaSplatRouteImport } from './routes/api/media/$'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AppDashboardNewsRouteImport } from './routes/_app/dashboard/news'
+import { Route as AppDashboardNewsIndexRouteImport } from './routes/_app/dashboard/news/index'
+import { Route as AppDashboardEventsIndexRouteImport } from './routes/_app/dashboard/events/index'
+import { Route as AppDashboardEventsCreateRouteImport } from './routes/_app/dashboard/events/create'
 
 const PastoralLettersRoute = PastoralLettersRouteImport.update({
   id: '/pastoral-letters',
@@ -42,6 +47,11 @@ const NewsIndexRoute = NewsIndexRouteImport.update({
   path: '/news/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EventsIndexRoute = EventsIndexRouteImport.update({
+  id: '/events/',
+  path: '/events/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const NewsSubmitRoute = NewsSubmitRouteImport.update({
   id: '/news/submit',
   path: '/news/submit',
@@ -50,6 +60,11 @@ const NewsSubmitRoute = NewsSubmitRouteImport.update({
 const NewsSlugRoute = NewsSlugRouteImport.update({
   id: '/news/$slug',
   path: '/news/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EventsIdRoute = EventsIdRouteImport.update({
+  id: '/events/$id',
+  path: '/events/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiUploadRoute = ApiUploadRouteImport.update({
@@ -87,6 +102,22 @@ const AppDashboardNewsRoute = AppDashboardNewsRouteImport.update({
   path: '/dashboard/news',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const AppDashboardNewsIndexRoute = AppDashboardNewsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppDashboardNewsRoute,
+} as any)
+const AppDashboardEventsIndexRoute = AppDashboardEventsIndexRouteImport.update({
+  id: '/dashboard/events/',
+  path: '/dashboard/events/',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppDashboardEventsCreateRoute =
+  AppDashboardEventsCreateRouteImport.update({
+    id: '/dashboard/events/create',
+    path: '/dashboard/events/create',
+    getParentRoute: () => AppRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -94,13 +125,18 @@ export interface FileRoutesByFullPath {
   '/init-admin': typeof AuthInitAdminRoute
   '/sign-in': typeof AuthSignInRoute
   '/api/upload': typeof ApiUploadRoute
+  '/events/$id': typeof EventsIdRoute
   '/news/$slug': typeof NewsSlugRoute
   '/news/submit': typeof NewsSubmitRoute
+  '/events/': typeof EventsIndexRoute
   '/news/': typeof NewsIndexRoute
-  '/dashboard/news': typeof AppDashboardNewsRoute
+  '/dashboard/news': typeof AppDashboardNewsRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/media/$': typeof ApiMediaSplatRoute
   '/dashboard/': typeof AppDashboardIndexRoute
+  '/dashboard/events/create': typeof AppDashboardEventsCreateRoute
+  '/dashboard/events/': typeof AppDashboardEventsIndexRoute
+  '/dashboard/news/': typeof AppDashboardNewsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -108,13 +144,17 @@ export interface FileRoutesByTo {
   '/init-admin': typeof AuthInitAdminRoute
   '/sign-in': typeof AuthSignInRoute
   '/api/upload': typeof ApiUploadRoute
+  '/events/$id': typeof EventsIdRoute
   '/news/$slug': typeof NewsSlugRoute
   '/news/submit': typeof NewsSubmitRoute
+  '/events': typeof EventsIndexRoute
   '/news': typeof NewsIndexRoute
-  '/dashboard/news': typeof AppDashboardNewsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/media/$': typeof ApiMediaSplatRoute
   '/dashboard': typeof AppDashboardIndexRoute
+  '/dashboard/events/create': typeof AppDashboardEventsCreateRoute
+  '/dashboard/events': typeof AppDashboardEventsIndexRoute
+  '/dashboard/news': typeof AppDashboardNewsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -124,13 +164,18 @@ export interface FileRoutesById {
   '/_auth/init-admin': typeof AuthInitAdminRoute
   '/_auth/sign-in': typeof AuthSignInRoute
   '/api/upload': typeof ApiUploadRoute
+  '/events/$id': typeof EventsIdRoute
   '/news/$slug': typeof NewsSlugRoute
   '/news/submit': typeof NewsSubmitRoute
+  '/events/': typeof EventsIndexRoute
   '/news/': typeof NewsIndexRoute
-  '/_app/dashboard/news': typeof AppDashboardNewsRoute
+  '/_app/dashboard/news': typeof AppDashboardNewsRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/media/$': typeof ApiMediaSplatRoute
   '/_app/dashboard/': typeof AppDashboardIndexRoute
+  '/_app/dashboard/events/create': typeof AppDashboardEventsCreateRoute
+  '/_app/dashboard/events/': typeof AppDashboardEventsIndexRoute
+  '/_app/dashboard/news/': typeof AppDashboardNewsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -140,13 +185,18 @@ export interface FileRouteTypes {
     | '/init-admin'
     | '/sign-in'
     | '/api/upload'
+    | '/events/$id'
     | '/news/$slug'
     | '/news/submit'
+    | '/events/'
     | '/news/'
     | '/dashboard/news'
     | '/api/auth/$'
     | '/api/media/$'
     | '/dashboard/'
+    | '/dashboard/events/create'
+    | '/dashboard/events/'
+    | '/dashboard/news/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -154,13 +204,17 @@ export interface FileRouteTypes {
     | '/init-admin'
     | '/sign-in'
     | '/api/upload'
+    | '/events/$id'
     | '/news/$slug'
     | '/news/submit'
+    | '/events'
     | '/news'
-    | '/dashboard/news'
     | '/api/auth/$'
     | '/api/media/$'
     | '/dashboard'
+    | '/dashboard/events/create'
+    | '/dashboard/events'
+    | '/dashboard/news'
   id:
     | '__root__'
     | '/'
@@ -169,13 +223,18 @@ export interface FileRouteTypes {
     | '/_auth/init-admin'
     | '/_auth/sign-in'
     | '/api/upload'
+    | '/events/$id'
     | '/news/$slug'
     | '/news/submit'
+    | '/events/'
     | '/news/'
     | '/_app/dashboard/news'
     | '/api/auth/$'
     | '/api/media/$'
     | '/_app/dashboard/'
+    | '/_app/dashboard/events/create'
+    | '/_app/dashboard/events/'
+    | '/_app/dashboard/news/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -185,8 +244,10 @@ export interface RootRouteChildren {
   AuthInitAdminRoute: typeof AuthInitAdminRoute
   AuthSignInRoute: typeof AuthSignInRoute
   ApiUploadRoute: typeof ApiUploadRoute
+  EventsIdRoute: typeof EventsIdRoute
   NewsSlugRoute: typeof NewsSlugRoute
   NewsSubmitRoute: typeof NewsSubmitRoute
+  EventsIndexRoute: typeof EventsIndexRoute
   NewsIndexRoute: typeof NewsIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiMediaSplatRoute: typeof ApiMediaSplatRoute
@@ -222,6 +283,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NewsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/events/': {
+      id: '/events/'
+      path: '/events'
+      fullPath: '/events/'
+      preLoaderRoute: typeof EventsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/news/submit': {
       id: '/news/submit'
       path: '/news/submit'
@@ -234,6 +302,13 @@ declare module '@tanstack/react-router' {
       path: '/news/$slug'
       fullPath: '/news/$slug'
       preLoaderRoute: typeof NewsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/events/$id': {
+      id: '/events/$id'
+      path: '/events/$id'
+      fullPath: '/events/$id'
+      preLoaderRoute: typeof EventsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/upload': {
@@ -285,17 +360,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDashboardNewsRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/_app/dashboard/news/': {
+      id: '/_app/dashboard/news/'
+      path: '/'
+      fullPath: '/dashboard/news/'
+      preLoaderRoute: typeof AppDashboardNewsIndexRouteImport
+      parentRoute: typeof AppDashboardNewsRoute
+    }
+    '/_app/dashboard/events/': {
+      id: '/_app/dashboard/events/'
+      path: '/dashboard/events'
+      fullPath: '/dashboard/events/'
+      preLoaderRoute: typeof AppDashboardEventsIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/dashboard/events/create': {
+      id: '/_app/dashboard/events/create'
+      path: '/dashboard/events/create'
+      fullPath: '/dashboard/events/create'
+      preLoaderRoute: typeof AppDashboardEventsCreateRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
   }
 }
 
+interface AppDashboardNewsRouteChildren {
+  AppDashboardNewsIndexRoute: typeof AppDashboardNewsIndexRoute
+}
+
+const AppDashboardNewsRouteChildren: AppDashboardNewsRouteChildren = {
+  AppDashboardNewsIndexRoute: AppDashboardNewsIndexRoute,
+}
+
+const AppDashboardNewsRouteWithChildren =
+  AppDashboardNewsRoute._addFileChildren(AppDashboardNewsRouteChildren)
+
 interface AppRouteRouteChildren {
-  AppDashboardNewsRoute: typeof AppDashboardNewsRoute
+  AppDashboardNewsRoute: typeof AppDashboardNewsRouteWithChildren
   AppDashboardIndexRoute: typeof AppDashboardIndexRoute
+  AppDashboardEventsCreateRoute: typeof AppDashboardEventsCreateRoute
+  AppDashboardEventsIndexRoute: typeof AppDashboardEventsIndexRoute
 }
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
-  AppDashboardNewsRoute: AppDashboardNewsRoute,
+  AppDashboardNewsRoute: AppDashboardNewsRouteWithChildren,
   AppDashboardIndexRoute: AppDashboardIndexRoute,
+  AppDashboardEventsCreateRoute: AppDashboardEventsCreateRoute,
+  AppDashboardEventsIndexRoute: AppDashboardEventsIndexRoute,
 }
 
 const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
@@ -309,8 +420,10 @@ const rootRouteChildren: RootRouteChildren = {
   AuthInitAdminRoute: AuthInitAdminRoute,
   AuthSignInRoute: AuthSignInRoute,
   ApiUploadRoute: ApiUploadRoute,
+  EventsIdRoute: EventsIdRoute,
   NewsSlugRoute: NewsSlugRoute,
   NewsSubmitRoute: NewsSubmitRoute,
+  EventsIndexRoute: EventsIndexRoute,
   NewsIndexRoute: NewsIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiMediaSplatRoute: ApiMediaSplatRoute,

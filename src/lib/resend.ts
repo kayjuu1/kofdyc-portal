@@ -1,12 +1,11 @@
 import { Resend } from "resend"
+import { env } from "cloudflare:workers"
 
 function getResendClient(): Resend {
-  const apiKey = process.env.RESEND_API_KEY
+  const apiKey = env.RESEND_API_KEY
   if (!apiKey) throw new Error("RESEND_API_KEY is not set")
   return new Resend(apiKey)
 }
-
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? "noreply@dyckoforidua.org"
 
 export async function sendEmail(params: {
   to: string
@@ -14,9 +13,10 @@ export async function sendEmail(params: {
   html: string
 }): Promise<{ success: boolean; error?: string }> {
   try {
+    const fromEmail = env.RESEND_FROM_EMAIL ?? "noreply@dyckoforidua.org"
     const resend = getResendClient()
     await resend.emails.send({
-      from: `DYC Koforidua <${FROM_EMAIL}>`,
+      from: `DYC Koforidua <${fromEmail}>`,
       to: params.to,
       subject: params.subject,
       html: params.html,

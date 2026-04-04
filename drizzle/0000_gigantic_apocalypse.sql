@@ -15,6 +15,37 @@ CREATE TABLE `account` (
 	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
+CREATE TABLE `audit_log` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`user_id` text,
+	`action` text NOT NULL,
+	`resource_type` text,
+	`resource_id` text,
+	`metadata` text,
+	`created_at` text DEFAULT 'CURRENT_TIMESTAMP' NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE `chaplain_conversations` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`user_id` text NOT NULL,
+	`alias` text(20),
+	`is_anonymous` integer DEFAULT false NOT NULL,
+	`status` text DEFAULT 'active' NOT NULL,
+	`created_at` text DEFAULT 'CURRENT_TIMESTAMP' NOT NULL,
+	`updated_at` text DEFAULT 'CURRENT_TIMESTAMP' NOT NULL,
+	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
+CREATE TABLE `chaplain_messages` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`conversation_id` integer NOT NULL,
+	`sender_role` text NOT NULL,
+	`body` text NOT NULL,
+	`sent_at` text DEFAULT 'CURRENT_TIMESTAMP' NOT NULL,
+	`read_at` text,
+	FOREIGN KEY (`conversation_id`) REFERENCES `chaplain_conversations`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
 CREATE TABLE `deaneries` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`name` text NOT NULL,
@@ -60,42 +91,6 @@ CREATE TABLE `dyc_executive` (
 	`created_at` text DEFAULT 'CURRENT_TIMESTAMP' NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE `election_candidates` (
-	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`election_id` integer NOT NULL,
-	`user_id` text NOT NULL,
-	`portfolio` text NOT NULL,
-	`bio` text,
-	`photo_url` text,
-	`votes` integer DEFAULT 0 NOT NULL,
-	`created_at` text DEFAULT 'CURRENT_TIMESTAMP' NOT NULL,
-	FOREIGN KEY (`election_id`) REFERENCES `elections`(`id`) ON UPDATE no action ON DELETE no action,
-	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action
-);
---> statement-breakpoint
-CREATE TABLE `election_votes` (
-	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`election_id` integer NOT NULL,
-	`candidate_id` integer NOT NULL,
-	`voter_id` text NOT NULL,
-	`created_at` text DEFAULT 'CURRENT_TIMESTAMP' NOT NULL,
-	FOREIGN KEY (`election_id`) REFERENCES `elections`(`id`) ON UPDATE no action ON DELETE no action,
-	FOREIGN KEY (`candidate_id`) REFERENCES `election_candidates`(`id`) ON UPDATE no action ON DELETE no action,
-	FOREIGN KEY (`voter_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action
-);
---> statement-breakpoint
-CREATE TABLE `elections` (
-	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`title` text NOT NULL,
-	`description` text,
-	`nomination_start` text NOT NULL,
-	`nomination_end` text NOT NULL,
-	`voting_start` text NOT NULL,
-	`voting_end` text NOT NULL,
-	`status` text DEFAULT 'draft' NOT NULL,
-	`created_at` text DEFAULT 'CURRENT_TIMESTAMP' NOT NULL
-);
---> statement-breakpoint
 CREATE TABLE `events` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`title` text NOT NULL,
@@ -133,7 +128,7 @@ CREATE TABLE `news` (
 	`scope_id` integer,
 	`cover_image_url` text,
 	`images` text,
-	`is_featured` integer DEFAULT false NOT NULL,
+	`is_pinned` integer DEFAULT false NOT NULL,
 	`status` text DEFAULT 'draft' NOT NULL,
 	`published_at` text,
 	`author_id` text,
@@ -169,6 +164,18 @@ CREATE TABLE `parishes` (
 	FOREIGN KEY (`deanery_id`) REFERENCES `deaneries`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
+CREATE TABLE `payments` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`registration_id` integer NOT NULL,
+	`paystack_reference` text,
+	`amount_ghs` real NOT NULL,
+	`status` text DEFAULT 'initiated' NOT NULL,
+	`webhook_payload` text,
+	`created_at` text DEFAULT 'CURRENT_TIMESTAMP' NOT NULL,
+	FOREIGN KEY (`registration_id`) REFERENCES `registrations`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `payments_paystack_reference_unique` ON `payments` (`paystack_reference`);--> statement-breakpoint
 CREATE TABLE `programme_activities` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`programme_id` integer NOT NULL,
@@ -203,7 +210,8 @@ CREATE TABLE `programmes` (
 	`pdf_url` text,
 	`created_at` text DEFAULT 'CURRENT_TIMESTAMP' NOT NULL,
 	`updated_at` text DEFAULT 'CURRENT_TIMESTAMP' NOT NULL,
-	FOREIGN KEY (`parish_id`) REFERENCES `parishes`(`id`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`parish_id`) REFERENCES `parishes`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`submitting_officer`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `registrations` (
@@ -219,7 +227,7 @@ CREATE TABLE `registrations` (
 	`dietary_requirements` text,
 	`medical_conditions` text,
 	`tshirt_size` text,
-	`payment_status` text DEFAULT 'free' NOT NULL,
+	`payment_status` text DEFAULT 'not_required' NOT NULL,
 	`registration_status` text DEFAULT 'pending' NOT NULL,
 	`paid_at` text,
 	`paystack_reference` text,
@@ -249,13 +257,14 @@ CREATE TABLE `user` (
 	`email` text NOT NULL,
 	`email_verified` integer DEFAULT false NOT NULL,
 	`image` text,
-	`created_at` text NOT NULL,
-	`updated_at` text NOT NULL,
+	`created_at` integer NOT NULL,
+	`updated_at` integer NOT NULL,
 	`role` text DEFAULT 'member' NOT NULL,
 	`phone` text,
 	`parish_id` integer,
 	`deanery_id` integer,
-	`is_active` integer DEFAULT true NOT NULL
+	`is_active` integer DEFAULT true NOT NULL,
+	`banned` integer DEFAULT false NOT NULL
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `user_email_unique` ON `user` (`email`);--> statement-breakpoint

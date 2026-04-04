@@ -62,7 +62,7 @@ function NewsDetailPage() {
             <Badge variant="outline" className="capitalize">
               {article.scope}
             </Badge>
-            {article.isFeatured && <Badge>Pinned</Badge>}
+            {article.isPinned && <Badge>Pinned</Badge>}
           </div>
 
           <h1 className="text-3xl md:text-4xl font-bold text-foreground font-serif leading-tight mb-4">

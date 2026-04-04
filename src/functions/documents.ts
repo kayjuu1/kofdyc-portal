@@ -18,7 +18,7 @@ export const getPastoralLetters = createServerFn({ method: "GET" })
     const limit = data.limit ?? 20
     const offset = (page - 1) * limit
 
-    const conditions = [eq(documents.category, "pastoral_letter")]
+    const conditions = [eq(documents.category, "pastoral_letters")]
     if (data.search) {
       conditions.push(like(documents.title, `%${data.search}%`))
     }

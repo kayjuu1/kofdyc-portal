@@ -11,10 +11,10 @@ interface NewsCardProps {
   coverImageUrl?: string | null
   publishedAt: string | null
   authorName: string | null
-  isFeatured: boolean | null
+  isPinned: boolean | null
 }
 
-export function NewsCard({ title, slug, body, scope, coverImageUrl, publishedAt, authorName, isFeatured }: NewsCardProps) {
+export function NewsCard({ title, slug, body, scope, coverImageUrl, publishedAt, authorName, isPinned }: NewsCardProps) {
   const excerpt = body.length > 120 ? body.slice(0, 120) + "..." : body
   const date = publishedAt
     ? new Date(publishedAt).toLocaleDateString("en-US", {
@@ -24,8 +24,18 @@ export function NewsCard({ title, slug, body, scope, coverImageUrl, publishedAt,
       })
     : ""
 
+  const Wrapper = slug
+    ? ({ children }: { children: React.ReactNode }) => (
+        <Link to="/news/$slug" params={{ slug }} className="group">
+          {children}
+        </Link>
+      )
+    : ({ children }: { children: React.ReactNode }) => (
+        <div className="group">{children}</div>
+      )
+
   return (
-    <Link to="/news/$slug" params={{ slug: slug ?? String(Date.now()) }} className="group">
+    <Wrapper>
       <Card className="h-full hover:border-primary/30 transition-colors overflow-hidden">
         {coverImageUrl && (
           <div className="aspect-[16/9] overflow-hidden">
@@ -41,7 +51,7 @@ export function NewsCard({ title, slug, body, scope, coverImageUrl, publishedAt,
             <Badge variant="outline" className="text-xs capitalize">
               {scope}
             </Badge>
-            {isFeatured && (
+            {isPinned && (
               <Badge variant="default" className="text-xs">
                 Pinned
               </Badge>
@@ -62,6 +72,6 @@ export function NewsCard({ title, slug, body, scope, coverImageUrl, publishedAt,
           </div>
         </CardContent>
       </Card>
-    </Link>
+    </Wrapper>
   )
 }

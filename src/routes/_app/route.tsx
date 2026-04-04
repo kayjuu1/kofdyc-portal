@@ -83,13 +83,13 @@ function AppLayout() {
           <Separator />
 
           <div className="p-3 space-y-1">
-            <a
-              href="/dashboard/settings"
+            <Link
+              to="/dashboard/settings"
               className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
             >
               <Settings className="w-4 h-4" />
               Settings
-            </a>
+            </Link>
             <button
               onClick={handleSignOut}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"

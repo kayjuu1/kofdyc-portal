@@ -137,7 +137,7 @@ async function seed() {
       dietary_requirements TEXT,
       medical_conditions TEXT,
       tshirt_size TEXT,
-      payment_status TEXT NOT NULL DEFAULT 'free',
+      payment_status TEXT NOT NULL DEFAULT 'not_required',
       registration_status TEXT NOT NULL DEFAULT 'pending',
       paid_at TEXT,
       paystack_reference TEXT,
@@ -171,7 +171,7 @@ async function seed() {
       parish_id INTEGER NOT NULL REFERENCES parishes(id),
       year INTEGER NOT NULL,
       status TEXT NOT NULL DEFAULT 'draft',
-      submitting_officer TEXT,
+      submitting_officer TEXT REFERENCES user(id),
       submission_date TEXT,
       final_approval_date TEXT,
       pdf_url TEXT,
@@ -213,7 +213,7 @@ async function seed() {
       scope TEXT NOT NULL DEFAULT 'diocese',
       scope_id INTEGER,
       cover_image_url TEXT,
-      is_featured INTEGER NOT NULL DEFAULT 0,
+      is_pinned INTEGER NOT NULL DEFAULT 0,
       status TEXT NOT NULL DEFAULT 'draft',
       published_at TEXT,
       author_id TEXT REFERENCES user(id),
@@ -249,6 +249,53 @@ async function seed() {
       phone TEXT,
       term_year TEXT NOT NULL,
       is_current INTEGER NOT NULL DEFAULT 1,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )
+  `)
+
+  sqlite.exec(`
+    CREATE TABLE IF NOT EXISTS chaplain_conversations (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL REFERENCES user(id),
+      alias TEXT,
+      is_anonymous INTEGER NOT NULL DEFAULT 0,
+      status TEXT NOT NULL DEFAULT 'active',
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )
+  `)
+
+  sqlite.exec(`
+    CREATE TABLE IF NOT EXISTS chaplain_messages (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      conversation_id INTEGER NOT NULL REFERENCES chaplain_conversations(id),
+      sender_role TEXT NOT NULL,
+      body TEXT NOT NULL,
+      sent_at TEXT NOT NULL DEFAULT (datetime('now')),
+      read_at TEXT
+    )
+  `)
+
+  sqlite.exec(`
+    CREATE TABLE IF NOT EXISTS payments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      registration_id INTEGER NOT NULL REFERENCES registrations(id),
+      paystack_reference TEXT UNIQUE,
+      amount_ghs REAL NOT NULL,
+      status TEXT NOT NULL DEFAULT 'initiated',
+      webhook_payload TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )
+  `)
+
+  sqlite.exec(`
+    CREATE TABLE IF NOT EXISTS audit_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT,
+      action TEXT NOT NULL,
+      resource_type TEXT,
+      resource_id TEXT,
+      metadata TEXT,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     )
   `)
@@ -362,7 +409,7 @@ async function seed() {
 
   // News articles (published, with slugs)
   sqlite.prepare(`
-    INSERT INTO news (title, slug, body, scope, is_featured, status, published_at, author_id, created_at, updated_at)
+    INSERT INTO news (title, slug, body, scope, is_pinned, status, published_at, author_id, created_at, updated_at)
     VALUES
     ('Diocesan Youth Congress 2026: A Gathering of Faith and Fellowship',
      'diocesan-youth-congress-2026',
@@ -419,15 +466,15 @@ async function seed() {
   sqlite.prepare(`
     INSERT INTO documents (title, category, scope, file_url, file_name, file_size, mime_type, issuing_authority, date_issued, uploaded_by, created_at)
     VALUES
-    ('Lenten Pastoral Letter 2026', 'pastoral_letter', 'diocese',
+    ('Lenten Pastoral Letter 2026', 'pastoral_letters', 'diocese',
      '/documents/lenten-letter-2026.pdf', 'lenten-letter-2026.pdf', 245000, 'application/pdf',
      'Most Rev. Dr. Samuel Osei Akrofi', '2026-02-14', '${chaplainId}', '${now}'),
 
-    ('DYC Constitution and Guidelines (Revised 2025)', 'pastoral_letter', 'diocese',
+    ('DYC Constitution and Guidelines (Revised 2025)', 'pastoral_letters', 'diocese',
      '/documents/dyc-constitution-2025.pdf', 'dyc-constitution-2025.pdf', 1250000, 'application/pdf',
      'DYC Executive Council', '2025-12-01', '${executiveId}', '${now}'),
 
-    ('Circular: Youth Day Celebration 2026', 'pastoral_letter', 'diocese',
+    ('Circular: Youth Day Celebration 2026', 'pastoral_letters', 'diocese',
      '/documents/circular-youth-day-2026.pdf', 'circular-youth-day-2026.pdf', 180000, 'application/pdf',
      'DYC General Secretary', '2026-03-01', '${executiveId}', '${now}')
   `).run()

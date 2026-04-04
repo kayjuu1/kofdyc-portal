@@ -29,7 +29,7 @@ interface NewsArticle {
   scope: string
   scopeId: number | null
   coverImageUrl: string | null
-  isFeatured: boolean | null
+  isPinned: boolean | null
   publishedAt: string | null
   createdAt: string
   authorName: string | null
@@ -70,7 +70,7 @@ function HomePage() {
   const { news, events } = Route.useLoaderData()
   const articles = news.articles as NewsArticle[]
   const eventList = events as EventItem[]
-  const featured = articles.find((a) => a.isFeatured) ?? articles[0]
+  const featured = articles.find((a) => a.isPinned) ?? articles[0]
   const restArticles = articles.filter((a) => a.id !== featured?.id).slice(0, 5)
 
   return (
@@ -105,7 +105,7 @@ function FeaturedSection({
             {article ? (
               <>
                 <Badge variant="outline" className="mb-4 text-primary border-primary/30 bg-primary/5">
-                  {article.isFeatured ? "Pinned" : "Latest"}
+                  {article.isPinned ? "Pinned" : "Latest"}
                 </Badge>
                 <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight mb-4 font-serif">
                   {article.title}
