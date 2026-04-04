@@ -1,64 +1,74 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
 import { useState } from "react"
-import { ArrowLeft, Save, Send } from "lucide-react"
+import { ArrowLeft, Save, Send, XCircle, Users } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { createEvent } from "@/functions/events"
+import { getEvent, updateEvent } from "@/functions/events"
 import { getDeaneries, getParishes } from "@/functions/locations"
 import { useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
 
 const EVENT_TYPES = ["mass", "rally", "retreat", "congress", "meeting", "other"] as const
 
-export const Route = createFileRoute("/_app/dashboard/events/create")({
-  loader: async () => {
-    const [deaneries, parishes] = await Promise.all([
+export const Route = createFileRoute("/_app/dashboard/events/$id")({
+  loader: async ({ params }) => {
+    const [event, deaneries, parishes] = await Promise.all([
+      getEvent({ data: { id: parseInt(params.id) } }),
       getDeaneries({ data: {} }),
       getParishes({ data: {} }),
     ])
-    return { deaneries, parishes }
+    if (!event) {
+      throw new Response("Event not found", { status: 404 })
+    }
+    return { event, deaneries, parishes }
   },
-  component: CreateEventPage,
+  component: EditEventPage,
 })
 
-function CreateEventPage() {
-  const data = Route.useLoaderData()
+function EditEventPage() {
+  const { event, deaneries: deaneryList, parishes: parishList } = Route.useLoaderData()
   const navigate = useNavigate()
-  
+
   const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    eventType: "other" as typeof EVENT_TYPES[number],
-    scope: "parish" as "diocese" | "deanery" | "parish",
-    scopeId: undefined as number | undefined,
-    startAt: "",
-    endAt: "",
-    venue: "",
-    googleMapsLink: "",
-    coverImageUrl: "",
-    registrationDeadline: "",
-    capacity: "",
-    contactName: "",
-    contactPhone: "",
-    showRetreatFields: false,
-    showTshirtSize: false,
+    title: event.title,
+    description: event.description ?? "",
+    eventType: event.eventType as typeof EVENT_TYPES[number],
+    scope: event.scope as "diocese" | "deanery" | "parish",
+    scopeId: event.scopeId ?? undefined as number | undefined,
+    startAt: event.startAt?.slice(0, 16) ?? "",
+    endAt: event.endAt?.slice(0, 16) ?? "",
+    venue: event.venue ?? "",
+    googleMapsLink: event.googleMapsLink ?? "",
+    coverImageUrl: event.coverImageUrl ?? "",
+    registrationDeadline: event.registrationDeadline?.slice(0, 16) ?? "",
+    capacity: event.capacity?.toString() ?? "",
+    contactName: event.contactName ?? "",
+    contactPhone: event.contactPhone ?? "",
   })
 
-  const createMutation = useMutation({
-    mutationFn: (data: Parameters<typeof createEvent>[0]["data"]) =>
-      createEvent({ data }),
+  const updateMutation = useMutation({
+    mutationFn: (data: Parameters<typeof updateEvent>[0]["data"]) =>
+      updateEvent({ data }),
     onSuccess: (_, variables) => {
-      toast.success(variables.status === "published" ? "Event published" : "Event saved as draft")
+      if (variables.status === "cancelled") {
+        toast.success("Event cancelled")
+      } else if (variables.status === "published") {
+        toast.success("Event published")
+      } else {
+        toast.success("Event updated")
+      }
       navigate({ to: "/dashboard/events" })
     },
   })
 
-  const submitWithStatus = (status: "draft" | "published") => {
-    createMutation.mutate({
+  const submitUpdate = (status?: "draft" | "published" | "cancelled") => {
+    updateMutation.mutate({
+      id: event.id,
       title: formData.title,
       description: formData.description || undefined,
       eventType: formData.eventType,
@@ -73,31 +83,43 @@ function CreateEventPage() {
       capacity: formData.capacity ? parseInt(formData.capacity) : undefined,
       contactName: formData.contactName || undefined,
       contactPhone: formData.contactPhone || undefined,
-      registrationType: "free",
-      status,
+      ...(status ? { status } : {}),
     })
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    submitWithStatus("draft")
+    submitUpdate()
   }
 
-  const deaneries = data.deaneries || []
-  const parishes = data.parishes || []
+  const deaneries = deaneryList || []
+  const parishes = parishList || []
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" asChild>
-          <Link to="/dashboard/events">
-            <ArrowLeft className="w-5 h-5" />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" asChild>
+            <Link to="/dashboard/events">
+              <ArrowLeft className="w-5 h-5" />
+            </Link>
+          </Button>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-foreground">Edit Event</h1>
+              <Badge variant={event.status === "published" ? "default" : event.status === "draft" ? "outline" : "secondary"}>
+                {event.status}
+              </Badge>
+            </div>
+            <p className="text-sm text-muted-foreground">Update event details</p>
+          </div>
+        </div>
+        <Button variant="outline" asChild>
+          <Link to="/dashboard/events/registrants" search={{ eventId: event.id }}>
+            <Users className="w-4 h-4 mr-2" />
+            View Registrants
           </Link>
         </Button>
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Create Event</h1>
-          <p className="text-sm text-muted-foreground">Fill in the event details</p>
-        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -321,54 +343,51 @@ function CreateEventPage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Retreat & Camp Options</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center gap-2">
-              <input
-                id="showRetreatFields"
-                type="checkbox"
-                checked={formData.showRetreatFields}
-                onChange={(e) => setFormData({ ...formData, showRetreatFields: e.target.checked })}
-                className="w-4 h-4"
-              />
-              <Label htmlFor="showRetreatFields">Show retreat-specific fields on registration</Label>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <input
-                id="showTshirtSize"
-                type="checkbox"
-                checked={formData.showTshirtSize}
-                onChange={(e) => setFormData({ ...formData, showTshirtSize: e.target.checked })}
-                className="w-4 h-4"
-              />
-              <Label htmlFor="showTshirtSize">Show t-shirt size field on registration</Label>
-            </div>
-          </CardContent>
-        </Card>
-
         <div className="flex justify-end gap-4">
           <Button variant="outline" type="button" onClick={() => navigate({ to: "/dashboard/events" })}>
             Cancel
           </Button>
-          <Button type="submit" variant="outline" disabled={createMutation.isPending}>
-            <Save className="w-4 h-4 mr-2" />
-            {createMutation.isPending ? "Saving..." : "Save as Draft"}
-          </Button>
-          <Button
-            type="button"
-            disabled={createMutation.isPending}
-            onClick={() => {
-              const form = document.querySelector("form") as HTMLFormElement
-              if (form?.reportValidity()) submitWithStatus("published")
-            }}
-          >
-            <Send className="w-4 h-4 mr-2" />
-            {createMutation.isPending ? "Publishing..." : "Save & Publish"}
-          </Button>
+
+          {event.status !== "cancelled" && (
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={updateMutation.isPending}
+              onClick={() => {
+                if (confirm("Are you sure you want to cancel this event?")) {
+                  submitUpdate("cancelled")
+                }
+              }}
+            >
+              <XCircle className="w-4 h-4 mr-2" />
+              Cancel Event
+            </Button>
+          )}
+
+          {event.status === "published" ? (
+            <Button type="submit" disabled={updateMutation.isPending}>
+              <Save className="w-4 h-4 mr-2" />
+              {updateMutation.isPending ? "Saving..." : "Save Changes"}
+            </Button>
+          ) : (
+            <>
+              <Button type="submit" variant="outline" disabled={updateMutation.isPending}>
+                <Save className="w-4 h-4 mr-2" />
+                {updateMutation.isPending ? "Saving..." : "Save Draft"}
+              </Button>
+              <Button
+                type="button"
+                disabled={updateMutation.isPending}
+                onClick={() => {
+                  const form = document.querySelector("form") as HTMLFormElement
+                  if (form?.reportValidity()) submitUpdate("published")
+                }}
+              >
+                <Send className="w-4 h-4 mr-2" />
+                {updateMutation.isPending ? "Publishing..." : "Publish"}
+              </Button>
+            </>
+          )}
         </div>
       </form>
     </div>

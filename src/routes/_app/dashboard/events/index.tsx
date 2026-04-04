@@ -1,6 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router"
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router"
 import { useState } from "react"
-import { Plus, Search, Pencil, Eye, Trash2, MoreHorizontal, Calendar } from "lucide-react"
+import { Plus, Search, Pencil, Eye, Trash2, MoreHorizontal, Users } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -21,6 +21,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card"
 import { getEvents, deleteEvent } from "@/functions/events"
 import { useMutation } from "@tanstack/react-query"
+import { toast } from "sonner"
 
 type SearchParams = {
   status?: "draft" | "published" | "cancelled" | "completed"
@@ -47,6 +48,7 @@ export const Route = createFileRoute("/_app/dashboard/events/")({
     status: (search.status as SearchParams["status"]) || undefined,
     page: Number(search.page) || 1,
   }),
+  loaderDeps: ({ search }) => ({ status: search.status, page: search.page }),
   loader: async ({ deps }) => {
     return getEvents({
       data: {
@@ -63,13 +65,15 @@ function EventsAdminPage() {
   const data = Route.useLoaderData()
   const { status } = Route.useSearch()
   const navigate = Route.useNavigate()
+  const router = useRouter()
   const eventList = (data.events || []) as EventItem[]
   const [search, setSearch] = useState("")
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => deleteEvent({ data: { id } }),
     onSuccess: () => {
-      window.location.reload()
+      toast.success("Event deleted")
+      router.invalidate()
     },
   })
 
@@ -186,15 +190,21 @@ function EventsAdminPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem asChild>
-                            <Link to={`/events/${event.id}`} target="_blank">
+                            <Link to="/events/$id" params={{ id: String(event.id) }} target="_blank">
                               <Eye className="w-4 h-4 mr-2" />
                               View Public Page
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
-                            <Link to={`/dashboard/events/${event.id}`}>
+                            <Link to="/dashboard/events/$id" params={{ id: String(event.id) }}>
                               <Pencil className="w-4 h-4 mr-2" />
                               Edit
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link to="/dashboard/events/registrants" search={{ eventId: event.id }}>
+                              <Users className="w-4 h-4 mr-2" />
+                              Registrants
                             </Link>
                           </DropdownMenuItem>
                           {event.status === "draft" && (

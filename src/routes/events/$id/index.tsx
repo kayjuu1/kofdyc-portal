@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, Link } from "@tanstack/react-router"
 import { useState } from "react"
 import { MapPin, Users, Calendar, ArrowLeft, CheckCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -15,7 +15,7 @@ import { useMutation } from "@tanstack/react-query"
 
 const TSHIRT_SIZES = ["XS", "S", "M", "L", "XL", "2XL", "3XL"] as const
 
-export const Route = createFileRoute("/events/$id")({
+export const Route = createFileRoute("/events/$id/")({
   loader: async ({ params }) => {
     const event = await getEvent({ data: { id: parseInt(params.id) } })
     if (!event || event.status !== "published") {
@@ -42,6 +42,10 @@ function EventDetailPage() {
   const [submitted, setSubmitted] = useState(false)
 
   const isRetreat = event.eventType === "retreat"
+  const isPaid = event.registrationType === "paid"
+  const isDeadlinePast = event.registrationDeadline
+    ? new Date() > new Date(event.registrationDeadline)
+    : false
 
   const registerMutation = useMutation({
     mutationFn: (data: Parameters<typeof registerGuest>[0]["data"]) =>
@@ -81,7 +85,7 @@ function EventDetailPage() {
             )}
           </p>
           <Button asChild>
-            <a href="/events">View More Events</a>
+            <Link to="/events">View More Events</Link>
           </Button>
         </main>
         <PublicFooter />
@@ -94,10 +98,10 @@ function EventDetailPage() {
       <PublicHeader />
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
         <Button variant="ghost" asChild className="mb-4">
-          <a href="/events">
+          <Link to="/events">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Events
-          </a>
+          </Link>
         </Button>
 
         <div className="grid lg:grid-cols-3 gap-8">
@@ -195,6 +199,11 @@ function EventDetailPage() {
                 <CardTitle>Register</CardTitle>
               </CardHeader>
               <CardContent>
+                {isPaid ? (
+                  <p className="text-sm text-muted-foreground">Payment registration coming soon. Please check back later.</p>
+                ) : isDeadlinePast ? (
+                  <p className="text-sm text-muted-foreground">Registration for this event has closed.</p>
+                ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="grid gap-2">
                     <Label htmlFor="guestName">Full Name *</Label>
@@ -313,7 +322,14 @@ function EventDetailPage() {
                   >
                     {registerMutation.isPending ? "Registering..." : "Register Now"}
                   </Button>
+
+                  {registerMutation.isError && (
+                    <p className="text-sm text-destructive mt-2">
+                      {registerMutation.error?.message ?? "Registration failed. Please try again."}
+                    </p>
+                  )}
                 </form>
+                )}
               </CardContent>
             </Card>
           </div>

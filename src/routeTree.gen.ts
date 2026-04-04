@@ -16,17 +16,20 @@ import { Route as NewsIndexRouteImport } from './routes/news/index'
 import { Route as EventsIndexRouteImport } from './routes/events/index'
 import { Route as NewsSubmitRouteImport } from './routes/news/submit'
 import { Route as NewsSlugRouteImport } from './routes/news/$slug'
-import { Route as EventsIdRouteImport } from './routes/events/$id'
 import { Route as ApiUploadRouteImport } from './routes/api/upload'
 import { Route as AuthSignInRouteImport } from './routes/_auth/sign-in'
 import { Route as AuthInitAdminRouteImport } from './routes/_auth/init-admin'
+import { Route as EventsIdIndexRouteImport } from './routes/events/$id/index'
 import { Route as AppDashboardIndexRouteImport } from './routes/_app/dashboard/index'
+import { Route as EventsIdCancelRouteImport } from './routes/events/$id/cancel'
 import { Route as ApiMediaSplatRouteImport } from './routes/api/media/$'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AppDashboardNewsRouteImport } from './routes/_app/dashboard/news'
 import { Route as AppDashboardNewsIndexRouteImport } from './routes/_app/dashboard/news/index'
 import { Route as AppDashboardEventsIndexRouteImport } from './routes/_app/dashboard/events/index'
+import { Route as AppDashboardEventsRegistrantsRouteImport } from './routes/_app/dashboard/events/registrants'
 import { Route as AppDashboardEventsCreateRouteImport } from './routes/_app/dashboard/events/create'
+import { Route as AppDashboardEventsIdRouteImport } from './routes/_app/dashboard/events/$id'
 
 const PastoralLettersRoute = PastoralLettersRouteImport.update({
   id: '/pastoral-letters',
@@ -62,11 +65,6 @@ const NewsSlugRoute = NewsSlugRouteImport.update({
   path: '/news/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
-const EventsIdRoute = EventsIdRouteImport.update({
-  id: '/events/$id',
-  path: '/events/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiUploadRoute = ApiUploadRouteImport.update({
   id: '/api/upload',
   path: '/api/upload',
@@ -82,10 +80,20 @@ const AuthInitAdminRoute = AuthInitAdminRouteImport.update({
   path: '/init-admin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EventsIdIndexRoute = EventsIdIndexRouteImport.update({
+  id: '/events/$id/',
+  path: '/events/$id/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppDashboardIndexRoute = AppDashboardIndexRouteImport.update({
   id: '/dashboard/',
   path: '/dashboard/',
   getParentRoute: () => AppRouteRoute,
+} as any)
+const EventsIdCancelRoute = EventsIdCancelRouteImport.update({
+  id: '/events/$id/cancel',
+  path: '/events/$id/cancel',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiMediaSplatRoute = ApiMediaSplatRouteImport.update({
   id: '/api/media/$',
@@ -112,12 +120,23 @@ const AppDashboardEventsIndexRoute = AppDashboardEventsIndexRouteImport.update({
   path: '/dashboard/events/',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const AppDashboardEventsRegistrantsRoute =
+  AppDashboardEventsRegistrantsRouteImport.update({
+    id: '/dashboard/events/registrants',
+    path: '/dashboard/events/registrants',
+    getParentRoute: () => AppRouteRoute,
+  } as any)
 const AppDashboardEventsCreateRoute =
   AppDashboardEventsCreateRouteImport.update({
     id: '/dashboard/events/create',
     path: '/dashboard/events/create',
     getParentRoute: () => AppRouteRoute,
   } as any)
+const AppDashboardEventsIdRoute = AppDashboardEventsIdRouteImport.update({
+  id: '/dashboard/events/$id',
+  path: '/dashboard/events/$id',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -125,7 +144,6 @@ export interface FileRoutesByFullPath {
   '/init-admin': typeof AuthInitAdminRoute
   '/sign-in': typeof AuthSignInRoute
   '/api/upload': typeof ApiUploadRoute
-  '/events/$id': typeof EventsIdRoute
   '/news/$slug': typeof NewsSlugRoute
   '/news/submit': typeof NewsSubmitRoute
   '/events/': typeof EventsIndexRoute
@@ -133,8 +151,12 @@ export interface FileRoutesByFullPath {
   '/dashboard/news': typeof AppDashboardNewsRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/media/$': typeof ApiMediaSplatRoute
+  '/events/$id/cancel': typeof EventsIdCancelRoute
   '/dashboard/': typeof AppDashboardIndexRoute
+  '/events/$id/': typeof EventsIdIndexRoute
+  '/dashboard/events/$id': typeof AppDashboardEventsIdRoute
   '/dashboard/events/create': typeof AppDashboardEventsCreateRoute
+  '/dashboard/events/registrants': typeof AppDashboardEventsRegistrantsRoute
   '/dashboard/events/': typeof AppDashboardEventsIndexRoute
   '/dashboard/news/': typeof AppDashboardNewsIndexRoute
 }
@@ -144,15 +166,18 @@ export interface FileRoutesByTo {
   '/init-admin': typeof AuthInitAdminRoute
   '/sign-in': typeof AuthSignInRoute
   '/api/upload': typeof ApiUploadRoute
-  '/events/$id': typeof EventsIdRoute
   '/news/$slug': typeof NewsSlugRoute
   '/news/submit': typeof NewsSubmitRoute
   '/events': typeof EventsIndexRoute
   '/news': typeof NewsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/media/$': typeof ApiMediaSplatRoute
+  '/events/$id/cancel': typeof EventsIdCancelRoute
   '/dashboard': typeof AppDashboardIndexRoute
+  '/events/$id': typeof EventsIdIndexRoute
+  '/dashboard/events/$id': typeof AppDashboardEventsIdRoute
   '/dashboard/events/create': typeof AppDashboardEventsCreateRoute
+  '/dashboard/events/registrants': typeof AppDashboardEventsRegistrantsRoute
   '/dashboard/events': typeof AppDashboardEventsIndexRoute
   '/dashboard/news': typeof AppDashboardNewsIndexRoute
 }
@@ -164,7 +189,6 @@ export interface FileRoutesById {
   '/_auth/init-admin': typeof AuthInitAdminRoute
   '/_auth/sign-in': typeof AuthSignInRoute
   '/api/upload': typeof ApiUploadRoute
-  '/events/$id': typeof EventsIdRoute
   '/news/$slug': typeof NewsSlugRoute
   '/news/submit': typeof NewsSubmitRoute
   '/events/': typeof EventsIndexRoute
@@ -172,8 +196,12 @@ export interface FileRoutesById {
   '/_app/dashboard/news': typeof AppDashboardNewsRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/media/$': typeof ApiMediaSplatRoute
+  '/events/$id/cancel': typeof EventsIdCancelRoute
   '/_app/dashboard/': typeof AppDashboardIndexRoute
+  '/events/$id/': typeof EventsIdIndexRoute
+  '/_app/dashboard/events/$id': typeof AppDashboardEventsIdRoute
   '/_app/dashboard/events/create': typeof AppDashboardEventsCreateRoute
+  '/_app/dashboard/events/registrants': typeof AppDashboardEventsRegistrantsRoute
   '/_app/dashboard/events/': typeof AppDashboardEventsIndexRoute
   '/_app/dashboard/news/': typeof AppDashboardNewsIndexRoute
 }
@@ -185,7 +213,6 @@ export interface FileRouteTypes {
     | '/init-admin'
     | '/sign-in'
     | '/api/upload'
-    | '/events/$id'
     | '/news/$slug'
     | '/news/submit'
     | '/events/'
@@ -193,8 +220,12 @@ export interface FileRouteTypes {
     | '/dashboard/news'
     | '/api/auth/$'
     | '/api/media/$'
+    | '/events/$id/cancel'
     | '/dashboard/'
+    | '/events/$id/'
+    | '/dashboard/events/$id'
     | '/dashboard/events/create'
+    | '/dashboard/events/registrants'
     | '/dashboard/events/'
     | '/dashboard/news/'
   fileRoutesByTo: FileRoutesByTo
@@ -204,15 +235,18 @@ export interface FileRouteTypes {
     | '/init-admin'
     | '/sign-in'
     | '/api/upload'
-    | '/events/$id'
     | '/news/$slug'
     | '/news/submit'
     | '/events'
     | '/news'
     | '/api/auth/$'
     | '/api/media/$'
+    | '/events/$id/cancel'
     | '/dashboard'
+    | '/events/$id'
+    | '/dashboard/events/$id'
     | '/dashboard/events/create'
+    | '/dashboard/events/registrants'
     | '/dashboard/events'
     | '/dashboard/news'
   id:
@@ -223,7 +257,6 @@ export interface FileRouteTypes {
     | '/_auth/init-admin'
     | '/_auth/sign-in'
     | '/api/upload'
-    | '/events/$id'
     | '/news/$slug'
     | '/news/submit'
     | '/events/'
@@ -231,8 +264,12 @@ export interface FileRouteTypes {
     | '/_app/dashboard/news'
     | '/api/auth/$'
     | '/api/media/$'
+    | '/events/$id/cancel'
     | '/_app/dashboard/'
+    | '/events/$id/'
+    | '/_app/dashboard/events/$id'
     | '/_app/dashboard/events/create'
+    | '/_app/dashboard/events/registrants'
     | '/_app/dashboard/events/'
     | '/_app/dashboard/news/'
   fileRoutesById: FileRoutesById
@@ -244,13 +281,14 @@ export interface RootRouteChildren {
   AuthInitAdminRoute: typeof AuthInitAdminRoute
   AuthSignInRoute: typeof AuthSignInRoute
   ApiUploadRoute: typeof ApiUploadRoute
-  EventsIdRoute: typeof EventsIdRoute
   NewsSlugRoute: typeof NewsSlugRoute
   NewsSubmitRoute: typeof NewsSubmitRoute
   EventsIndexRoute: typeof EventsIndexRoute
   NewsIndexRoute: typeof NewsIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiMediaSplatRoute: typeof ApiMediaSplatRoute
+  EventsIdCancelRoute: typeof EventsIdCancelRoute
+  EventsIdIndexRoute: typeof EventsIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -304,13 +342,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NewsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/events/$id': {
-      id: '/events/$id'
-      path: '/events/$id'
-      fullPath: '/events/$id'
-      preLoaderRoute: typeof EventsIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/upload': {
       id: '/api/upload'
       path: '/api/upload'
@@ -332,12 +363,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthInitAdminRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/events/$id/': {
+      id: '/events/$id/'
+      path: '/events/$id'
+      fullPath: '/events/$id/'
+      preLoaderRoute: typeof EventsIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app/dashboard/': {
       id: '/_app/dashboard/'
       path: '/dashboard'
       fullPath: '/dashboard/'
       preLoaderRoute: typeof AppDashboardIndexRouteImport
       parentRoute: typeof AppRouteRoute
+    }
+    '/events/$id/cancel': {
+      id: '/events/$id/cancel'
+      path: '/events/$id/cancel'
+      fullPath: '/events/$id/cancel'
+      preLoaderRoute: typeof EventsIdCancelRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/media/$': {
       id: '/api/media/$'
@@ -374,11 +419,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDashboardEventsIndexRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/_app/dashboard/events/registrants': {
+      id: '/_app/dashboard/events/registrants'
+      path: '/dashboard/events/registrants'
+      fullPath: '/dashboard/events/registrants'
+      preLoaderRoute: typeof AppDashboardEventsRegistrantsRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/_app/dashboard/events/create': {
       id: '/_app/dashboard/events/create'
       path: '/dashboard/events/create'
       fullPath: '/dashboard/events/create'
       preLoaderRoute: typeof AppDashboardEventsCreateRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/dashboard/events/$id': {
+      id: '/_app/dashboard/events/$id'
+      path: '/dashboard/events/$id'
+      fullPath: '/dashboard/events/$id'
+      preLoaderRoute: typeof AppDashboardEventsIdRouteImport
       parentRoute: typeof AppRouteRoute
     }
   }
@@ -398,14 +457,18 @@ const AppDashboardNewsRouteWithChildren =
 interface AppRouteRouteChildren {
   AppDashboardNewsRoute: typeof AppDashboardNewsRouteWithChildren
   AppDashboardIndexRoute: typeof AppDashboardIndexRoute
+  AppDashboardEventsIdRoute: typeof AppDashboardEventsIdRoute
   AppDashboardEventsCreateRoute: typeof AppDashboardEventsCreateRoute
+  AppDashboardEventsRegistrantsRoute: typeof AppDashboardEventsRegistrantsRoute
   AppDashboardEventsIndexRoute: typeof AppDashboardEventsIndexRoute
 }
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppDashboardNewsRoute: AppDashboardNewsRouteWithChildren,
   AppDashboardIndexRoute: AppDashboardIndexRoute,
+  AppDashboardEventsIdRoute: AppDashboardEventsIdRoute,
   AppDashboardEventsCreateRoute: AppDashboardEventsCreateRoute,
+  AppDashboardEventsRegistrantsRoute: AppDashboardEventsRegistrantsRoute,
   AppDashboardEventsIndexRoute: AppDashboardEventsIndexRoute,
 }
 
@@ -420,13 +483,14 @@ const rootRouteChildren: RootRouteChildren = {
   AuthInitAdminRoute: AuthInitAdminRoute,
   AuthSignInRoute: AuthSignInRoute,
   ApiUploadRoute: ApiUploadRoute,
-  EventsIdRoute: EventsIdRoute,
   NewsSlugRoute: NewsSlugRoute,
   NewsSubmitRoute: NewsSubmitRoute,
   EventsIndexRoute: EventsIndexRoute,
   NewsIndexRoute: NewsIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiMediaSplatRoute: ApiMediaSplatRoute,
+  EventsIdCancelRoute: EventsIdCancelRoute,
+  EventsIdIndexRoute: EventsIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

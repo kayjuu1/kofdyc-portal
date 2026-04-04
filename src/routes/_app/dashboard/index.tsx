@@ -9,23 +9,39 @@ import {
   ArrowRight,
   Newspaper,
   ChevronRight,
-  TrendingUp,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
+import { getDashboardStats } from "@/functions/dashboard"
+import { getUpcomingEvents } from "@/functions/events"
 
 export const Route = createFileRoute("/_app/dashboard/")({
   head: () => ({
     meta: [{ title: "Dashboard | DYC Koforidua" }],
   }),
+  loader: async () => {
+    const [stats, upcomingEvents] = await Promise.all([
+      getDashboardStats(),
+      getUpcomingEvents({ data: { limit: 3 } }),
+    ])
+    return { stats, upcomingEvents }
+  },
   component: DashboardPage,
 })
 
 function DashboardPage() {
   const { session } = Route.useRouteContext()
+  const { stats, upcomingEvents } = Route.useLoaderData()
   const firstName = session.user.name?.split(" ")[0] ?? "there"
+
+  const statCards = [
+    { label: "Total Members", value: stats.members, icon: Users, color: "text-primary" },
+    { label: "Upcoming Events", value: stats.upcomingEvents, icon: Calendar, color: "text-blue-600" },
+    { label: "Published News", value: stats.publishedNews, icon: Newspaper, color: "text-amber-600" },
+    { label: "Documents", value: stats.documents, icon: FileText, color: "text-emerald-600" },
+  ]
 
   return (
     <div className="space-y-8 max-w-7xl">
@@ -38,29 +54,22 @@ function DashboardPage() {
             Here's what's happening in the diocese today.
           </p>
         </div>
-        <Button className="bg-primary hover:bg-primary/90 w-fit">
-          <Plus className="w-4 h-4 mr-2" />
-          Create Event
+        <Button className="bg-primary hover:bg-primary/90 w-fit" asChild>
+          <Link to="/dashboard/events/create">
+            <Plus className="w-4 h-4 mr-2" />
+            Create Event
+          </Link>
         </Button>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { label: "Total Members", value: "1,247", change: "+12%", icon: Users, color: "text-primary" },
-          { label: "Upcoming Events", value: "8", change: "+3 this week", icon: Calendar, color: "text-blue-600" },
-          { label: "Active Parishes", value: "23", change: "5 deaneries", icon: MapPin, color: "text-amber-600" },
-          { label: "Documents", value: "56", change: "+4 new", icon: FileText, color: "text-emerald-600" },
-        ].map((stat, i) => (
+        {statCards.map((stat, i) => (
           <Card key={i} className="hover:border-primary/30 transition-colors">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-3">
                 <div className={`w-10 h-10 rounded-lg bg-muted flex items-center justify-center ${stat.color}`}>
                   <stat.icon className="w-5 h-5" />
                 </div>
-                <Badge variant="secondary" className="text-xs">
-                  <TrendingUp className="w-3 h-3 mr-1" />
-                  {stat.change}
-                </Badge>
               </div>
               <p className="text-2xl font-bold text-foreground">{stat.value}</p>
               <p className="text-sm text-muted-foreground mt-0.5">{stat.label}</p>
@@ -74,63 +83,60 @@ function DashboardPage() {
           <Card>
             <CardHeader className="flex-row items-center justify-between pb-2">
               <CardTitle className="text-lg font-semibold">Upcoming Events</CardTitle>
-              <Button variant="ghost" size="sm">
-                View all <ChevronRight className="w-3.5 h-3.5 ml-1" />
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/events">
+                  View all <ChevronRight className="w-3.5 h-3.5 ml-1" />
+                </Link>
               </Button>
             </CardHeader>
             <CardContent className="space-y-4">
-              {[
-                {
-                  title: "Monthly Youth Mass",
-                  date: "Apr 5, 2026",
-                  time: "10:00 AM",
-                  location: "All Parishes",
-                  type: "Mass",
-                },
-                {
-                  title: "Youth Retreat: Finding Peace in Christ",
-                  date: "May 20, 2026",
-                  time: "8:00 AM",
-                  location: "St. Augustine's Parish Hall",
-                  type: "Retreat",
-                },
-                {
-                  title: "Diocesan Youth Day 2026",
-                  date: "Jun 15, 2026",
-                  time: "9:00 AM",
-                  location: "St. Joseph's Cathedral",
-                  type: "Rally",
-                },
-              ].map((event, i) => (
-                <div key={i}>
-                  <div className="flex items-start gap-4 group cursor-pointer p-2 -mx-2 rounded-lg hover:bg-muted transition-colors">
-                    <div className="w-14 h-14 rounded-lg bg-primary/10 flex flex-col items-center justify-center shrink-0">
-                      <span className="text-xs font-medium text-primary">{event.date.split(" ")[0]}</span>
-                      <span className="text-lg font-bold text-primary leading-none">{event.date.split(" ")[1].replace(",", "")}</span>
+              {upcomingEvents.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-4 text-center">No upcoming events</p>
+              ) : (
+                upcomingEvents.map((event, i) => {
+                  const date = new Date(event.startAt)
+                  const monthStr = date.toLocaleDateString("en-US", { month: "short" })
+                  const dayStr = date.getDate().toString()
+                  const timeStr = date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+
+                  return (
+                    <div key={event.id}>
+                      <Link
+                        to="/events/$id"
+                        params={{ id: String(event.id) }}
+                        className="flex items-start gap-4 group p-2 -mx-2 rounded-lg hover:bg-muted transition-colors"
+                      >
+                        <div className="w-14 h-14 rounded-lg bg-primary/10 flex flex-col items-center justify-center shrink-0">
+                          <span className="text-xs font-medium text-primary">{monthStr}</span>
+                          <span className="text-lg font-bold text-primary leading-none">{dayStr}</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <p className="font-medium text-foreground group-hover:text-primary transition-colors truncate">
+                              {event.title}
+                            </p>
+                            <Badge variant="outline" className="shrink-0 text-xs capitalize">
+                              {event.eventType}
+                            </Badge>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-3.5 h-3.5" /> {timeStr}
+                            </span>
+                            {event.venue && (
+                              <span className="flex items-center gap-1">
+                                <MapPin className="w-3.5 h-3.5" /> {event.venue}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <ArrowRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-1" />
+                      </Link>
+                      {i < upcomingEvents.length - 1 && <Separator className="mt-4" />}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <p className="font-medium text-foreground group-hover:text-primary transition-colors truncate">
-                          {event.title}
-                        </p>
-                        <Badge variant="outline" className="shrink-0 text-xs">
-                          {event.type}
-                        </Badge>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5" /> {event.time}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <MapPin className="w-3.5 h-3.5" /> {event.location}
-                        </span>
-                      </div>
-                    </div>
-                    <ArrowRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-1" />
-                  </div>
-                  {i < 2 && <Separator className="mt-4" />}
-                </div>
-              ))}
+                  )
+                })
+              )}
             </CardContent>
           </Card>
         </div>
@@ -167,6 +173,7 @@ function DashboardPage() {
               <CardTitle className="text-lg font-semibold">Recent Activity</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* TODO: replace with audit_log query */}
               {[
                 { text: "New member registered from St. Peter's Parish", time: "2h ago" },
                 { text: "Youth Congress registration opened", time: "5h ago" },
