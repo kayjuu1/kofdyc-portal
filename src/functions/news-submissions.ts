@@ -70,7 +70,7 @@ export const submitPublicNews = createServerFn({ method: "POST" })
   })
 
 export const getNewsSubmissions = createServerFn({ method: "GET" })
-  .middleware([requireRole("dyc_executive")])
+  .middleware([requireRole("diocesan_executive", "system_admin")])
   .inputValidator(
     (input: {
       status?: "pending" | "approved" | "rejected"
@@ -127,7 +127,7 @@ export const getNewsSubmissions = createServerFn({ method: "GET" })
   })
 
 export const reviewNewsSubmission = createServerFn({ method: "POST" })
-  .middleware([requireRole("dyc_executive")])
+  .middleware([requireRole("diocesan_executive", "system_admin")])
   .inputValidator(
     (input: {
       id: number

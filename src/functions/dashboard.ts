@@ -8,14 +8,14 @@ export const getDashboardStats = createServerFn({ method: "GET" })
     const now = new Date().toISOString()
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
 
-    const [members, upcoming, docs, published, newMembers, programmeStats] = await Promise.all([
+    const [members, upcoming, docs, published, newAdminUsers, programmeStats] = await Promise.all([
       db.select({ count: sql<number>`count(*)` }).from(user),
       db.select({ count: sql<number>`count(*)` }).from(events)
         .where(and(eq(events.status, "published"), gt(events.startAt, now))),
       db.select({ count: sql<number>`count(*)` }).from(documents),
       db.select({ count: sql<number>`count(*)` }).from(news)
         .where(eq(news.status, "published")),
-      // New members in last 30 days
+      // New admin users in the last 30 days
       db.select({ count: sql<number>`count(*)` }).from(user)
         .where(gte(sql`${user.createdAt}`, sql`${thirtyDaysAgo}`)),
       // Programme status counts
@@ -36,7 +36,7 @@ export const getDashboardStats = createServerFn({ method: "GET" })
       upcomingEvents: upcoming[0]?.count ?? 0,
       documents: docs[0]?.count ?? 0,
       publishedNews: published[0]?.count ?? 0,
-      newMembersThisMonth: newMembers[0]?.count ?? 0,
+      newMembersThisMonth: newAdminUsers[0]?.count ?? 0,
       programmeStatusCounts,
     }
   })

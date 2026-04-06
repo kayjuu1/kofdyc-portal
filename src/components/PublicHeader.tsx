@@ -56,7 +56,7 @@ export function PublicHeader() {
 
           <div className="flex items-center gap-2">
             <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex">
-              <Link to="/sign-in">Sign In</Link>
+              <Link to="/dashboard/login">Admin Login</Link>
             </Button>
             <Button
               variant="ghost"
@@ -92,7 +92,7 @@ export function PublicHeader() {
           ))}
           <Separator className="my-2" />
           <Button asChild variant="outline" className="w-full">
-            <Link to="/sign-in" onClick={() => setMobileOpen(false)}>Sign In</Link>
+            <Link to="/dashboard/login" onClick={() => setMobileOpen(false)}>Admin Login</Link>
           </Button>
         </div>
       )}

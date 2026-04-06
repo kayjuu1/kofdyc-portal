@@ -1,1 +1,1 @@
-export type UserRole = "system_admin" | "diocesan_youth_chaplain" | "dyc_executive" | "coordinator" | "member"
+export type { UserRole } from "@/lib/permissions"

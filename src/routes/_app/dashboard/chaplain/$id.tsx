@@ -6,8 +6,8 @@ import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
 import {
-  getMessages,
-  sendMessage,
+  getChaplainMessages,
+  sendChaplainMessage,
   updateConversationStatus,
 } from "@/functions/chaplain"
 import { useMutation, useQuery } from "@tanstack/react-query"
@@ -15,7 +15,7 @@ import { toast } from "sonner"
 
 export const Route = createFileRoute("/_app/dashboard/chaplain/$id")({
   loader: async ({ params }) => {
-    return getMessages({ data: { conversationId: parseInt(params.id) } })
+    return getChaplainMessages({ data: { conversationId: parseInt(params.id) } })
   },
   component: ChatPage,
 })
@@ -23,18 +23,12 @@ export const Route = createFileRoute("/_app/dashboard/chaplain/$id")({
 function ChatPage() {
   const initialData = Route.useLoaderData()
   const { id } = Route.useParams()
-  const { session } = Route.useRouteContext()
-  const isChaplain =
-    (session.user as { role?: string }).role === "diocesan_youth_chaplain" ||
-    (session.user as { role?: string }).role === "system_admin"
-
   const [newMessage, setNewMessage] = useState("")
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  // Poll for new messages every 5 seconds
   const { data } = useQuery({
     queryKey: ["chaplain-messages", id],
-    queryFn: () => getMessages({ data: { conversationId: parseInt(id) } }),
+    queryFn: () => getChaplainMessages({ data: { conversationId: parseInt(id) } }),
     initialData,
     refetchInterval: 5000,
   })
@@ -48,18 +42,18 @@ function ChatPage() {
 
   const sendMutation = useMutation({
     mutationFn: (body: string) =>
-      sendMessage({ data: { conversationId: parseInt(id), body } }),
+      sendChaplainMessage({ data: { conversationId: parseInt(id), body } }),
     onSuccess: () => {
       setNewMessage("")
     },
-    onError: (err) => toast.error(err.message),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Unable to send message."),
   })
 
   const statusMutation = useMutation({
     mutationFn: (status: "active" | "resolved") =>
       updateConversationStatus({ data: { conversationId: parseInt(id), status } }),
     onSuccess: () => toast.success("Status updated"),
-    onError: (err) => toast.error(err.message),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Unable to update status."),
   })
 
   const handleSend = () => {
@@ -84,44 +78,40 @@ function ChatPage() {
         </Button>
         <div className="flex-1">
           <h1 className="font-semibold text-foreground">
-            {conversation.isAnonymous ? (conversation.alias ?? "Anonymous") : "Conversation"}
+            {conversation.alias ?? "Public Contact"}
           </h1>
           <Badge variant={conversation.status === "active" ? "default" : "secondary"}>
             {conversation.status}
           </Badge>
         </div>
-        {isChaplain && (
-          <div className="flex gap-2">
-            {conversation.status === "active" ? (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => statusMutation.mutate("resolved")}
-                disabled={statusMutation.isPending}
-              >
-                <CheckCircle className="w-4 h-4 mr-1" />
-                Resolve
-              </Button>
-            ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => statusMutation.mutate("active")}
-                disabled={statusMutation.isPending}
-              >
-                <XCircle className="w-4 h-4 mr-1" />
-                Reopen
-              </Button>
-            )}
-          </div>
-        )}
+        <div className="flex gap-2">
+          {conversation.status === "active" ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => statusMutation.mutate("resolved")}
+              disabled={statusMutation.isPending}
+            >
+              <CheckCircle className="w-4 h-4 mr-1" />
+              Resolve
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => statusMutation.mutate("active")}
+              disabled={statusMutation.isPending}
+            >
+              <XCircle className="w-4 h-4 mr-1" />
+              Reopen
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto space-y-3 pb-4">
         {messages.map((msg) => {
-          const isMine =
-            (isChaplain && msg.senderRole === "chaplain") ||
-            (!isChaplain && msg.senderRole === "member")
+          const isMine = msg.senderRole === "chaplain"
 
           return (
             <div
@@ -153,13 +143,20 @@ function ChatPage() {
         <div ref={messagesEndRef} />
       </div>
 
-      {conversation.status === "active" && (
-        <div className="border-t pt-4 flex gap-2">
+      <div className="border-t pt-4 space-y-3">
+        {conversation.status === "resolved" && (
+          <Card>
+            <CardContent className="py-3 text-center text-sm text-muted-foreground">
+              This conversation is resolved right now. Sending a reply will reopen it.
+            </CardContent>
+          </Card>
+        )}
+        <div className="flex gap-2">
           <Textarea
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Type a message..."
+            placeholder="Reply to this anonymous conversation..."
             rows={2}
             className="flex-1 resize-none"
           />
@@ -171,15 +168,7 @@ function ChatPage() {
             <Send className="w-4 h-4" />
           </Button>
         </div>
-      )}
-
-      {conversation.status === "resolved" && (
-        <Card className="mt-4">
-          <CardContent className="py-3 text-center text-sm text-muted-foreground">
-            This conversation has been resolved.
-          </CardContent>
-        </Card>
-      )}
+      </div>
     </div>
   )
 }

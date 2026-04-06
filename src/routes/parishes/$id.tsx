@@ -25,7 +25,7 @@ function ParishProfilePage() {
   const parish = Route.useLoaderData()
 
   const stats = [
-    { label: "Members", value: parish.memberCount, icon: Users },
+    { label: "Admin Contacts", value: parish.adminCount, icon: Users },
     { label: "Events", value: parish.eventCount, icon: Calendar },
     { label: "News", value: parish.newsCount, icon: Newspaper },
   ]

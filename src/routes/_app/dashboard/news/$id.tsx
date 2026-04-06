@@ -11,6 +11,7 @@ import { getNewsArticleById, updateNewsArticle, archiveNewsArticle } from "@/fun
 import { getDeaneries, getParishes } from "@/functions/locations"
 import { useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
+import { hasPermission, type UserRole } from "@/lib/permissions"
 
 export const Route = createFileRoute("/_app/dashboard/news/$id")({
   loader: async ({ params }) => {
@@ -28,7 +29,10 @@ function EditNewsPage() {
   const { article, deaneries: deaneriesList, parishes: parishesList } = Route.useLoaderData()
   const navigate = useNavigate()
   const { session } = Route.useRouteContext()
-  const roleLevel = getRoleLevel((session.user as { role?: string }).role ?? "member")
+  const canArchive = hasPermission(
+    ((session.user as { role?: string }).role ?? "coordinator") as UserRole,
+    "manageNews",
+  )
 
   const [formData, setFormData] = useState({
     title: article.title,
@@ -92,7 +96,7 @@ function EditNewsPage() {
             <p className="text-sm text-muted-foreground">Update article details</p>
           </div>
         </div>
-        {roleLevel >= 2 && article.status !== "archived" && (
+        {canArchive && article.status !== "archived" && (
           <Button
             variant="destructive"
             size="sm"
@@ -240,15 +244,4 @@ function EditNewsPage() {
       </form>
     </div>
   )
-}
-
-function getRoleLevel(role: string): number {
-  const levels: Record<string, number> = {
-    member: 0,
-    coordinator: 1,
-    dyc_executive: 2,
-    diocesan_youth_chaplain: 3,
-    system_admin: 4,
-  }
-  return levels[role] ?? 0
 }

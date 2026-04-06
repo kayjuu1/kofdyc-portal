@@ -5,6 +5,7 @@ import { admin } from "better-auth/plugins"
 import { db } from "@/db"
 import * as schema from "@/db/schema"
 import { env } from "cloudflare:workers"
+import { canonicalizeRole, isAdminRole, type UserRole } from "@/lib/permissions"
 
 // Workers-compatible password hashing using Web Crypto PBKDF2
 // Replaces bcryptjs which exceeds Cloudflare Workers CPU limits
@@ -72,29 +73,13 @@ export const auth = betterAuth({
 export type Session = typeof auth.$Infer.Session
 export type User = typeof auth.$Infer.Session.user
 
-export type UserRole = "system_admin" | "diocesan_youth_chaplain" | "dyc_executive" | "coordinator" | "member"
-
-export const ROLE_HIERARCHY: Record<UserRole, number> = {
-  system_admin: 4,
-  diocesan_youth_chaplain: 3,
-  dyc_executive: 2,
-  coordinator: 1,
-  member: 0,
-}
-
-export function hasPermission(userRole: UserRole | null, requiredRole: UserRole): boolean {
-  if (!userRole) return false
-  return ROLE_HIERARCHY[userRole] >= ROLE_HIERARCHY[requiredRole]
-}
-
 export function canAccessDashboard(role: UserRole | null): boolean {
-  if (!role) return false
-  return ["system_admin", "diocesan_youth_chaplain", "dyc_executive"].includes(role)
+  return isAdminRole(role)
 }
 
 export async function getUserRole(userId: string): Promise<UserRole | null> {
   const user = await db.query.user.findFirst({
     where: (users, { eq }) => eq(users.id, userId),
   })
-  return (user?.role as UserRole) ?? null
+  return canonicalizeRole(user?.role) ?? null
 }

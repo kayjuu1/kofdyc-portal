@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, redirect, Link, useRouter } from "@tanstack/react-router"
 import { getSession } from "@/functions/get-user"
 import { authClient } from "@/lib/auth-client"
+import { canonicalizeRole, hasPermission, type UserRole } from "@/lib/permissions"
 import {
   LayoutDashboard,
   Calendar,
@@ -33,27 +34,29 @@ import {
 export const Route = createFileRoute("/_app")({
   beforeLoad: async () => {
     const session = await getSession()
-    if (!session?.user) {
-      throw redirect({ to: "/sign-in" })
+    const role = canonicalizeRole((session?.user as { role?: string } | undefined)?.role)
+    if (!session?.user || !role || (session.user as { isActive?: boolean }).isActive === false) {
+      throw redirect({ to: "/dashboard/login" })
     }
+    ;(session.user as { role?: string }).role = role
     return { session }
   },
   component: AppLayout,
 })
 
-const navItems = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Events", href: "/dashboard/events", icon: Calendar },
-  { label: "News", href: "/dashboard/news", icon: Newspaper },
-  { label: "Documents", href: "/dashboard/documents", icon: FileText },
-  { label: "Programmes", href: "/dashboard/programmes", icon: ClipboardList },
-  { label: "Members", href: "/dashboard/members", icon: Users },
-  { label: "Chaplain Chat", href: "/dashboard/chaplain", icon: MessageSquare },
-]
-
 function AppLayout() {
   const { session } = Route.useRouteContext()
   const router = useRouter()
+  const role = ((session.user as { role?: string }).role ?? "coordinator") as UserRole
+  const navItems = [
+    { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard, show: true },
+    { label: "Events", href: "/dashboard/events", icon: Calendar, show: true },
+    { label: "News", href: "/dashboard/news", icon: Newspaper, show: true },
+    { label: "Documents", href: "/dashboard/documents", icon: FileText, show: true },
+    { label: "Programmes", href: "/dashboard/programmes", icon: ClipboardList, show: true },
+    { label: "Admin Users", href: "/dashboard/admin-users", icon: Users, show: hasPermission(role, "manageAdminUsers") },
+    { label: "Chaplain Inbox", href: "/dashboard/chaplain", icon: MessageSquare, show: hasPermission(role, "manageChaplainInbox") },
+  ]
 
   async function handleSignOut() {
     await authClient.signOut()
@@ -89,7 +92,7 @@ function AppLayout() {
           <SidebarGroup>
             <SidebarGroupContent>
               <SidebarMenu>
-                {navItems.map((item) => (
+                {navItems.filter((item) => item.show).map((item) => (
                   <SidebarMenuItem key={item.label}>
                     <SidebarMenuButton asChild tooltip={item.label}>
                       <Link to={item.href}>
@@ -108,14 +111,16 @@ function AppLayout() {
 
         <SidebarFooter>
           <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="Settings">
-                <Link to="/dashboard/settings">
-                  <Settings />
-                  <span>Settings</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+            {hasPermission(role, "manageSettings") && (
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Settings">
+                  <Link to="/dashboard/settings">
+                    <Settings />
+                    <span>Settings</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )}
             <SidebarMenuItem>
               <SidebarMenuButton tooltip="Sign Out" onClick={handleSignOut}>
                 <LogOut />

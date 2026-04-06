@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start"
 import { db } from "@/db"
 import { documents, user } from "@/db/schema"
 import { eq, desc, and, like, gte, lte, sql } from "drizzle-orm"
-import { requireRole } from "@/middleware/role.middleware"
+import { requirePermission } from "@/middleware/role.middleware"
 import { getSignedUrl } from "@/lib/r2"
 import { env } from "cloudflare:workers"
 
@@ -141,7 +141,7 @@ export const getDocuments = createServerFn({ method: "GET" })
   })
 
 export const uploadDocument = createServerFn({ method: "POST" })
-  .middleware([requireRole("coordinator")])
+  .middleware([requirePermission("manageDocuments")])
   .inputValidator(
     (input: {
       title: string
@@ -194,7 +194,7 @@ export const getDocumentDownloadUrl = createServerFn({ method: "GET" })
   })
 
 export const deleteDocument = createServerFn({ method: "POST" })
-  .middleware([requireRole("dyc_executive")])
+  .middleware([requirePermission("manageDocuments")])
   .inputValidator((input: { id: number }) => input)
   .handler(async ({ data }) => {
     const doc = await db

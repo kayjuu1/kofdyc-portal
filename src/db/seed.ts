@@ -44,7 +44,7 @@ async function seed() {
       image TEXT,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
-      role TEXT NOT NULL DEFAULT 'member',
+      role TEXT NOT NULL DEFAULT 'coordinator',
       phone TEXT,
       parish_id INTEGER,
       deanery_id INTEGER,
@@ -342,9 +342,7 @@ async function seed() {
   }
 
   const firstParish = sqlite.prepare('SELECT id FROM parishes LIMIT 1').get() as { id: number }
-  const secondParish = sqlite.prepare('SELECT id FROM parishes LIMIT 1 OFFSET 1').get() as { id: number }
-
-  // Users (all 5 roles)
+  // Users (admin roles only)
   const adminPassword = await hashPassword('admin123')
   const password = await hashPassword('password123')
   const now = Math.floor(Date.now() / 1000) // epoch seconds for user timestamps
@@ -353,7 +351,6 @@ async function seed() {
   const chaplainId = crypto.randomUUID()
   const executiveId = crypto.randomUUID()
   const coordinatorId = crypto.randomUUID()
-  const memberId = crypto.randomUUID()
 
   sqlite.prepare(`
     INSERT INTO user (id, name, email, email_verified, created_at, updated_at, role, phone, parish_id, banned)
@@ -362,23 +359,18 @@ async function seed() {
 
   sqlite.prepare(`
     INSERT INTO user (id, name, email, email_verified, created_at, updated_at, role, phone, banned)
-    VALUES (?, ?, ?, 1, ?, ?, 'diocesan_youth_chaplain', '+233244234567', 0)
+    VALUES (?, ?, ?, 1, ?, ?, 'youth_chaplain', '+233244234567', 0)
   `).run(chaplainId, 'Fr. Emmanuel Asamoah', 'chaplain@dyckoforidua.org', now, now)
 
   sqlite.prepare(`
     INSERT INTO user (id, name, email, email_verified, created_at, updated_at, role, phone, parish_id, banned)
-    VALUES (?, ?, ?, 1, ?, ?, 'dyc_executive', '+233244345678', ?, 0)
+    VALUES (?, ?, ?, 1, ?, ?, 'diocesan_executive', '+233244345678', ?, 0)
   `).run(executiveId, 'Kojo Mensah', 'chairman@dyckoforidua.org', now, now, firstParish?.id)
 
   sqlite.prepare(`
     INSERT INTO user (id, name, email, email_verified, created_at, updated_at, role, phone, parish_id, banned)
     VALUES (?, ?, ?, 1, ?, ?, 'coordinator', '+233244456789', ?, 0)
   `).run(coordinatorId, 'Kwame Antwi', 'coordinator@dyckoforidua.org', now, now, firstParish?.id)
-
-  sqlite.prepare(`
-    INSERT INTO user (id, name, email, email_verified, created_at, updated_at, role, phone, parish_id, banned)
-    VALUES (?, ?, ?, 1, ?, ?, 'member', '+233244567890', ?, 0)
-  `).run(memberId, 'Ama Mensah', 'member@dyckoforidua.org', now, now, secondParish?.id)
 
   // Create credential accounts for Better Auth
   const accountTimestamp = Math.floor(Date.now() / 1000)
@@ -387,7 +379,6 @@ async function seed() {
     [chaplainId, password],
     [executiveId, password],
     [coordinatorId, password],
-    [memberId, password],
   ] as const) {
     sqlite.prepare(`
       INSERT INTO account (id, account_id, provider_id, user_id, password, created_at, updated_at)
@@ -428,7 +419,7 @@ async function seed() {
 
     ('New Portal Launch Announcement',
      'new-portal-launch',
-     'We are excited to announce the launch of our new digital platform for the Diocese of Koforidua. The DYC Koforidua Portal will serve as the central hub for all youth activities, events, news, and communications within our diocese. Members can register for events, access documents, and stay connected with their parish community.',
+     'We are excited to announce the launch of our new digital platform for the Diocese of Koforidua. The DYC Koforidua Portal serves as the central hub for youth activities, events, news, documents, and diocesan communication.',
      'diocese', 0, 'published', '${now}', '${adminId}', '${now}', '${now}'),
 
     ('Youth Leadership Training Workshop',
@@ -525,7 +516,6 @@ async function seed() {
   console.log('  Chaplain:  chaplain@dyckoforidua.org / password123')
   console.log('  Executive: chairman@dyckoforidua.org / password123')
   console.log('  Coord:     coordinator@dyckoforidua.org / password123')
-  console.log('  Member:    member@dyckoforidua.org / password123')
 }
 
 seed().catch(console.error)

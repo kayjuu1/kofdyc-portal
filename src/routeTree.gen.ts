@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as PaymentCallbackRouteImport } from './routes/payment-callback'
 import { Route as PastoralLettersRouteImport } from './routes/pastoral-letters'
 import { Route as ExecutiveRouteImport } from './routes/executive'
+import { Route as ChaplainContactRouteImport } from './routes/chaplain-contact'
 import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as AppRouteRouteImport } from './routes/_app/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -20,6 +21,8 @@ import { Route as EventsIndexRouteImport } from './routes/events/index'
 import { Route as ParishesIdRouteImport } from './routes/parishes/$id'
 import { Route as NewsSubmitRouteImport } from './routes/news/submit'
 import { Route as NewsSlugRouteImport } from './routes/news/$slug'
+import { Route as DashboardLoginRouteImport } from './routes/dashboard/login'
+import { Route as ChaplainChatTokenRouteImport } from './routes/chaplain-chat/$token'
 import { Route as ApiUploadRouteImport } from './routes/api/upload'
 import { Route as ApiPaystackWebhookRouteImport } from './routes/api/paystack-webhook'
 import { Route as AuthSignInRouteImport } from './routes/_auth/sign-in'
@@ -38,6 +41,7 @@ import { Route as AppDashboardExecutiveIndexRouteImport } from './routes/_app/da
 import { Route as AppDashboardEventsIndexRouteImport } from './routes/_app/dashboard/events/index'
 import { Route as AppDashboardDocumentsIndexRouteImport } from './routes/_app/dashboard/documents/index'
 import { Route as AppDashboardChaplainIndexRouteImport } from './routes/_app/dashboard/chaplain/index'
+import { Route as AppDashboardAdminUsersIndexRouteImport } from './routes/_app/dashboard/admin-users/index'
 import { Route as AppDashboardProgrammesCreateRouteImport } from './routes/_app/dashboard/programmes/create'
 import { Route as AppDashboardProgrammesIdRouteImport } from './routes/_app/dashboard/programmes/$id'
 import { Route as AppDashboardNewsSubmissionsRouteImport } from './routes/_app/dashboard/news/submissions'
@@ -62,6 +66,11 @@ const PastoralLettersRoute = PastoralLettersRouteImport.update({
 const ExecutiveRoute = ExecutiveRouteImport.update({
   id: '/executive',
   path: '/executive',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChaplainContactRoute = ChaplainContactRouteImport.update({
+  id: '/chaplain-contact',
+  path: '/chaplain-contact',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CalendarRoute = CalendarRouteImport.update({
@@ -101,6 +110,16 @@ const NewsSubmitRoute = NewsSubmitRouteImport.update({
 const NewsSlugRoute = NewsSlugRouteImport.update({
   id: '/news/$slug',
   path: '/news/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardLoginRoute = DashboardLoginRouteImport.update({
+  id: '/dashboard/login',
+  path: '/dashboard/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChaplainChatTokenRoute = ChaplainChatTokenRouteImport.update({
+  id: '/chaplain-chat/$token',
+  path: '/chaplain-chat/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiUploadRoute = ApiUploadRouteImport.update({
@@ -199,6 +218,12 @@ const AppDashboardChaplainIndexRoute =
     path: '/dashboard/chaplain/',
     getParentRoute: () => AppRouteRoute,
   } as any)
+const AppDashboardAdminUsersIndexRoute =
+  AppDashboardAdminUsersIndexRouteImport.update({
+    id: '/dashboard/admin-users/',
+    path: '/dashboard/admin-users/',
+    getParentRoute: () => AppRouteRoute,
+  } as any)
 const AppDashboardProgrammesCreateRoute =
   AppDashboardProgrammesCreateRouteImport.update({
     id: '/dashboard/programmes/create',
@@ -259,6 +284,7 @@ const AppDashboardChaplainIdRoute = AppDashboardChaplainIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/calendar': typeof CalendarRoute
+  '/chaplain-contact': typeof ChaplainContactRoute
   '/executive': typeof ExecutiveRoute
   '/pastoral-letters': typeof PastoralLettersRoute
   '/payment-callback': typeof PaymentCallbackRoute
@@ -266,6 +292,8 @@ export interface FileRoutesByFullPath {
   '/sign-in': typeof AuthSignInRoute
   '/api/paystack-webhook': typeof ApiPaystackWebhookRoute
   '/api/upload': typeof ApiUploadRoute
+  '/chaplain-chat/$token': typeof ChaplainChatTokenRoute
+  '/dashboard/login': typeof DashboardLoginRoute
   '/news/$slug': typeof NewsSlugRoute
   '/news/submit': typeof NewsSubmitRoute
   '/parishes/$id': typeof ParishesIdRoute
@@ -287,6 +315,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/news/submissions': typeof AppDashboardNewsSubmissionsRoute
   '/dashboard/programmes/$id': typeof AppDashboardProgrammesIdRoute
   '/dashboard/programmes/create': typeof AppDashboardProgrammesCreateRoute
+  '/dashboard/admin-users/': typeof AppDashboardAdminUsersIndexRoute
   '/dashboard/chaplain/': typeof AppDashboardChaplainIndexRoute
   '/dashboard/documents/': typeof AppDashboardDocumentsIndexRoute
   '/dashboard/events/': typeof AppDashboardEventsIndexRoute
@@ -299,6 +328,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/calendar': typeof CalendarRoute
+  '/chaplain-contact': typeof ChaplainContactRoute
   '/executive': typeof ExecutiveRoute
   '/pastoral-letters': typeof PastoralLettersRoute
   '/payment-callback': typeof PaymentCallbackRoute
@@ -306,6 +336,8 @@ export interface FileRoutesByTo {
   '/sign-in': typeof AuthSignInRoute
   '/api/paystack-webhook': typeof ApiPaystackWebhookRoute
   '/api/upload': typeof ApiUploadRoute
+  '/chaplain-chat/$token': typeof ChaplainChatTokenRoute
+  '/dashboard/login': typeof DashboardLoginRoute
   '/news/$slug': typeof NewsSlugRoute
   '/news/submit': typeof NewsSubmitRoute
   '/parishes/$id': typeof ParishesIdRoute
@@ -326,6 +358,7 @@ export interface FileRoutesByTo {
   '/dashboard/news/submissions': typeof AppDashboardNewsSubmissionsRoute
   '/dashboard/programmes/$id': typeof AppDashboardProgrammesIdRoute
   '/dashboard/programmes/create': typeof AppDashboardProgrammesCreateRoute
+  '/dashboard/admin-users': typeof AppDashboardAdminUsersIndexRoute
   '/dashboard/chaplain': typeof AppDashboardChaplainIndexRoute
   '/dashboard/documents': typeof AppDashboardDocumentsIndexRoute
   '/dashboard/events': typeof AppDashboardEventsIndexRoute
@@ -340,6 +373,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_app': typeof AppRouteRouteWithChildren
   '/calendar': typeof CalendarRoute
+  '/chaplain-contact': typeof ChaplainContactRoute
   '/executive': typeof ExecutiveRoute
   '/pastoral-letters': typeof PastoralLettersRoute
   '/payment-callback': typeof PaymentCallbackRoute
@@ -347,6 +381,8 @@ export interface FileRoutesById {
   '/_auth/sign-in': typeof AuthSignInRoute
   '/api/paystack-webhook': typeof ApiPaystackWebhookRoute
   '/api/upload': typeof ApiUploadRoute
+  '/chaplain-chat/$token': typeof ChaplainChatTokenRoute
+  '/dashboard/login': typeof DashboardLoginRoute
   '/news/$slug': typeof NewsSlugRoute
   '/news/submit': typeof NewsSubmitRoute
   '/parishes/$id': typeof ParishesIdRoute
@@ -368,6 +404,7 @@ export interface FileRoutesById {
   '/_app/dashboard/news/submissions': typeof AppDashboardNewsSubmissionsRoute
   '/_app/dashboard/programmes/$id': typeof AppDashboardProgrammesIdRoute
   '/_app/dashboard/programmes/create': typeof AppDashboardProgrammesCreateRoute
+  '/_app/dashboard/admin-users/': typeof AppDashboardAdminUsersIndexRoute
   '/_app/dashboard/chaplain/': typeof AppDashboardChaplainIndexRoute
   '/_app/dashboard/documents/': typeof AppDashboardDocumentsIndexRoute
   '/_app/dashboard/events/': typeof AppDashboardEventsIndexRoute
@@ -382,6 +419,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/calendar'
+    | '/chaplain-contact'
     | '/executive'
     | '/pastoral-letters'
     | '/payment-callback'
@@ -389,6 +427,8 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/api/paystack-webhook'
     | '/api/upload'
+    | '/chaplain-chat/$token'
+    | '/dashboard/login'
     | '/news/$slug'
     | '/news/submit'
     | '/parishes/$id'
@@ -410,6 +450,7 @@ export interface FileRouteTypes {
     | '/dashboard/news/submissions'
     | '/dashboard/programmes/$id'
     | '/dashboard/programmes/create'
+    | '/dashboard/admin-users/'
     | '/dashboard/chaplain/'
     | '/dashboard/documents/'
     | '/dashboard/events/'
@@ -422,6 +463,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/calendar'
+    | '/chaplain-contact'
     | '/executive'
     | '/pastoral-letters'
     | '/payment-callback'
@@ -429,6 +471,8 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/api/paystack-webhook'
     | '/api/upload'
+    | '/chaplain-chat/$token'
+    | '/dashboard/login'
     | '/news/$slug'
     | '/news/submit'
     | '/parishes/$id'
@@ -449,6 +493,7 @@ export interface FileRouteTypes {
     | '/dashboard/news/submissions'
     | '/dashboard/programmes/$id'
     | '/dashboard/programmes/create'
+    | '/dashboard/admin-users'
     | '/dashboard/chaplain'
     | '/dashboard/documents'
     | '/dashboard/events'
@@ -462,6 +507,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_app'
     | '/calendar'
+    | '/chaplain-contact'
     | '/executive'
     | '/pastoral-letters'
     | '/payment-callback'
@@ -469,6 +515,8 @@ export interface FileRouteTypes {
     | '/_auth/sign-in'
     | '/api/paystack-webhook'
     | '/api/upload'
+    | '/chaplain-chat/$token'
+    | '/dashboard/login'
     | '/news/$slug'
     | '/news/submit'
     | '/parishes/$id'
@@ -490,6 +538,7 @@ export interface FileRouteTypes {
     | '/_app/dashboard/news/submissions'
     | '/_app/dashboard/programmes/$id'
     | '/_app/dashboard/programmes/create'
+    | '/_app/dashboard/admin-users/'
     | '/_app/dashboard/chaplain/'
     | '/_app/dashboard/documents/'
     | '/_app/dashboard/events/'
@@ -504,6 +553,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRouteRoute: typeof AppRouteRouteWithChildren
   CalendarRoute: typeof CalendarRoute
+  ChaplainContactRoute: typeof ChaplainContactRoute
   ExecutiveRoute: typeof ExecutiveRoute
   PastoralLettersRoute: typeof PastoralLettersRoute
   PaymentCallbackRoute: typeof PaymentCallbackRoute
@@ -511,6 +561,8 @@ export interface RootRouteChildren {
   AuthSignInRoute: typeof AuthSignInRoute
   ApiPaystackWebhookRoute: typeof ApiPaystackWebhookRoute
   ApiUploadRoute: typeof ApiUploadRoute
+  ChaplainChatTokenRoute: typeof ChaplainChatTokenRoute
+  DashboardLoginRoute: typeof DashboardLoginRoute
   NewsSlugRoute: typeof NewsSlugRoute
   NewsSubmitRoute: typeof NewsSubmitRoute
   ParishesIdRoute: typeof ParishesIdRoute
@@ -543,6 +595,13 @@ declare module '@tanstack/react-router' {
       path: '/executive'
       fullPath: '/executive'
       preLoaderRoute: typeof ExecutiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/chaplain-contact': {
+      id: '/chaplain-contact'
+      path: '/chaplain-contact'
+      fullPath: '/chaplain-contact'
+      preLoaderRoute: typeof ChaplainContactRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/calendar': {
@@ -599,6 +658,20 @@ declare module '@tanstack/react-router' {
       path: '/news/$slug'
       fullPath: '/news/$slug'
       preLoaderRoute: typeof NewsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/login': {
+      id: '/dashboard/login'
+      path: '/dashboard/login'
+      fullPath: '/dashboard/login'
+      preLoaderRoute: typeof DashboardLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/chaplain-chat/$token': {
+      id: '/chaplain-chat/$token'
+      path: '/chaplain-chat/$token'
+      fullPath: '/chaplain-chat/$token'
+      preLoaderRoute: typeof ChaplainChatTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/upload': {
@@ -727,6 +800,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDashboardChaplainIndexRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/_app/dashboard/admin-users/': {
+      id: '/_app/dashboard/admin-users/'
+      path: '/dashboard/admin-users'
+      fullPath: '/dashboard/admin-users/'
+      preLoaderRoute: typeof AppDashboardAdminUsersIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/_app/dashboard/programmes/create': {
       id: '/_app/dashboard/programmes/create'
       path: '/dashboard/programmes/create'
@@ -827,6 +907,7 @@ interface AppRouteRouteChildren {
   AppDashboardEventsRegistrantsRoute: typeof AppDashboardEventsRegistrantsRoute
   AppDashboardProgrammesIdRoute: typeof AppDashboardProgrammesIdRoute
   AppDashboardProgrammesCreateRoute: typeof AppDashboardProgrammesCreateRoute
+  AppDashboardAdminUsersIndexRoute: typeof AppDashboardAdminUsersIndexRoute
   AppDashboardChaplainIndexRoute: typeof AppDashboardChaplainIndexRoute
   AppDashboardDocumentsIndexRoute: typeof AppDashboardDocumentsIndexRoute
   AppDashboardEventsIndexRoute: typeof AppDashboardEventsIndexRoute
@@ -846,6 +927,7 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppDashboardEventsRegistrantsRoute: AppDashboardEventsRegistrantsRoute,
   AppDashboardProgrammesIdRoute: AppDashboardProgrammesIdRoute,
   AppDashboardProgrammesCreateRoute: AppDashboardProgrammesCreateRoute,
+  AppDashboardAdminUsersIndexRoute: AppDashboardAdminUsersIndexRoute,
   AppDashboardChaplainIndexRoute: AppDashboardChaplainIndexRoute,
   AppDashboardDocumentsIndexRoute: AppDashboardDocumentsIndexRoute,
   AppDashboardEventsIndexRoute: AppDashboardEventsIndexRoute,
@@ -863,6 +945,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRouteRoute: AppRouteRouteWithChildren,
   CalendarRoute: CalendarRoute,
+  ChaplainContactRoute: ChaplainContactRoute,
   ExecutiveRoute: ExecutiveRoute,
   PastoralLettersRoute: PastoralLettersRoute,
   PaymentCallbackRoute: PaymentCallbackRoute,
@@ -870,6 +953,8 @@ const rootRouteChildren: RootRouteChildren = {
   AuthSignInRoute: AuthSignInRoute,
   ApiPaystackWebhookRoute: ApiPaystackWebhookRoute,
   ApiUploadRoute: ApiUploadRoute,
+  ChaplainChatTokenRoute: ChaplainChatTokenRoute,
+  DashboardLoginRoute: DashboardLoginRoute,
   NewsSlugRoute: NewsSlugRoute,
   NewsSubmitRoute: NewsSubmitRoute,
   ParishesIdRoute: ParishesIdRoute,

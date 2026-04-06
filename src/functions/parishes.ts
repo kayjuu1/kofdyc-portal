@@ -21,7 +21,7 @@ export const getParishProfile = createServerFn({ method: "GET" })
 
     if (!parish) throw new Error("Parish not found")
 
-    const [memberCount, eventCount, newsCount, programmeStatus] = await Promise.all([
+    const [adminCount, eventCount, newsCount, programmeStatus] = await Promise.all([
       db.select({ count: sql<number>`count(*)` }).from(user).where(eq(user.parishId, data.id)),
       db.select({ count: sql<number>`count(*)` }).from(events)
         .where(sql`${events.scope} = 'parish' AND ${events.scopeId} = ${data.id}`),
@@ -36,7 +36,7 @@ export const getParishProfile = createServerFn({ method: "GET" })
 
     return {
       ...parish,
-      memberCount: memberCount[0]?.count ?? 0,
+      adminCount: adminCount[0]?.count ?? 0,
       eventCount: eventCount[0]?.count ?? 0,
       newsCount: newsCount[0]?.count ?? 0,
       recentProgrammes: programmeStatus,

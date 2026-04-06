@@ -10,8 +10,8 @@ export const user = sqliteTable('user', {
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
   role: text('role', {
-    enum: ['system_admin', 'diocesan_youth_chaplain', 'dyc_executive', 'coordinator', 'member']
-  }).notNull().default('member'),
+    enum: ['system_admin', 'youth_chaplain', 'diocesan_executive', 'coordinator']
+  }).notNull().default('coordinator'),
   phone: text('phone'),
   parishId: integer('parish_id'),
   deaneryId: integer('deanery_id'),
@@ -268,14 +268,26 @@ export const dycExecutive = sqliteTable('dyc_executive', {
 
 export const chaplainConversations = sqliteTable('chaplain_conversations', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  userId: text('user_id').references(() => user.id).notNull(),
-  alias: text('alias', { length: 20 }),
-  isAnonymous: integer('is_anonymous', { mode: 'boolean' }).notNull().default(false),
+  userId: text('user_id').references(() => user.id),
+  alias: text('alias', { length: 20 }).notNull(),
+  isAnonymous: integer('is_anonymous', { mode: 'boolean' }).notNull().default(true),
   status: text('status', {
     enum: ['active', 'resolved']
   }).notNull().default('active'),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
   updatedAt: text('updated_at').notNull().default('CURRENT_TIMESTAMP'),
+})
+
+export const chaplainConversationAccessTokens = sqliteTable('chaplain_conversation_access_tokens', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  conversationId: integer('conversation_id').references(() => chaplainConversations.id).notNull(),
+  email: text('email').notNull(),
+  selector: text('selector').notNull().unique(),
+  tokenHash: text('token_hash').notNull(),
+  expiresAt: text('expires_at').notNull(),
+  lastUsedAt: text('last_used_at'),
+  revokedAt: text('revoked_at'),
+  createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 })
 
 export const chaplainMessages = sqliteTable('chaplain_messages', {
@@ -424,7 +436,15 @@ export const chaplainConversationsRelations = relations(chaplainConversations, (
     fields: [chaplainConversations.userId],
     references: [user.id],
   }),
+  accessTokens: many(chaplainConversationAccessTokens),
   messages: many(chaplainMessages),
+}))
+
+export const chaplainConversationAccessTokensRelations = relations(chaplainConversationAccessTokens, ({ one }) => ({
+  conversation: one(chaplainConversations, {
+    fields: [chaplainConversationAccessTokens.conversationId],
+    references: [chaplainConversations.id],
+  }),
 }))
 
 export const chaplainMessagesRelations = relations(chaplainMessages, ({ one }) => ({

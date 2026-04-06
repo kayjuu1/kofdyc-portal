@@ -10,8 +10,15 @@ import { getProfile, updateProfile } from "@/functions/settings"
 import { getParishes } from "@/functions/locations"
 import { useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
+import { hasPermission, getRoleLabel, type UserRole } from "@/lib/permissions"
 
 export const Route = createFileRoute("/_app/dashboard/settings/")({
+  beforeLoad: ({ context }) => {
+    const role = ((context.session.user as { role?: string }).role ?? "coordinator") as UserRole
+    if (!hasPermission(role, "manageSettings")) {
+      throw new Response("Forbidden", { status: 403 })
+    }
+  },
   loader: async () => {
     const [profile, parishes] = await Promise.all([
       getProfile(),
@@ -54,14 +61,6 @@ function SettingsPage() {
     updateMutation.mutate()
   }
 
-  const roleLabels: Record<string, string> = {
-    system_admin: "System Admin",
-    diocesan_youth_chaplain: "Diocesan Youth Chaplain",
-    dyc_executive: "DYC Executive",
-    coordinator: "Coordinator",
-    member: "Member",
-  }
-
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
@@ -95,7 +94,7 @@ function SettingsPage() {
 
             <div className="grid gap-2">
               <Label htmlFor="role">Role</Label>
-              <Input id="role" value={roleLabels[profile.role] ?? profile.role} disabled className="bg-muted" />
+              <Input id="role" value={getRoleLabel(profile.role)} disabled className="bg-muted" />
             </div>
 
             <div className="grid gap-2">

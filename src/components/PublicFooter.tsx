@@ -32,6 +32,7 @@ export function PublicFooter() {
                 { label: "News", href: "/news" },
                 { label: "Pastoral Letters", href: "/pastoral-letters" },
                 { label: "Submit News", href: "/news/submit" },
+                { label: "Contact Chaplain", href: "/chaplain-contact" },
               ].map((link) => (
                 <li key={link.label}>
                   <Link to={link.href} className="hover:text-primary transition-colors">
@@ -58,8 +59,8 @@ export function PublicFooter() {
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
           <p>&copy; {new Date().getFullYear()} Diocesan Youth Council, Koforidua. All rights reserved.</p>
           <div className="flex items-center gap-4">
-            <Link to="/sign-in" className="hover:text-primary transition-colors">
-              Sign In
+            <Link to="/dashboard/login" className="hover:text-primary transition-colors">
+              Admin Login
             </Link>
           </div>
         </div>

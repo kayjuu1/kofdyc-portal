@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start"
 import { db } from "@/db"
 import { dycExecutive } from "@/db/schema"
 import { eq, desc } from "drizzle-orm"
-import { requireRole } from "@/middleware/role.middleware"
+import { requirePermission } from "@/middleware/role.middleware"
 
 export const getExecutiveMembers = createServerFn({ method: "GET" })
   .inputValidator((input: { currentOnly?: boolean }) => input)
@@ -19,7 +19,7 @@ export const getExecutiveMembers = createServerFn({ method: "GET" })
   })
 
 export const createExecutiveMember = createServerFn({ method: "POST" })
-  .middleware([requireRole("system_admin")])
+  .middleware([requirePermission("manageAdminUsers")])
   .inputValidator(
     (input: {
       name: string
@@ -46,7 +46,7 @@ export const createExecutiveMember = createServerFn({ method: "POST" })
   })
 
 export const updateExecutiveMember = createServerFn({ method: "POST" })
-  .middleware([requireRole("system_admin")])
+  .middleware([requirePermission("manageAdminUsers")])
   .inputValidator(
     (input: {
       id: number
@@ -70,7 +70,7 @@ export const updateExecutiveMember = createServerFn({ method: "POST" })
   })
 
 export const deleteExecutiveMember = createServerFn({ method: "POST" })
-  .middleware([requireRole("system_admin")])
+  .middleware([requirePermission("manageAdminUsers")])
   .inputValidator((input: { id: number }) => input)
   .handler(async ({ data }) => {
     await db.delete(dycExecutive).where(eq(dycExecutive.id, data.id))

@@ -2,15 +2,16 @@ import { createServerFn } from "@tanstack/react-start"
 import { db } from "@/db"
 import { user, parishes } from "@/db/schema"
 import { eq, sql, and, desc } from "drizzle-orm"
-import { requireRole } from "@/middleware/role.middleware"
+import { requirePermission } from "@/middleware/role.middleware"
 import { logAudit } from "@/functions/audit"
+import { type UserRole } from "@/lib/permissions"
 
-export const getMembers = createServerFn({ method: "GET" })
-  .middleware([requireRole("coordinator")])
+export const getAdminUsers = createServerFn({ method: "GET" })
+  .middleware([requirePermission("viewDashboard")])
   .inputValidator(
     (input: {
       search?: string
-      role?: string
+      role?: UserRole
       parishId?: number
       page?: number
       limit?: number
@@ -28,15 +29,16 @@ export const getMembers = createServerFn({ method: "GET" })
       )
     }
     if (data.role) {
-      conditions.push(eq(user.role, data.role as typeof user.role.enumValues[number]))
+      conditions.push(eq(user.role, data.role))
     }
     if (data.parishId) {
       conditions.push(eq(user.parishId, data.parishId))
     }
+    conditions.push(sql`${user.role} != 'member'`)
 
     const where = conditions.length > 0 ? and(...conditions) : undefined
 
-    const [members, countResult] = await Promise.all([
+    const [adminUsers, countResult] = await Promise.all([
       db
         .select({
           id: user.id,
@@ -62,7 +64,7 @@ export const getMembers = createServerFn({ method: "GET" })
     ])
 
     return {
-      members,
+      adminUsers,
       total: countResult[0]?.count ?? 0,
       page,
       totalPages: Math.ceil((countResult[0]?.count ?? 0) / limit),
@@ -70,11 +72,11 @@ export const getMembers = createServerFn({ method: "GET" })
   })
 
 export const updateUserRole = createServerFn({ method: "POST" })
-  .middleware([requireRole("system_admin")])
+  .middleware([requirePermission("manageAdminUsers")])
   .inputValidator(
     (input: {
       userId: string
-      role: "system_admin" | "diocesan_youth_chaplain" | "dyc_executive" | "coordinator" | "member"
+      role: UserRole
     }) => input
   )
   .handler(async ({ data, context }) => {
@@ -92,7 +94,7 @@ export const updateUserRole = createServerFn({ method: "POST" })
   })
 
 export const toggleUserActive = createServerFn({ method: "POST" })
-  .middleware([requireRole("system_admin")])
+  .middleware([requirePermission("manageAdminUsers")])
   .inputValidator(
     (input: { userId: string; isActive: boolean }) => input
   )

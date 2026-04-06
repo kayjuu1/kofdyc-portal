@@ -11,28 +11,23 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PublicHeader } from "@/components/PublicHeader"
 import { PublicFooter } from "@/components/PublicFooter"
 import { getEvent, registerGuest } from "@/functions/events"
-import { initiatePayment } from "@/functions/payments"
-import { getSession } from "@/functions/get-user"
 import { useMutation } from "@tanstack/react-query"
 
 const TSHIRT_SIZES = ["XS", "S", "M", "L", "XL", "2XL", "3XL"] as const
 
 export const Route = createFileRoute("/events/$id/")({
   loader: async ({ params }) => {
-    const [event, session] = await Promise.all([
-      getEvent({ data: { id: parseInt(params.id) } }),
-      getSession(),
-    ])
+    const event = await getEvent({ data: { id: parseInt(params.id) } })
     if (!event || event.status !== "published") {
       throw new Response("Event not found", { status: 404 })
     }
-    return { event, session }
+    return { event }
   },
   component: EventDetailPage,
 })
 
 function EventDetailPage() {
-  const { event, session } = Route.useLoaderData()
+  const { event } = Route.useLoaderData()
   const [formData, setFormData] = useState({
     guestName: "",
     guestEmail: "",
@@ -57,14 +52,6 @@ function EventDetailPage() {
       registerGuest({ data }),
     onSuccess: () => {
       setSubmitted(true)
-    },
-  })
-
-  const paymentMutation = useMutation({
-    mutationFn: (data: Parameters<typeof initiatePayment>[0]["data"]) =>
-      initiatePayment({ data }),
-    onSuccess: (result) => {
-      window.location.href = result.authorizationUrl
     },
   })
 
@@ -213,68 +200,14 @@ function EventDetailPage() {
               </CardHeader>
               <CardContent>
                 {isPaid ? (
-                  session?.user ? (
-                    <div className="space-y-4">
-                      <p className="text-sm text-muted-foreground">
-                        This event requires payment of <strong>{event.feeCurrency} {event.feeAmount?.toFixed(2)}</strong>.
-                      </p>
-                      <div className="grid gap-2">
-                        <Label htmlFor="paidName">Full Name *</Label>
-                        <Input
-                          id="paidName"
-                          value={formData.guestName}
-                          onChange={(e) => setFormData({ ...formData, guestName: e.target.value })}
-                          required
-                        />
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="paidEmail">Email *</Label>
-                        <Input
-                          id="paidEmail"
-                          type="email"
-                          value={formData.guestEmail}
-                          onChange={(e) => setFormData({ ...formData, guestEmail: e.target.value })}
-                          required
-                        />
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="paidPhone">Phone Number *</Label>
-                        <Input
-                          id="paidPhone"
-                          type="tel"
-                          value={formData.guestPhone}
-                          onChange={(e) => setFormData({ ...formData, guestPhone: e.target.value })}
-                          placeholder="+233..."
-                          required
-                        />
-                      </div>
-                      <Button
-                        className="w-full"
-                        disabled={paymentMutation.isPending || !formData.guestName || !formData.guestEmail || !formData.guestPhone}
-                        onClick={() => paymentMutation.mutate({
-                          eventId: event.id,
-                          guestName: formData.guestName,
-                          guestEmail: formData.guestEmail,
-                          guestPhone: formData.guestPhone,
-                          parish: formData.parish || undefined,
-                        })}
-                      >
-                        {paymentMutation.isPending ? "Processing..." : `Pay ${event.feeCurrency} ${event.feeAmount?.toFixed(2)} & Register`}
-                      </Button>
-                      {paymentMutation.isError && (
-                        <p className="text-sm text-destructive">{paymentMutation.error?.message}</p>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="space-y-3 text-center">
-                      <p className="text-sm text-muted-foreground">
-                        This event requires payment of <strong>{event.feeCurrency} {event.feeAmount?.toFixed(2)}</strong>. Please sign in to register.
-                      </p>
-                      <Button asChild className="w-full">
-                        <Link to="/sign-in">Sign In to Register</Link>
-                      </Button>
-                    </div>
-                  )
+                  <div className="space-y-3 text-center">
+                    <p className="text-sm text-muted-foreground">
+                      This event requires payment of <strong>{event.feeCurrency} {event.feeAmount?.toFixed(2)}</strong>.
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Paid event registration is temporarily unavailable while the admin-only portal redesign is being completed.
+                    </p>
+                  </div>
                 ) : isDeadlinePast ? (
                   <p className="text-sm text-muted-foreground">Registration for this event has closed.</p>
                 ) : (

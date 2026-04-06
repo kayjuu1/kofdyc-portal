@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start"
 import { db } from "@/db"
 import { news, user } from "@/db/schema"
 import { eq, desc, and, sql, like } from "drizzle-orm"
-import { requireRole } from "@/middleware/role.middleware"
+import { requirePermission } from "@/middleware/role.middleware"
 import { generateSlug } from "@/lib/slug"
 
 export const getPublishedNews = createServerFn({ method: "GET" })
@@ -97,7 +97,7 @@ export const getNewsArticle = createServerFn({ method: "GET" })
   })
 
 export const getNewsArticleById = createServerFn({ method: "GET" })
-  .middleware([requireRole("coordinator")])
+  .middleware([requirePermission("manageNews")])
   .inputValidator((input: { id: number }) => input)
   .handler(async ({ data }) => {
     const result = await db
@@ -126,7 +126,7 @@ export const getNewsArticleById = createServerFn({ method: "GET" })
   })
 
 export const getNewsForAdmin = createServerFn({ method: "GET" })
-  .middleware([requireRole("coordinator")])
+  .middleware([requirePermission("manageNews")])
   .inputValidator(
     (input: {
       status?: "draft" | "published" | "archived"
@@ -180,7 +180,7 @@ export const getNewsForAdmin = createServerFn({ method: "GET" })
   })
 
 export const createNewsArticle = createServerFn({ method: "POST" })
-  .middleware([requireRole("coordinator")])
+  .middleware([requirePermission("manageNews")])
   .inputValidator(
     (input: {
       title: string
@@ -213,7 +213,7 @@ export const createNewsArticle = createServerFn({ method: "POST" })
   })
 
 export const updateNewsArticle = createServerFn({ method: "POST" })
-  .middleware([requireRole("coordinator")])
+  .middleware([requirePermission("manageNews")])
   .inputValidator(
     (input: {
       id: number
@@ -251,7 +251,7 @@ export const updateNewsArticle = createServerFn({ method: "POST" })
   })
 
 export const archiveNewsArticle = createServerFn({ method: "POST" })
-  .middleware([requireRole("dyc_executive")])
+  .middleware([requirePermission("manageNews")])
   .inputValidator((input: { id: number }) => input)
   .handler(async ({ data }) => {
     await db

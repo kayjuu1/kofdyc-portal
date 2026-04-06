@@ -2,10 +2,10 @@ import { createServerFn } from "@tanstack/react-start"
 import { db } from "@/db"
 import { user } from "@/db/schema"
 import { eq } from "drizzle-orm"
-import { requireRole } from "@/middleware/role.middleware"
+import { requirePermission } from "@/middleware/role.middleware"
 
 export const getProfile = createServerFn({ method: "GET" })
-  .middleware([requireRole("member")])
+  .middleware([requirePermission("manageSettings")])
   .handler(async ({ context }) => {
     const result = await db
       .select({
@@ -25,7 +25,7 @@ export const getProfile = createServerFn({ method: "GET" })
   })
 
 export const updateProfile = createServerFn({ method: "POST" })
-  .middleware([requireRole("member")])
+  .middleware([requirePermission("manageSettings")])
   .inputValidator(
     (input: {
       name: string

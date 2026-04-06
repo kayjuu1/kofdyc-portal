@@ -75,7 +75,7 @@ function InitAdminPage() {
                   : "Admin user created successfully!"}
               </div>
               <Button asChild className="w-full">
-                <Link to="/sign-in">Go to Sign In</Link>
+                <Link to="/dashboard/login">Go to Admin Login</Link>
               </Button>
             </div>
           )}

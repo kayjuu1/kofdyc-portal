@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { getDashboardStats, getParishLeaderboard } from "@/functions/dashboard"
 import { getUpcomingEvents } from "@/functions/events"
+import { hasPermission, type UserRole } from "@/lib/permissions"
 
 export const Route = createFileRoute("/_app/dashboard/")({
   head: () => ({
@@ -36,12 +37,23 @@ function DashboardPage() {
   const { session } = Route.useRouteContext()
   const { stats, upcomingEvents, leaderboard } = Route.useLoaderData()
   const firstName = session.user.name?.split(" ")[0] ?? "there"
+  const canManageAdminUsers = hasPermission(
+    ((session.user as { role?: string }).role ?? "coordinator") as UserRole,
+    "manageAdminUsers",
+  )
 
   const statCards = [
-    { label: "Total Members", value: stats.members, icon: Users, color: "text-primary" },
+    { label: "Admin Users", value: stats.members, icon: Users, color: "text-primary" },
     { label: "Upcoming Events", value: stats.upcomingEvents, icon: Calendar, color: "text-blue-600" },
     { label: "Published News", value: stats.publishedNews, icon: Newspaper, color: "text-amber-600" },
     { label: "Documents", value: stats.documents, icon: FileText, color: "text-emerald-600" },
+  ]
+
+  const quickActions = [
+    { label: "Create Event", icon: Calendar, href: "/dashboard/events/create", show: true },
+    { label: "Post News", icon: Newspaper, href: "/dashboard/news/create", show: true },
+    { label: "Upload Document", icon: FileText, href: "/dashboard/documents/upload", show: true },
+    { label: "View Admin Users", icon: Users, href: "/dashboard/admin-users", show: canManageAdminUsers },
   ]
 
   return (
@@ -148,12 +160,7 @@ function DashboardPage() {
               <CardTitle className="text-lg font-semibold">Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              {[
-                { label: "Create Event", icon: Calendar, href: "/dashboard/events/create" },
-                { label: "Post News", icon: Newspaper, href: "/dashboard/news/create" },
-                { label: "Upload Document", icon: FileText, href: "/dashboard/documents/upload" },
-                { label: "View Members", icon: Users, href: "/dashboard/members" },
-              ].map((action, i) => (
+              {quickActions.filter((action) => action.show).map((action, i) => (
                 <Link
                   key={i}
                   to={action.href}
