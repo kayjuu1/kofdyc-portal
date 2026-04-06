@@ -192,13 +192,13 @@ function NewsAdminPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem asChild>
-                            <Link to={`/news/${article.slug}`} target="_blank">
+                            <Link to="/news/$slug" params={{ slug: article.slug ?? "" }} target="_blank">
                               <Eye className="w-4 h-4 mr-2" />
                               View
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
-                            <Link to={`/dashboard/news/${article.id}`}>
+                            <Link to="/dashboard/news/$id" params={{ id: String(article.id) }}>
                               <Pencil className="w-4 h-4 mr-2" />
                               Edit
                             </Link>

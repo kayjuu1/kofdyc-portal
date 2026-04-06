@@ -1,8 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { env } from "cloudflare:workers"
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"]
+const MAX_FILE_SIZE = 20 * 1024 * 1024 // 20MB
+const ALLOWED_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "application/pdf",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+]
 
 export const Route = createFileRoute("/api/upload")({
   server: {
@@ -19,6 +27,7 @@ export const Route = createFileRoute("/api/upload")({
 
           const formData = await request.formData()
           const files = formData.getAll("files") as File[]
+          const category = (formData.get("category") as string) || "uploads"
 
           if (files.length === 0) {
             return new Response(JSON.stringify({ error: "No files provided" }), {
@@ -39,20 +48,21 @@ export const Route = createFileRoute("/api/upload")({
           for (const file of files) {
             if (!ALLOWED_TYPES.includes(file.type)) {
               return new Response(
-                JSON.stringify({ error: `Invalid file type: ${file.type}. Allowed: JPEG, PNG, WebP, GIF` }),
+                JSON.stringify({ error: `Invalid file type: ${file.type}. Allowed: JPEG, PNG, WebP, GIF, PDF, DOCX, XLSX` }),
                 { status: 400, headers: { "Content-Type": "application/json" } },
               )
             }
 
             if (file.size > MAX_FILE_SIZE) {
               return new Response(
-                JSON.stringify({ error: `File "${file.name}" exceeds 5MB limit` }),
+                JSON.stringify({ error: `File "${file.name}" exceeds 20MB limit` }),
                 { status: 400, headers: { "Content-Type": "application/json" } },
               )
             }
 
-            const ext = file.name.split(".").pop() ?? "jpg"
-            const key = `uploads/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
+            const ext = file.name.split(".").pop() ?? "bin"
+            const folder = ["uploads", "documents", "programmes"].includes(category) ? category : "uploads"
+            const key = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
 
             await env.R2_BUCKET.put(key, file.stream(), {
               httpMetadata: { contentType: file.type },

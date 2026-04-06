@@ -3,6 +3,7 @@ import { Toaster } from 'sonner'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { TooltipProvider } from '@/components/ui/tooltip'
 
 import appCss from '../styles.css?url'
 
@@ -27,6 +28,10 @@ export const Route = createRootRoute({
         rel: 'stylesheet',
         href: appCss,
       },
+      {
+        rel: 'manifest',
+        href: '/manifest.json',
+      },
     ],
   }),
   component: RootDocument,
@@ -40,7 +45,9 @@ function RootDocument() {
           <HeadContent />
         </head>
         <body suppressHydrationWarning>
-          <Outlet />
+          <TooltipProvider>
+            <Outlet />
+          </TooltipProvider>
           <Toaster richColors position="top-right" />
           <TanStackDevtools
             config={{
@@ -54,6 +61,11 @@ function RootDocument() {
             ]}
           />
           <Scripts />
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js').catch(() => {}) }`,
+            }}
+          />
         </body>
       </html>
     </QueryClientProvider>

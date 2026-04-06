@@ -96,6 +96,35 @@ export const getNewsArticle = createServerFn({ method: "GET" })
     return result[0] ?? null
   })
 
+export const getNewsArticleById = createServerFn({ method: "GET" })
+  .middleware([requireRole("coordinator")])
+  .inputValidator((input: { id: number }) => input)
+  .handler(async ({ data }) => {
+    const result = await db
+      .select({
+        id: news.id,
+        title: news.title,
+        slug: news.slug,
+        body: news.body,
+        scope: news.scope,
+        scopeId: news.scopeId,
+        coverImageUrl: news.coverImageUrl,
+        isPinned: news.isPinned,
+        status: news.status,
+        publishedAt: news.publishedAt,
+        createdAt: news.createdAt,
+        authorName: user.name,
+        authorId: news.authorId,
+      })
+      .from(news)
+      .leftJoin(user, eq(news.authorId, user.id))
+      .where(eq(news.id, data.id))
+      .limit(1)
+
+    if (!result[0]) throw new Error("Article not found")
+    return result[0]
+  })
+
 export const getNewsForAdmin = createServerFn({ method: "GET" })
   .middleware([requireRole("coordinator")])
   .inputValidator(

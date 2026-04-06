@@ -1,13 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
-import { useState } from "react"
-import { ArrowLeft, Save, Send } from "lucide-react"
+import { useState, useEffect } from "react"
+import { ArrowLeft, Save, Send, AlertTriangle } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { createEvent } from "@/functions/events"
+import { createEvent, checkEventConflicts } from "@/functions/events"
 import { getDeaneries, getParishes } from "@/functions/locations"
 import { useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
@@ -47,6 +47,30 @@ function CreateEventPage() {
     showRetreatFields: false,
     showTshirtSize: false,
   })
+
+  const [conflicts, setConflicts] = useState<{ id: number; title: string; startAt: string; isDiocesanPriority: boolean }[]>([])
+
+  useEffect(() => {
+    if (!formData.startAt) {
+      setConflicts([])
+      return
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const result = await checkEventConflicts({
+          data: {
+            startAt: new Date(formData.startAt).toISOString(),
+            endAt: formData.endAt ? new Date(formData.endAt).toISOString() : undefined,
+            scope: formData.scope,
+          },
+        })
+        setConflicts(result.conflicts)
+      } catch {
+        // ignore
+      }
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [formData.startAt, formData.endAt, formData.scope])
 
   const createMutation = useMutation({
     mutationFn: (data: Parameters<typeof createEvent>[0]["data"]) =>
@@ -237,6 +261,26 @@ function CreateEventPage() {
                 />
               </div>
             </div>
+
+            {conflicts.length > 0 && (
+              <div className="flex items-start gap-2 p-3 rounded-md bg-yellow-50 border border-yellow-200 text-yellow-800 dark:bg-yellow-950 dark:border-yellow-800 dark:text-yellow-200">
+                <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+                <div className="text-sm">
+                  <p className="font-medium">
+                    {conflicts.some(c => c.isDiocesanPriority)
+                      ? "Conflicts with a diocesan priority event!"
+                      : "Potential scheduling conflict"}
+                  </p>
+                  <ul className="mt-1 list-disc list-inside">
+                    {conflicts.map((c) => (
+                      <li key={c.id}>
+                        {c.title} — {new Date(c.startAt).toLocaleDateString()}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
 
             <div className="grid gap-2">
               <Label htmlFor="venue">Venue</Label>

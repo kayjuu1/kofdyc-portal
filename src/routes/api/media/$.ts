@@ -15,6 +15,13 @@ export const Route = createFileRoute("/api/media/$")({
         const expires = url.searchParams.get("expires")
         const sig = url.searchParams.get("sig")
 
+        // Documents require signed URLs
+        if (key.startsWith("documents/")) {
+          if (!expires || !sig) {
+            return new Response("Forbidden: signed URL required for documents", { status: 403 })
+          }
+        }
+
         if (expires && sig) {
           const valid = await verifySignedUrl(key, expires, sig)
           if (!valid) {

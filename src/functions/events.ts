@@ -254,6 +254,7 @@ export const registerGuest = createServerFn({ method: "POST" })
       }
     }
 
+    let isWaitlisted = false
     if (event[0].capacity && event[0].capacity > 0) {
       const countResult = await db
         .select({ count: sql<number>`count(*)` })
@@ -263,7 +264,7 @@ export const registerGuest = createServerFn({ method: "POST" })
           eq(registrations.registrationStatus, "confirmed")
         ))
       if (countResult[0]?.count >= event[0].capacity) {
-        throw new Error("Event is full. You have been added to the waitlist.")
+        isWaitlisted = true
       }
     }
 
@@ -282,7 +283,7 @@ export const registerGuest = createServerFn({ method: "POST" })
       medicalConditions: data.medicalConditions ?? null,
       tshirtSize: data.tshirtSize ?? null,
       paymentStatus: "not_required",
-      registrationStatus: "confirmed",
+      registrationStatus: isWaitlisted ? "waitlisted" : "confirmed",
       cancellationToken,
       createdAt: now,
     }).returning()
@@ -290,24 +291,39 @@ export const registerGuest = createServerFn({ method: "POST" })
     const registration = result[0]
 
     if (data.guestEmail) {
-      await sendEmail({
-        to: data.guestEmail,
-        subject: `Registration Confirmed — ${event[0].title}`,
-        html: `
-          <h2>Registration Confirmed!</h2>
-          <p>Dear ${data.guestName},</p>
-          <p>You have successfully registered for <strong>${event[0].title}</strong>.</p>
-          <p><strong>Date:</strong> ${new Date(event[0].startAt).toLocaleDateString()}</p>
-          <p><strong>Venue:</strong> ${event[0].venue || "TBA"}</p>
-          <p>Keep this email for your records.</p>
-          <p>To cancel your registration, use this link:<br/>
-          ${env.BETTER_AUTH_URL ?? "http://localhost:3000"}/events/${data.eventId}/cancel?token=${cancellationToken}</p>
-          <p>God bless,<br/>DYC Koforidua</p>
-        `,
-      })
+      if (isWaitlisted) {
+        await sendEmail({
+          to: data.guestEmail,
+          subject: `Waitlisted — ${event[0].title}`,
+          html: `
+            <h2>You're on the Waitlist</h2>
+            <p>Dear ${data.guestName},</p>
+            <p>The event <strong>${event[0].title}</strong> is currently full. You have been added to the waitlist and will be notified if a spot opens up.</p>
+            <p><strong>Date:</strong> ${new Date(event[0].startAt).toLocaleDateString()}</p>
+            <p><strong>Venue:</strong> ${event[0].venue || "TBA"}</p>
+            <p>God bless,<br/>DYC Koforidua</p>
+          `,
+        })
+      } else {
+        await sendEmail({
+          to: data.guestEmail,
+          subject: `Registration Confirmed — ${event[0].title}`,
+          html: `
+            <h2>Registration Confirmed!</h2>
+            <p>Dear ${data.guestName},</p>
+            <p>You have successfully registered for <strong>${event[0].title}</strong>.</p>
+            <p><strong>Date:</strong> ${new Date(event[0].startAt).toLocaleDateString()}</p>
+            <p><strong>Venue:</strong> ${event[0].venue || "TBA"}</p>
+            <p>Keep this email for your records.</p>
+            <p>To cancel your registration, use this link:<br/>
+            ${env.BETTER_AUTH_URL ?? "http://localhost:3000"}/events/${data.eventId}/cancel?token=${cancellationToken}</p>
+            <p>God bless,<br/>DYC Koforidua</p>
+          `,
+        })
+      }
     }
 
-    return { success: true, registrationId: registration.id, waitlisted: false }
+    return { success: true, registrationId: registration.id, waitlisted: isWaitlisted }
   })
 
 export const cancelRegistration = createServerFn({ method: "POST" })
@@ -333,6 +349,47 @@ export const cancelRegistration = createServerFn({ method: "POST" })
       .set({ registrationStatus: "cancelled" })
       .where(eq(registrations.id, registration[0].id))
 
+    // Auto-promote earliest waitlisted registration
+    const waitlisted = await db
+      .select()
+      .from(registrations)
+      .where(and(
+        eq(registrations.eventId, data.eventId),
+        eq(registrations.registrationStatus, "waitlisted")
+      ))
+      .orderBy(asc(registrations.createdAt))
+      .limit(1)
+
+    if (waitlisted[0]) {
+      await db
+        .update(registrations)
+        .set({ registrationStatus: "confirmed" })
+        .where(eq(registrations.id, waitlisted[0].id))
+
+      if (waitlisted[0].guestEmail) {
+        const event = await db
+          .select({ title: events.title, startAt: events.startAt, venue: events.venue })
+          .from(events)
+          .where(eq(events.id, data.eventId))
+          .limit(1)
+
+        if (event[0]) {
+          await sendEmail({
+            to: waitlisted[0].guestEmail,
+            subject: `You're In! — ${event[0].title}`,
+            html: `
+              <h2>Good News!</h2>
+              <p>Dear ${waitlisted[0].guestName},</p>
+              <p>A spot has opened up and your registration for <strong>${event[0].title}</strong> has been confirmed!</p>
+              <p><strong>Date:</strong> ${new Date(event[0].startAt).toLocaleDateString()}</p>
+              <p><strong>Venue:</strong> ${event[0].venue || "TBA"}</p>
+              <p>God bless,<br/>DYC Koforidua</p>
+            `,
+          })
+        }
+      }
+    }
+
     return { success: true }
   })
 
@@ -354,6 +411,53 @@ export const getRegistrants = createServerFn({ method: "GET" })
       .orderBy(desc(registrations.createdAt))
 
     return result
+  })
+
+export const checkEventConflicts = createServerFn({ method: "GET" })
+  .inputValidator(
+    (input: {
+      startAt: string
+      endAt?: string
+      scope: "diocese" | "deanery" | "parish"
+      excludeEventId?: number
+    }) => input
+  )
+  .handler(async ({ data }) => {
+    const start = data.startAt
+    const end = data.endAt ?? data.startAt
+
+    // Find overlapping published events
+    const conditions = [
+      eq(events.status, "published"),
+      // Events that overlap: existing.start < new.end AND existing.end > new.start
+      sql`${events.startAt} < ${end}`,
+      sql`COALESCE(${events.endAt}, ${events.startAt}) > ${start}`,
+    ]
+
+    if (data.excludeEventId) {
+      conditions.push(sql`${events.id} != ${data.excludeEventId}`)
+    }
+
+    const conflicts = await db
+      .select({
+        id: events.id,
+        title: events.title,
+        startAt: events.startAt,
+        endAt: events.endAt,
+        scope: events.scope,
+        isDiocesanPriority: events.isDiocesanPriority,
+      })
+      .from(events)
+      .where(and(...conditions))
+      .limit(10)
+
+    const hasDiocesanPriority = conflicts.some(c => c.isDiocesanPriority)
+
+    return {
+      conflicts,
+      hasDiocesanPriority,
+      hasConflicts: conflicts.length > 0,
+    }
   })
 
 export const toggleAttendance = createServerFn({ method: "POST" })

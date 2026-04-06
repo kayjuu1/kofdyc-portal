@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { getDashboardStats } from "@/functions/dashboard"
+import { getDashboardStats, getParishLeaderboard } from "@/functions/dashboard"
 import { getUpcomingEvents } from "@/functions/events"
 
 export const Route = createFileRoute("/_app/dashboard/")({
@@ -22,18 +22,19 @@ export const Route = createFileRoute("/_app/dashboard/")({
     meta: [{ title: "Dashboard | DYC Koforidua" }],
   }),
   loader: async () => {
-    const [stats, upcomingEvents] = await Promise.all([
+    const [stats, upcomingEvents, leaderboard] = await Promise.all([
       getDashboardStats(),
       getUpcomingEvents({ data: { limit: 3 } }),
+      getParishLeaderboard({ data: { limit: 5 } }),
     ])
-    return { stats, upcomingEvents }
+    return { stats, upcomingEvents, leaderboard }
   },
   component: DashboardPage,
 })
 
 function DashboardPage() {
   const { session } = Route.useRouteContext()
-  const { stats, upcomingEvents } = Route.useLoaderData()
+  const { stats, upcomingEvents, leaderboard } = Route.useLoaderData()
   const firstName = session.user.name?.split(" ")[0] ?? "there"
 
   const statCards = [
@@ -170,24 +171,30 @@ function DashboardPage() {
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-semibold">Recent Activity</CardTitle>
+              <CardTitle className="text-lg font-semibold">Parish Leaderboard</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {/* TODO: replace with audit_log query */}
-              {[
-                { text: "New member registered from St. Peter's Parish", time: "2h ago" },
-                { text: "Youth Congress registration opened", time: "5h ago" },
-                { text: "Lenten retreat schedule published", time: "1d ago" },
-                { text: "March newsletter uploaded", time: "2d ago" },
-              ].map((activity, i) => (
-                <div key={i} className="flex gap-3">
-                  <div className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0" />
-                  <div>
-                    <p className="text-sm text-foreground">{activity.text}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{activity.time}</p>
-                  </div>
-                </div>
-              ))}
+            <CardContent className="space-y-3">
+              {leaderboard.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">No data yet</p>
+              ) : (
+                leaderboard.map((parish, i) => {
+                  const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : null
+                  return (
+                    <div key={parish.id} className="flex items-center gap-3">
+                      <span className="w-6 text-center font-bold text-sm">
+                        {medal ?? `${i + 1}.`}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{parish.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {parish.programmeCount} prog · {parish.eventCount} events · {parish.registrationCount} reg
+                        </p>
+                      </div>
+                      <span className="text-sm font-bold text-primary">{parish.score} pts</span>
+                    </div>
+                  )
+                })
+              )}
             </CardContent>
           </Card>
         </div>

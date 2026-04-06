@@ -16,6 +16,7 @@ import { EventCard } from "@/components/EventCard"
 import { ScopeFilter } from "@/components/ScopeFilter"
 import { getPublishedNews } from "@/functions/news"
 import { getUpcomingEvents } from "@/functions/events"
+import { getDocuments, getDocumentDownloadUrl } from "@/functions/documents"
 
 type SearchParams = {
   scope?: "diocese" | "deanery" | "parish"
@@ -57,19 +58,36 @@ export const Route = createFileRoute("/")({
   }),
   loaderDeps: ({ search }) => ({ scope: search.scope }),
   loader: async ({ deps }) => {
-    const [newsData, eventsData] = await Promise.all([
+    const [newsData, eventsData, docsData] = await Promise.all([
       getPublishedNews({ data: { limit: 6, scope: deps.scope } }),
       getUpcomingEvents({ data: { limit: 4, scope: deps.scope } }),
+      getDocuments({ data: { limit: 6 } }),
     ])
-    return { news: newsData, events: eventsData }
+    return { news: newsData, events: eventsData, documents: docsData }
   },
   component: HomePage,
 })
 
+interface DocumentItem {
+  id: number
+  title: string
+  category: string
+  scope: string
+  fileUrl: string
+  fileName: string | null
+  fileSize: number | null
+  mimeType: string | null
+  issuingAuthority: string | null
+  dateIssued: string | null
+  uploaderName: string | null
+  createdAt: string
+}
+
 function HomePage() {
-  const { news, events } = Route.useLoaderData()
+  const { news, events, documents } = Route.useLoaderData()
   const articles = news.articles as NewsArticle[]
   const eventList = events as EventItem[]
+  const docList = documents.documents as DocumentItem[]
   const featured = articles.find((a) => a.isPinned) ?? articles[0]
   const restArticles = articles.filter((a) => a.id !== featured?.id).slice(0, 5)
 
@@ -80,6 +98,7 @@ function HomePage() {
         <FeaturedSection article={featured} events={eventList} />
         <NewsSection articles={restArticles} />
         <EventsSection events={eventList} />
+        <DocumentsSection documents={docList} />
         <AboutSection />
       </main>
       <PublicFooter />
@@ -258,6 +277,81 @@ function EventsSection({ events }: { events: EventItem[] }) {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
           {events.map((event) => (
             <EventCard key={event.id} {...event} />
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function DocumentsSection({ documents }: { documents: DocumentItem[] }) {
+  if (documents.length === 0) return null
+
+  async function handleDownload(id: number) {
+    try {
+      const { url } = await getDocumentDownloadUrl({ data: { id } })
+      window.open(url, "_blank")
+    } catch {
+      // fallback - ignore
+    }
+  }
+
+  const categoryLabels: Record<string, string> = {
+    pastoral_letters: "Pastoral Letter",
+    circulars: "Circular",
+    minutes: "Minutes",
+    reports: "Report",
+    forms: "Form",
+    other: "Document",
+  }
+
+  return (
+    <section id="documents" className="py-12 border-t border-border">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h2 className="text-2xl font-bold text-foreground font-serif">Documents & Resources</h2>
+            <p className="text-sm text-muted-foreground mt-1">Access important documents and resources</p>
+          </div>
+          <Button variant="ghost" size="sm" asChild>
+            <Link to="/dashboard/documents">
+              View All <ChevronRight className="w-4 h-4 ml-1" />
+            </Link>
+          </Button>
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {documents.map((doc) => (
+            <Card key={doc.id} className="hover:shadow-md transition-shadow">
+              <CardContent className="p-4 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium text-foreground text-sm truncate">{doc.title}</h3>
+                    {doc.dateIssued && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {new Date(doc.dateIssued).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </p>
+                    )}
+                  </div>
+                  <Badge variant="secondary" className="text-xs shrink-0">
+                    {categoryLabels[doc.category] ?? doc.category}
+                  </Badge>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => handleDownload(doc.id)}
+                >
+                  <FileText className="w-4 h-4 mr-2" />
+                  Download
+                </Button>
+              </CardContent>
+            </Card>
           ))}
         </div>
       </div>

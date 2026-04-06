@@ -115,7 +115,7 @@ function EventsPage() {
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {eventList.map((event) => (
-              <Link key={event.id} to={`/events/${event.id}`}>
+              <Link key={event.id} to="/events/$id" params={{ id: String(event.id) }}>
                 <Card className="h-full hover:border-primary/30 transition-colors cursor-pointer">
                   {event.coverImageUrl && (
                     <div
