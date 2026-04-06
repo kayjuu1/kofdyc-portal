@@ -1,4 +1,4 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router"
+import { createFileRoute, redirect, useRouter } from "@tanstack/react-router"
 import { useState } from "react"
 import { Plus, Pencil, Trash2, UserCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -22,8 +22,15 @@ import {
 } from "@/functions/executive"
 import { useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
+import { hasPermission, type UserRole } from "@/lib/permissions"
 
 export const Route = createFileRoute("/_app/dashboard/executive/")({
+  beforeLoad: ({ context }) => {
+    const role = ((context.session.user as { role?: string }).role ?? "coordinator") as UserRole
+    if (!hasPermission(role, "manageAdminUsers")) {
+      throw redirect({ to: "/dashboard" })
+    }
+  },
   loader: async () => {
     return getExecutiveMembers({ data: { currentOnly: false } })
   },

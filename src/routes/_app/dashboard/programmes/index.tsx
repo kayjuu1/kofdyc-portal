@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { getProgrammes } from "@/functions/programmes"
+import { canonicalizeRole } from "@/lib/permissions"
 
 const currentYear = new Date().getFullYear()
 const YEARS = [currentYear - 1, currentYear, currentYear + 1]
@@ -58,9 +59,12 @@ export const Route = createFileRoute("/_app/dashboard/programmes/")({
 })
 
 function ProgrammesPage() {
+  const { session } = Route.useRouteContext()
   const data = Route.useLoaderData()
   const { year, status } = Route.useSearch()
   const navigate = Route.useNavigate()
+  const role = canonicalizeRole((session.user as { role?: string }).role)
+  const canCreateProgramme = role === "coordinator"
 
   const isOverdue = (prog: { status: string; submissionDate: string | null }) => {
     if (prog.status !== "draft" && prog.submissionDate) return false
@@ -77,12 +81,14 @@ function ProgrammesPage() {
             Manage parish programme submissions and reviews
           </p>
         </div>
-        <Button asChild>
-          <Link to="/dashboard/programmes/create">
-            <Plus className="w-4 h-4 mr-2" />
-            New Programme
-          </Link>
-        </Button>
+        {canCreateProgramme && (
+          <Button asChild>
+            <Link to="/dashboard/programmes/create">
+              <Plus className="w-4 h-4 mr-2" />
+              New Programme
+            </Link>
+          </Button>
+        )}
       </div>
 
       <div className="flex gap-4">

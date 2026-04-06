@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router"
+import { createFileRoute, useNavigate, Link, redirect } from "@tanstack/react-router"
 import { useState, useRef } from "react"
 import { ArrowLeft, Upload, FileText, X } from "lucide-react"
 import { Input } from "@/components/ui/input"
@@ -15,6 +15,7 @@ import {
 import { uploadDocument } from "@/functions/documents"
 import { useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
+import { hasPermission, type UserRole } from "@/lib/permissions"
 
 const CATEGORIES = [
   { value: "meeting_minutes", label: "Meeting Minutes" },
@@ -29,6 +30,12 @@ const CATEGORIES = [
 const MAX_FILE_SIZE = 20 * 1024 * 1024
 
 export const Route = createFileRoute("/_app/dashboard/documents/upload")({
+  beforeLoad: ({ context }) => {
+    const role = ((context.session.user as { role?: string }).role ?? "coordinator") as UserRole
+    if (!hasPermission(role, "manageDocuments")) {
+      throw redirect({ to: "/dashboard/documents" })
+    }
+  },
   component: UploadDocumentPage,
 })
 

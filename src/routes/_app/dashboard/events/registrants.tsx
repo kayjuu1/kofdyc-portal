@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router"
+import { createFileRoute, Link, redirect } from "@tanstack/react-router"
 import { ArrowLeft, Download, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -15,6 +15,7 @@ import { getRegistrants, getEvent, toggleAttendance } from "@/functions/events"
 import { useMutation } from "@tanstack/react-query"
 import { useRouter } from "@tanstack/react-router"
 import { toast } from "sonner"
+import { canonicalizeRole } from "@/lib/permissions"
 
 type SearchParams = {
   eventId: number
@@ -22,6 +23,12 @@ type SearchParams = {
 }
 
 export const Route = createFileRoute("/_app/dashboard/events/registrants")({
+  beforeLoad: ({ context }) => {
+    const role = canonicalizeRole((context.session.user as { role?: string }).role)
+    if (role !== "coordinator") {
+      throw redirect({ to: "/dashboard/events" })
+    }
+  },
   validateSearch: (search: Record<string, unknown>): SearchParams => ({
     eventId: Number(search.eventId) || 0,
     status: (search.status as string) || undefined,

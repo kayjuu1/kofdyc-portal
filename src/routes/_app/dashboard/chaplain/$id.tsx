@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router"
+import { createFileRoute, Link, redirect } from "@tanstack/react-router"
 import { useState, useEffect, useRef } from "react"
 import { ArrowLeft, Send, CheckCircle, XCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -12,8 +12,15 @@ import {
 } from "@/functions/chaplain"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { toast } from "sonner"
+import { hasPermission, type UserRole } from "@/lib/permissions"
 
 export const Route = createFileRoute("/_app/dashboard/chaplain/$id")({
+  beforeLoad: ({ context }) => {
+    const role = ((context.session.user as { role?: string }).role ?? "coordinator") as UserRole
+    if (!hasPermission(role, "manageChaplainInbox")) {
+      throw redirect({ to: "/dashboard" })
+    }
+  },
   loader: async ({ params }) => {
     return getChaplainMessages({ data: { conversationId: parseInt(params.id) } })
   },

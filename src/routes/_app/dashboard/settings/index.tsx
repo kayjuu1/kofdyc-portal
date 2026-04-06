@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, redirect } from "@tanstack/react-router"
 import { useState } from "react"
 import { Save } from "lucide-react"
 import { Input } from "@/components/ui/input"
@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_app/dashboard/settings/")({
   beforeLoad: ({ context }) => {
     const role = ((context.session.user as { role?: string }).role ?? "coordinator") as UserRole
     if (!hasPermission(role, "manageSettings")) {
-      throw new Response("Forbidden", { status: 403 })
+      throw redirect({ to: "/dashboard" })
     }
   },
   loader: async () => {

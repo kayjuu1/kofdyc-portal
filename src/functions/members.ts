@@ -7,7 +7,7 @@ import { logAudit } from "@/functions/audit"
 import { type UserRole } from "@/lib/permissions"
 
 export const getAdminUsers = createServerFn({ method: "GET" })
-  .middleware([requirePermission("viewDashboard")])
+  .middleware([requirePermission("manageAdminUsers")])
   .inputValidator(
     (input: {
       search?: string

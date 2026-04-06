@@ -17,6 +17,7 @@ import {
 import { getProgramme, reviewProgramme } from "@/functions/programmes"
 import { useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
+import { canonicalizeRole } from "@/lib/permissions"
 
 const STATUS_COLORS: Record<string, "default" | "outline" | "secondary" | "destructive"> = {
   draft: "outline",
@@ -34,9 +35,11 @@ export const Route = createFileRoute("/_app/dashboard/programmes/$id")({
 })
 
 function ProgrammeDetailPage() {
+  const { session } = Route.useRouteContext()
   const programme = Route.useLoaderData()
   const router = useRouter()
   const [reviewComment, setReviewComment] = useState("")
+  const role = canonicalizeRole((session.user as { role?: string }).role)
 
   const reviewMutation = useMutation({
     mutationFn: (data: Parameters<typeof reviewProgramme>[0]["data"]) =>
@@ -50,8 +53,8 @@ function ProgrammeDetailPage() {
     },
   })
 
-  const canReviewStage1 = programme.status === "submitted"
-  const canReviewStage2 = programme.status === "under_review"
+  const canReviewStage1 = role === "coordinator" && programme.status === "submitted"
+  const canReviewStage2 = role === "diocesan_executive" && programme.status === "under_review"
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">

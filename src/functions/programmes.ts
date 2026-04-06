@@ -3,6 +3,7 @@ import { db } from "@/db"
 import { programmes, programmeActivities, programmeReviews, parishes, user } from "@/db/schema"
 import { eq, and, desc, sql } from "drizzle-orm"
 import { requireRole } from "@/middleware/role.middleware"
+import { requirePermission } from "@/middleware/role.middleware"
 import { sendEmail } from "@/lib/resend"
 
 export const createProgramme = createServerFn({ method: "POST" })
@@ -139,7 +140,7 @@ export const submitProgramme = createServerFn({ method: "POST" })
   })
 
 export const getProgrammes = createServerFn({ method: "GET" })
-  .middleware([requireRole("coordinator")])
+  .middleware([requirePermission("viewDashboard")])
   .inputValidator(
     (input: {
       year?: number
@@ -198,7 +199,7 @@ export const getProgrammes = createServerFn({ method: "GET" })
   })
 
 export const getProgramme = createServerFn({ method: "GET" })
-  .middleware([requireRole("coordinator")])
+  .middleware([requirePermission("viewDashboard")])
   .inputValidator((input: { id: number }) => input)
   .handler(async ({ data }) => {
     const [programme] = await db

@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
+import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-router"
 import { useState, useEffect } from "react"
 import { ArrowLeft, Save, Send, AlertTriangle } from "lucide-react"
 import { Input } from "@/components/ui/input"
@@ -11,10 +11,17 @@ import { createEvent, checkEventConflicts } from "@/functions/events"
 import { getDeaneries, getParishes } from "@/functions/locations"
 import { useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
+import { canonicalizeRole } from "@/lib/permissions"
 
 const EVENT_TYPES = ["mass", "rally", "retreat", "congress", "meeting", "other"] as const
 
 export const Route = createFileRoute("/_app/dashboard/events/create")({
+  beforeLoad: ({ context }) => {
+    const role = canonicalizeRole((context.session.user as { role?: string }).role)
+    if (role !== "coordinator") {
+      throw redirect({ to: "/dashboard/events" })
+    }
+  },
   loader: async () => {
     const [deaneries, parishes] = await Promise.all([
       getDeaneries({ data: {} }),

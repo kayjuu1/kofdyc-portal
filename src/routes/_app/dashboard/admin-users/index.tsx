@@ -1,4 +1,4 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router"
+import { createFileRoute, redirect, useRouter } from "@tanstack/react-router"
 import { useState } from "react"
 import { Search, Shield } from "lucide-react"
 import { Input } from "@/components/ui/input"
@@ -42,6 +42,12 @@ type SearchParams = {
 }
 
 export const Route = createFileRoute("/_app/dashboard/admin-users/")({
+  beforeLoad: ({ context }) => {
+    const role = ((context.session.user as { role?: string }).role ?? "coordinator") as UserRole
+    if (!hasPermission(role, "manageAdminUsers")) {
+      throw redirect({ to: "/dashboard" })
+    }
+  },
   validateSearch: (search: Record<string, unknown>): SearchParams => ({
     role: search.role as UserRole | undefined,
     search: search.search as string | undefined,

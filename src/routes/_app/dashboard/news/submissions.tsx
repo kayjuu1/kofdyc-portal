@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, redirect } from "@tanstack/react-router"
 import { useState } from "react"
 import { Check, X, Eye, ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -9,10 +9,17 @@ import { Label } from "@/components/ui/label"
 import { getNewsSubmissions, reviewNewsSubmission } from "@/functions/news-submissions"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
+import { canonicalizeRole } from "@/lib/permissions"
 
 type StatusFilter = "pending" | "approved" | "rejected"
 
 export const Route = createFileRoute("/_app/dashboard/news/submissions")({
+  beforeLoad: ({ context }) => {
+    const role = canonicalizeRole((context.session.user as { role?: string }).role)
+    if (role !== "diocesan_executive" && role !== "system_admin") {
+      throw redirect({ to: "/dashboard/news" })
+    }
+  },
   component: NewsSubmissionsPage,
 })
 

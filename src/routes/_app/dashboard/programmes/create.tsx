@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
+import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-router"
 import { useState } from "react"
 import { ArrowLeft, Plus, Trash2, Save, Send } from "lucide-react"
 import { Input } from "@/components/ui/input"
@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select"
 import { useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
+import { canonicalizeRole } from "@/lib/permissions"
 
 const currentYear = new Date().getFullYear()
 const YEARS = [currentYear, currentYear + 1]
@@ -29,6 +30,12 @@ interface Activity {
 }
 
 export const Route = createFileRoute("/_app/dashboard/programmes/create")({
+  beforeLoad: ({ context }) => {
+    const role = canonicalizeRole((context.session.user as { role?: string }).role)
+    if (role !== "coordinator") {
+      throw redirect({ to: "/dashboard/programmes" })
+    }
+  },
   loader: async () => {
     const parishes = await getParishes({ data: {} })
     return { parishes }
