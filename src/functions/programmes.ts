@@ -164,7 +164,10 @@ export const getProgrammes = createServerFn({ method: "GET" })
 
     const where = conditions.length > 0 ? and(...conditions) : undefined
 
-    const [list, countResult] = await Promise.all([
+    // Year condition for stats (always scoped to selected year)
+    const yearCondition = data.year ? eq(programmes.year, data.year) : undefined
+
+    const [list, countResult, statsResult] = await Promise.all([
       db
         .select({
           id: programmes.id,
@@ -188,13 +191,27 @@ export const getProgrammes = createServerFn({ method: "GET" })
         .select({ count: sql<number>`count(*)` })
         .from(programmes)
         .where(where),
+      db
+        .select({
+          status: programmes.status,
+          count: sql<number>`count(*)`,
+        })
+        .from(programmes)
+        .where(yearCondition)
+        .groupBy(programmes.status),
     ])
+
+    const stats: Record<string, number> = {}
+    for (const row of statsResult) {
+      stats[row.status] = row.count
+    }
 
     return {
       programmes: list,
       total: countResult[0]?.count ?? 0,
       page,
       totalPages: Math.ceil((countResult[0]?.count ?? 0) / limit),
+      stats,
     }
   })
 
@@ -317,9 +334,53 @@ export const reviewProgramme = createServerFn({ method: "POST" })
             ${data.decision === "returned" ? "<p>Please review the feedback and resubmit.</p>" : "<p>Congratulations!</p>"}
             <p>God bless,<br/>DYC Koforidua</p>
           `,
-        })
-      }
-    }
+})
+       }
+     }
 
     return { success: true }
+  })
+
+export const getPublicProgrammes = createServerFn({ method: "GET" })
+  .inputValidator(
+    (input: {
+      year?: number
+      status?: string
+      page?: number
+      limit?: number
+    }) => input
+  )
+  .handler(async ({ data }) => {
+    const page = data.page ?? 1
+    const limit = data.limit ?? 50
+    const offset = (page - 1) * limit
+
+    const conditions = [eq(programmes.year, data.year ?? new Date().getFullYear())]
+    if (data.status) {
+      conditions.push(eq(programmes.status, data.status as typeof programmes.status.enumValues[number]))
+    }
+
+    const where = and(...conditions)
+
+    const list = await db
+      .select({
+        id: programmes.id,
+        parishId: programmes.parishId,
+        parishName: parishes.name,
+        year: programmes.year,
+        status: programmes.status,
+        submissionDate: programmes.submissionDate,
+        finalApprovalDate: programmes.finalApprovalDate,
+      })
+      .from(programmes)
+      .leftJoin(parishes, eq(programmes.parishId, parishes.id))
+      .where(where)
+      .orderBy(desc(programmes.submissionDate))
+      .limit(limit)
+      .offset(offset)
+
+    return {
+      programmes: list,
+      page,
+    }
   })

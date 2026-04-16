@@ -1,11 +1,11 @@
 import { createFileRoute, Link, redirect, useRouter } from "@tanstack/react-router"
 import { getSession } from "@/functions/get-user"
+import { seedAdminUser } from "@/functions/seed-admin-user"
 import { authClient } from "@/lib/auth-client"
 import { useState } from "react"
 import { Church, Eye, EyeOff, ArrowLeft, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { canonicalizeRole } from "@/lib/permissions"
 
 export const Route = createFileRoute("/dashboard/login")({
   head: () => ({
@@ -13,8 +13,7 @@ export const Route = createFileRoute("/dashboard/login")({
   }),
   beforeLoad: async () => {
     const session = await getSession()
-    const role = canonicalizeRole((session?.user as { role?: string } | undefined)?.role)
-    if (session?.user && role) {
+    if (session?.user) {
       throw redirect({ to: "/dashboard" })
     }
     return { session }
@@ -29,6 +28,19 @@ function DashboardLoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [seedStatus, setSeedStatus] = useState("")
+
+  async function handleSeed() {
+    setSeedStatus("Seeding...")
+    const result = await seedAdminUser()
+    if (result.success) {
+      setSeedStatus("Admin seeded! Use admin@dyckoforidua.org / admin123")
+    } else if (result.isDuplicate) {
+      setSeedStatus("Admin already exists")
+    } else {
+      setSeedStatus(`Seed failed: ${result.error}`)
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -176,6 +188,15 @@ function DashboardLoginPage() {
               </form>
             </CardContent>
           </Card>
+
+          {import.meta.env.DEV && (
+            <div className="mt-6 text-center space-y-2">
+              <Button variant="outline" size="sm" onClick={handleSeed}>
+                Seed Admin User
+              </Button>
+              {seedStatus && <p className="text-xs text-muted-foreground">{seedStatus}</p>}
+            </div>
+          )}
 
           <p className="text-xs text-muted-foreground text-center mt-6 lg:hidden">
             Catholic Diocese of Koforidua &copy; 2026

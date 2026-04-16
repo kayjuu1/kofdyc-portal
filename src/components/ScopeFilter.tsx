@@ -1,4 +1,5 @@
 import { useNavigate, useSearch } from "@tanstack/react-router"
+import { cn } from "@/lib/utils"
 
 const scopes = [
   { value: "", label: "All" },
@@ -26,11 +27,12 @@ export function ScopeFilter() {
               }),
             } as never)
           }
-          className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
+          className={cn(
+            "rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
             currentScope === s.value
-              ? "bg-primary text-primary-foreground"
-              : "bg-muted text-muted-foreground hover:text-foreground"
-          }`}
+              ? "border-primary bg-primary text-primary-foreground"
+              : "border-border bg-background text-muted-foreground hover:bg-accent hover:text-foreground",
+          )}
         >
           {s.label}
         </button>

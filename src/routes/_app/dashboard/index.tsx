@@ -1,19 +1,24 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
 import {
-  Users,
-  Calendar,
-  FileText,
-  Clock,
-  MapPin,
-  Plus,
   ArrowRight,
+  Calendar,
+  Clock,
+  FileText,
+  MapPin,
   Newspaper,
-  ChevronRight,
+  Plus,
+  TrendingUp,
+  Users,
 } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+
+import {
+  DashboardPageHeader,
+  DashboardStatCard,
+} from "@/components/dashboard-ui"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Progress } from "@/components/ui/progress"
 import { getDashboardStats, getParishLeaderboard } from "@/functions/dashboard"
 import { getUpcomingEvents } from "@/functions/events"
 import { hasPermission, type UserRole } from "@/lib/permissions"
@@ -25,7 +30,7 @@ export const Route = createFileRoute("/_app/dashboard/")({
   loader: async () => {
     const [stats, upcomingEvents, leaderboard] = await Promise.all([
       getDashboardStats(),
-      getUpcomingEvents({ data: { limit: 3 } }),
+      getUpcomingEvents({ data: { limit: 5 } }),
       getParishLeaderboard({ data: { limit: 5 } }),
     ])
     return { stats, upcomingEvents, leaderboard }
@@ -33,174 +38,204 @@ export const Route = createFileRoute("/_app/dashboard/")({
   component: DashboardPage,
 })
 
+function getGreeting(): string {
+  const hour = new Date().getHours()
+  if (hour < 12) return "Good morning"
+  if (hour < 17) return "Good afternoon"
+  return "Good evening"
+}
+
 function DashboardPage() {
   const { session } = Route.useRouteContext()
   const { stats, upcomingEvents, leaderboard } = Route.useLoaderData()
   const firstName = session.user.name?.split(" ")[0] ?? "there"
-  const canManageAdminUsers = hasPermission(
-    ((session.user as { role?: string }).role ?? "coordinator") as UserRole,
-    "manageAdminUsers",
-  )
+  const role = ((session.user as { role?: string }).role ?? "coordinator") as UserRole
+  const canManageAdminUsers = hasPermission(role, "manageAdminUsers")
 
   const statCards = [
-    { label: "Admin Users", value: stats.members, icon: Users, color: "text-primary" },
-    { label: "Upcoming Events", value: stats.upcomingEvents, icon: Calendar, color: "text-blue-600" },
-    { label: "Published News", value: stats.publishedNews, icon: Newspaper, color: "text-amber-600" },
-    { label: "Documents", value: stats.documents, icon: FileText, color: "text-emerald-600" },
+    {
+      label: "Active Members",
+      value: stats.members,
+      icon: Users,
+      tone: "emerald" as const,
+      detail: "Registered profiles",
+    },
+    {
+      label: "Upcoming Events",
+      value: stats.upcomingEvents,
+      icon: Calendar,
+      tone: "sky" as const,
+      detail: "Scheduled gatherings",
+    },
+    {
+      label: "Published News",
+      value: stats.publishedNews,
+      icon: Newspaper,
+      tone: "gold" as const,
+      detail: "Live articles",
+    },
+    {
+      label: "Documents",
+      value: stats.documents,
+      icon: FileText,
+      tone: "plum" as const,
+      detail: "Archived files",
+    },
   ]
 
-  const quickActions = [
-    { label: "Create Event", icon: Calendar, href: "/dashboard/events/create", show: true },
-    { label: "Post News", icon: Newspaper, href: "/dashboard/news/create", show: true },
-    { label: "Upload Document", icon: FileText, href: "/dashboard/documents/upload", show: true },
-    { label: "View Admin Users", icon: Users, href: "/dashboard/admin-users", show: canManageAdminUsers },
+  const quickLinks = [
+    { label: "Create Event", href: "/dashboard/events/create", icon: Calendar },
+    { label: "Post News", href: "/dashboard/news/create", icon: Newspaper },
+    { label: "Upload Document", href: "/dashboard/documents/upload", icon: FileText },
+    ...(canManageAdminUsers
+      ? [{ label: "Manage Users", href: "/dashboard/admin-users", icon: Users }]
+      : []),
   ]
+
+  const maxScore = leaderboard.length > 0 ? Math.max(...leaderboard.map((p: { score: number }) => p.score)) : 1
 
   return (
-    <div className="space-y-8 max-w-7xl">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">
-            Welcome back, {firstName}
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Here's what's happening in the diocese today.
-          </p>
-        </div>
-        <Button className="bg-primary hover:bg-primary/90 w-fit" asChild>
-          <Link to="/dashboard/events/create">
-            <Plus className="w-4 h-4 mr-2" />
-            Create Event
-          </Link>
-        </Button>
-      </div>
+    <div className="space-y-6">
+      <DashboardPageHeader
+        title={`${getGreeting()}, ${firstName}`}
+        description="Here's what's happening across the diocese today."
+        action={{
+          label: "Create Event",
+          href: "/dashboard/events/create",
+          icon: Plus,
+        }}
+      />
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {statCards.map((stat, i) => (
-          <Card key={i} className="hover:border-primary/30 transition-colors">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between mb-3">
-                <div className={`w-10 h-10 rounded-lg bg-muted flex items-center justify-center ${stat.color}`}>
-                  <stat.icon className="w-5 h-5" />
-                </div>
-              </div>
-              <p className="text-2xl font-bold text-foreground">{stat.value}</p>
-              <p className="text-sm text-muted-foreground mt-0.5">{stat.label}</p>
-            </CardContent>
-          </Card>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {statCards.map((stat) => (
+          <DashboardStatCard key={stat.label} {...stat} />
         ))}
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader className="flex-row items-center justify-between pb-2">
-              <CardTitle className="text-lg font-semibold">Upcoming Events</CardTitle>
-              <Button variant="ghost" size="sm" asChild>
-                <Link to="/events">
-                  View all <ChevronRight className="w-3.5 h-3.5 ml-1" />
-                </Link>
-              </Button>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {upcomingEvents.length === 0 ? (
-                <p className="text-sm text-muted-foreground py-4 text-center">No upcoming events</p>
-              ) : (
-                upcomingEvents.map((event, i) => {
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Upcoming Events - takes 2 cols */}
+        <Card className="border-border/50 shadow-sm lg:col-span-2">
+          <CardHeader className="flex-row items-center justify-between">
+            <CardTitle className="text-base font-semibold">Upcoming Events</CardTitle>
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/dashboard/events">
+                View all
+                <ArrowRight className="ml-1 size-3.5" />
+              </Link>
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {upcomingEvents.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-border/60 bg-muted/30 py-8 text-center">
+                <Calendar className="mx-auto mb-2 size-8 text-muted-foreground/50" />
+                <p className="text-sm text-muted-foreground">No upcoming events</p>
+              </div>
+            ) : (
+              <div className="space-y-1">
+                {upcomingEvents.map((event: { id: number; title: string; startAt: string; venue: string | null; eventType: string }) => {
                   const date = new Date(event.startAt)
                   const monthStr = date.toLocaleDateString("en-US", { month: "short" })
                   const dayStr = date.getDate().toString()
-                  const timeStr = date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+                  const timeStr = date.toLocaleTimeString("en-US", {
+                    hour: "numeric",
+                    minute: "2-digit",
+                  })
 
                   return (
-                    <div key={event.id}>
-                      <Link
-                        to="/events/$id"
-                        params={{ id: String(event.id) }}
-                        className="flex items-start gap-4 group p-2 -mx-2 rounded-lg hover:bg-muted transition-colors"
-                      >
-                        <div className="w-14 h-14 rounded-lg bg-primary/10 flex flex-col items-center justify-center shrink-0">
-                          <span className="text-xs font-medium text-primary">{monthStr}</span>
-                          <span className="text-lg font-bold text-primary leading-none">{dayStr}</span>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <p className="font-medium text-foreground group-hover:text-primary transition-colors truncate">
-                              {event.title}
-                            </p>
-                            <Badge variant="outline" className="shrink-0 text-xs capitalize">
-                              {event.eventType}
-                            </Badge>
-                          </div>
-                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                    <Link
+                      key={event.id}
+                      to="/events/$id"
+                      params={{ id: String(event.id) }}
+                      className="group flex items-center gap-4 rounded-lg px-2 py-3 transition-colors hover:bg-accent"
+                    >
+                      <div className="flex size-12 shrink-0 flex-col items-center justify-center rounded-lg bg-primary/5 text-primary">
+                        <span className="text-[10px] font-medium uppercase tracking-wider">{monthStr}</span>
+                        <span className="text-lg font-bold leading-none">{dayStr}</span>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium text-foreground group-hover:text-primary">
+                          {event.title}
+                        </p>
+                        <div className="mt-0.5 flex items-center gap-3 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Clock className="size-3" />
+                            {timeStr}
+                          </span>
+                          {event.venue ? (
                             <span className="flex items-center gap-1">
-                              <Clock className="w-3.5 h-3.5" /> {timeStr}
+                              <MapPin className="size-3" />
+                              <span className="truncate">{event.venue}</span>
                             </span>
-                            {event.venue && (
-                              <span className="flex items-center gap-1">
-                                <MapPin className="w-3.5 h-3.5" /> {event.venue}
-                              </span>
-                            )}
-                          </div>
+                          ) : null}
                         </div>
-                        <ArrowRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-1" />
-                      </Link>
-                      {i < upcomingEvents.length - 1 && <Separator className="mt-4" />}
-                    </div>
+                      </div>
+                      <Badge variant="outline" className="shrink-0 text-xs capitalize">
+                        {event.eventType}
+                      </Badge>
+                    </Link>
                   )
-                })
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
+        {/* Quick Actions */}
         <div className="space-y-6">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-semibold">Quick Actions</CardTitle>
+          <Card className="border-border/50 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-base font-semibold">Quick Actions</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
-              {quickActions.filter((action) => action.show).map((action, i) => (
-                <Link
-                  key={i}
-                  to={action.href}
-                  className="flex items-center gap-3 p-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors"
+            <CardContent className="grid gap-2">
+              {quickLinks.map((action) => (
+                <Button
+                  key={action.label}
+                  variant="outline"
+                  asChild
+                  className="h-auto justify-start gap-3 px-3 py-2.5"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                    <action.icon className="w-4 h-4" />
-                  </div>
-                  {action.label}
-                  <ChevronRight className="w-3.5 h-3.5 ml-auto text-muted-foreground" />
-                </Link>
+                  <Link to={action.href}>
+                    <div className="flex size-8 items-center justify-center rounded-md bg-muted">
+                      <action.icon className="size-4 text-muted-foreground" />
+                    </div>
+                    <span className="text-sm font-medium">{action.label}</span>
+                  </Link>
+                </Button>
               ))}
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-semibold">Parish Leaderboard</CardTitle>
+          {/* Parish Leaderboard */}
+          <Card className="border-border/50 shadow-sm">
+            <CardHeader className="flex-row items-center justify-between">
+              <CardTitle className="text-base font-semibold">Parish Rankings</CardTitle>
+              <TrendingUp className="size-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent>
               {leaderboard.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">No data yet</p>
+                <p className="py-4 text-center text-sm text-muted-foreground">
+                  No activity recorded yet.
+                </p>
               ) : (
-                leaderboard.map((parish, i) => {
-                  const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : null
-                  return (
-                    <div key={parish.id} className="flex items-center gap-3">
-                      <span className="w-6 text-center font-bold text-sm">
-                        {medal ?? `${i + 1}.`}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{parish.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {parish.programmeCount} prog · {parish.eventCount} events · {parish.registrationCount} reg
-                        </p>
+                <div className="space-y-4">
+                  {leaderboard.map((parish: { id: number; name: string; score: number; programmeCount: number; eventCount: number; registrationCount: number }, index: number) => (
+                    <div key={parish.id} className="space-y-1.5">
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2">
+                          <span className="flex size-5 items-center justify-center rounded text-xs font-bold text-muted-foreground">
+                            {index + 1}
+                          </span>
+                          <span className="font-medium">{parish.name}</span>
+                        </div>
+                        <span className="text-xs font-semibold text-primary">{parish.score} pts</span>
                       </div>
-                      <span className="text-sm font-bold text-primary">{parish.score} pts</span>
+                      <Progress
+                        value={(parish.score / maxScore) * 100}
+                        className="h-1.5"
+                      />
                     </div>
-                  )
-                })
+                  ))}
+                </div>
               )}
             </CardContent>
           </Card>

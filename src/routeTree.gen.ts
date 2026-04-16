@@ -16,8 +16,11 @@ import { Route as ChaplainContactRouteImport } from './routes/chaplain-contact'
 import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as AppRouteRouteImport } from './routes/_app/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProgrammesIndexRouteImport } from './routes/programmes/index'
 import { Route as NewsIndexRouteImport } from './routes/news/index'
 import { Route as EventsIndexRouteImport } from './routes/events/index'
+import { Route as DocumentsIndexRouteImport } from './routes/documents/index'
+import { Route as ProgrammesSubmitRouteImport } from './routes/programmes/submit'
 import { Route as ParishesIdRouteImport } from './routes/parishes/$id'
 import { Route as NewsSubmitRouteImport } from './routes/news/submit'
 import { Route as NewsSlugRouteImport } from './routes/news/$slug'
@@ -25,7 +28,6 @@ import { Route as DashboardLoginRouteImport } from './routes/dashboard/login'
 import { Route as ChaplainChatTokenRouteImport } from './routes/chaplain-chat/$token'
 import { Route as ApiUploadRouteImport } from './routes/api/upload'
 import { Route as ApiPaystackWebhookRouteImport } from './routes/api/paystack-webhook'
-import { Route as AuthSignInRouteImport } from './routes/_auth/sign-in'
 import { Route as AuthInitAdminRouteImport } from './routes/_auth/init-admin'
 import { Route as EventsIdIndexRouteImport } from './routes/events/$id/index'
 import { Route as AppDashboardIndexRouteImport } from './routes/_app/dashboard/index'
@@ -33,6 +35,7 @@ import { Route as EventsIdCancelRouteImport } from './routes/events/$id/cancel'
 import { Route as ApiMediaSplatRouteImport } from './routes/api/media/$'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AppDashboardNewsRouteImport } from './routes/_app/dashboard/news'
+import { Route as AppDashboardSubmissionPromptsIndexRouteImport } from './routes/_app/dashboard/submission-prompts/index'
 import { Route as AppDashboardSettingsIndexRouteImport } from './routes/_app/dashboard/settings/index'
 import { Route as AppDashboardProgrammesIndexRouteImport } from './routes/_app/dashboard/programmes/index'
 import { Route as AppDashboardNewsIndexRouteImport } from './routes/_app/dashboard/news/index'
@@ -42,6 +45,7 @@ import { Route as AppDashboardEventsIndexRouteImport } from './routes/_app/dashb
 import { Route as AppDashboardDocumentsIndexRouteImport } from './routes/_app/dashboard/documents/index'
 import { Route as AppDashboardChaplainIndexRouteImport } from './routes/_app/dashboard/chaplain/index'
 import { Route as AppDashboardAdminUsersIndexRouteImport } from './routes/_app/dashboard/admin-users/index'
+import { Route as AppDashboardSubmissionPromptsCreateRouteImport } from './routes/_app/dashboard/submission-prompts/create'
 import { Route as AppDashboardProgrammesCreateRouteImport } from './routes/_app/dashboard/programmes/create'
 import { Route as AppDashboardProgrammesIdRouteImport } from './routes/_app/dashboard/programmes/$id'
 import { Route as AppDashboardNewsSubmissionsRouteImport } from './routes/_app/dashboard/news/submissions'
@@ -87,6 +91,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProgrammesIndexRoute = ProgrammesIndexRouteImport.update({
+  id: '/programmes/',
+  path: '/programmes/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const NewsIndexRoute = NewsIndexRouteImport.update({
   id: '/news/',
   path: '/news/',
@@ -95,6 +104,16 @@ const NewsIndexRoute = NewsIndexRouteImport.update({
 const EventsIndexRoute = EventsIndexRouteImport.update({
   id: '/events/',
   path: '/events/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocumentsIndexRoute = DocumentsIndexRouteImport.update({
+  id: '/documents/',
+  path: '/documents/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProgrammesSubmitRoute = ProgrammesSubmitRouteImport.update({
+  id: '/programmes/submit',
+  path: '/programmes/submit',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ParishesIdRoute = ParishesIdRouteImport.update({
@@ -132,11 +151,6 @@ const ApiPaystackWebhookRoute = ApiPaystackWebhookRouteImport.update({
   path: '/api/paystack-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthSignInRoute = AuthSignInRouteImport.update({
-  id: '/_auth/sign-in',
-  path: '/sign-in',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthInitAdminRoute = AuthInitAdminRouteImport.update({
   id: '/_auth/init-admin',
   path: '/init-admin',
@@ -172,6 +186,12 @@ const AppDashboardNewsRoute = AppDashboardNewsRouteImport.update({
   path: '/dashboard/news',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const AppDashboardSubmissionPromptsIndexRoute =
+  AppDashboardSubmissionPromptsIndexRouteImport.update({
+    id: '/dashboard/submission-prompts/',
+    path: '/dashboard/submission-prompts/',
+    getParentRoute: () => AppRouteRoute,
+  } as any)
 const AppDashboardSettingsIndexRoute =
   AppDashboardSettingsIndexRouteImport.update({
     id: '/dashboard/settings/',
@@ -222,6 +242,12 @@ const AppDashboardAdminUsersIndexRoute =
   AppDashboardAdminUsersIndexRouteImport.update({
     id: '/dashboard/admin-users/',
     path: '/dashboard/admin-users/',
+    getParentRoute: () => AppRouteRoute,
+  } as any)
+const AppDashboardSubmissionPromptsCreateRoute =
+  AppDashboardSubmissionPromptsCreateRouteImport.update({
+    id: '/dashboard/submission-prompts/create',
+    path: '/dashboard/submission-prompts/create',
     getParentRoute: () => AppRouteRoute,
   } as any)
 const AppDashboardProgrammesCreateRoute =
@@ -289,7 +315,6 @@ export interface FileRoutesByFullPath {
   '/pastoral-letters': typeof PastoralLettersRoute
   '/payment-callback': typeof PaymentCallbackRoute
   '/init-admin': typeof AuthInitAdminRoute
-  '/sign-in': typeof AuthSignInRoute
   '/api/paystack-webhook': typeof ApiPaystackWebhookRoute
   '/api/upload': typeof ApiUploadRoute
   '/chaplain-chat/$token': typeof ChaplainChatTokenRoute
@@ -297,8 +322,11 @@ export interface FileRoutesByFullPath {
   '/news/$slug': typeof NewsSlugRoute
   '/news/submit': typeof NewsSubmitRoute
   '/parishes/$id': typeof ParishesIdRoute
+  '/programmes/submit': typeof ProgrammesSubmitRoute
+  '/documents/': typeof DocumentsIndexRoute
   '/events/': typeof EventsIndexRoute
   '/news/': typeof NewsIndexRoute
+  '/programmes/': typeof ProgrammesIndexRoute
   '/dashboard/news': typeof AppDashboardNewsRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/media/$': typeof ApiMediaSplatRoute
@@ -315,6 +343,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/news/submissions': typeof AppDashboardNewsSubmissionsRoute
   '/dashboard/programmes/$id': typeof AppDashboardProgrammesIdRoute
   '/dashboard/programmes/create': typeof AppDashboardProgrammesCreateRoute
+  '/dashboard/submission-prompts/create': typeof AppDashboardSubmissionPromptsCreateRoute
   '/dashboard/admin-users/': typeof AppDashboardAdminUsersIndexRoute
   '/dashboard/chaplain/': typeof AppDashboardChaplainIndexRoute
   '/dashboard/documents/': typeof AppDashboardDocumentsIndexRoute
@@ -324,6 +353,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/news/': typeof AppDashboardNewsIndexRoute
   '/dashboard/programmes/': typeof AppDashboardProgrammesIndexRoute
   '/dashboard/settings/': typeof AppDashboardSettingsIndexRoute
+  '/dashboard/submission-prompts/': typeof AppDashboardSubmissionPromptsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -333,7 +363,6 @@ export interface FileRoutesByTo {
   '/pastoral-letters': typeof PastoralLettersRoute
   '/payment-callback': typeof PaymentCallbackRoute
   '/init-admin': typeof AuthInitAdminRoute
-  '/sign-in': typeof AuthSignInRoute
   '/api/paystack-webhook': typeof ApiPaystackWebhookRoute
   '/api/upload': typeof ApiUploadRoute
   '/chaplain-chat/$token': typeof ChaplainChatTokenRoute
@@ -341,8 +370,11 @@ export interface FileRoutesByTo {
   '/news/$slug': typeof NewsSlugRoute
   '/news/submit': typeof NewsSubmitRoute
   '/parishes/$id': typeof ParishesIdRoute
+  '/programmes/submit': typeof ProgrammesSubmitRoute
+  '/documents': typeof DocumentsIndexRoute
   '/events': typeof EventsIndexRoute
   '/news': typeof NewsIndexRoute
+  '/programmes': typeof ProgrammesIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/media/$': typeof ApiMediaSplatRoute
   '/events/$id/cancel': typeof EventsIdCancelRoute
@@ -358,6 +390,7 @@ export interface FileRoutesByTo {
   '/dashboard/news/submissions': typeof AppDashboardNewsSubmissionsRoute
   '/dashboard/programmes/$id': typeof AppDashboardProgrammesIdRoute
   '/dashboard/programmes/create': typeof AppDashboardProgrammesCreateRoute
+  '/dashboard/submission-prompts/create': typeof AppDashboardSubmissionPromptsCreateRoute
   '/dashboard/admin-users': typeof AppDashboardAdminUsersIndexRoute
   '/dashboard/chaplain': typeof AppDashboardChaplainIndexRoute
   '/dashboard/documents': typeof AppDashboardDocumentsIndexRoute
@@ -367,6 +400,7 @@ export interface FileRoutesByTo {
   '/dashboard/news': typeof AppDashboardNewsIndexRoute
   '/dashboard/programmes': typeof AppDashboardProgrammesIndexRoute
   '/dashboard/settings': typeof AppDashboardSettingsIndexRoute
+  '/dashboard/submission-prompts': typeof AppDashboardSubmissionPromptsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -378,7 +412,6 @@ export interface FileRoutesById {
   '/pastoral-letters': typeof PastoralLettersRoute
   '/payment-callback': typeof PaymentCallbackRoute
   '/_auth/init-admin': typeof AuthInitAdminRoute
-  '/_auth/sign-in': typeof AuthSignInRoute
   '/api/paystack-webhook': typeof ApiPaystackWebhookRoute
   '/api/upload': typeof ApiUploadRoute
   '/chaplain-chat/$token': typeof ChaplainChatTokenRoute
@@ -386,8 +419,11 @@ export interface FileRoutesById {
   '/news/$slug': typeof NewsSlugRoute
   '/news/submit': typeof NewsSubmitRoute
   '/parishes/$id': typeof ParishesIdRoute
+  '/programmes/submit': typeof ProgrammesSubmitRoute
+  '/documents/': typeof DocumentsIndexRoute
   '/events/': typeof EventsIndexRoute
   '/news/': typeof NewsIndexRoute
+  '/programmes/': typeof ProgrammesIndexRoute
   '/_app/dashboard/news': typeof AppDashboardNewsRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/media/$': typeof ApiMediaSplatRoute
@@ -404,6 +440,7 @@ export interface FileRoutesById {
   '/_app/dashboard/news/submissions': typeof AppDashboardNewsSubmissionsRoute
   '/_app/dashboard/programmes/$id': typeof AppDashboardProgrammesIdRoute
   '/_app/dashboard/programmes/create': typeof AppDashboardProgrammesCreateRoute
+  '/_app/dashboard/submission-prompts/create': typeof AppDashboardSubmissionPromptsCreateRoute
   '/_app/dashboard/admin-users/': typeof AppDashboardAdminUsersIndexRoute
   '/_app/dashboard/chaplain/': typeof AppDashboardChaplainIndexRoute
   '/_app/dashboard/documents/': typeof AppDashboardDocumentsIndexRoute
@@ -413,6 +450,7 @@ export interface FileRoutesById {
   '/_app/dashboard/news/': typeof AppDashboardNewsIndexRoute
   '/_app/dashboard/programmes/': typeof AppDashboardProgrammesIndexRoute
   '/_app/dashboard/settings/': typeof AppDashboardSettingsIndexRoute
+  '/_app/dashboard/submission-prompts/': typeof AppDashboardSubmissionPromptsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -424,7 +462,6 @@ export interface FileRouteTypes {
     | '/pastoral-letters'
     | '/payment-callback'
     | '/init-admin'
-    | '/sign-in'
     | '/api/paystack-webhook'
     | '/api/upload'
     | '/chaplain-chat/$token'
@@ -432,8 +469,11 @@ export interface FileRouteTypes {
     | '/news/$slug'
     | '/news/submit'
     | '/parishes/$id'
+    | '/programmes/submit'
+    | '/documents/'
     | '/events/'
     | '/news/'
+    | '/programmes/'
     | '/dashboard/news'
     | '/api/auth/$'
     | '/api/media/$'
@@ -450,6 +490,7 @@ export interface FileRouteTypes {
     | '/dashboard/news/submissions'
     | '/dashboard/programmes/$id'
     | '/dashboard/programmes/create'
+    | '/dashboard/submission-prompts/create'
     | '/dashboard/admin-users/'
     | '/dashboard/chaplain/'
     | '/dashboard/documents/'
@@ -459,6 +500,7 @@ export interface FileRouteTypes {
     | '/dashboard/news/'
     | '/dashboard/programmes/'
     | '/dashboard/settings/'
+    | '/dashboard/submission-prompts/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -468,7 +510,6 @@ export interface FileRouteTypes {
     | '/pastoral-letters'
     | '/payment-callback'
     | '/init-admin'
-    | '/sign-in'
     | '/api/paystack-webhook'
     | '/api/upload'
     | '/chaplain-chat/$token'
@@ -476,8 +517,11 @@ export interface FileRouteTypes {
     | '/news/$slug'
     | '/news/submit'
     | '/parishes/$id'
+    | '/programmes/submit'
+    | '/documents'
     | '/events'
     | '/news'
+    | '/programmes'
     | '/api/auth/$'
     | '/api/media/$'
     | '/events/$id/cancel'
@@ -493,6 +537,7 @@ export interface FileRouteTypes {
     | '/dashboard/news/submissions'
     | '/dashboard/programmes/$id'
     | '/dashboard/programmes/create'
+    | '/dashboard/submission-prompts/create'
     | '/dashboard/admin-users'
     | '/dashboard/chaplain'
     | '/dashboard/documents'
@@ -502,6 +547,7 @@ export interface FileRouteTypes {
     | '/dashboard/news'
     | '/dashboard/programmes'
     | '/dashboard/settings'
+    | '/dashboard/submission-prompts'
   id:
     | '__root__'
     | '/'
@@ -512,7 +558,6 @@ export interface FileRouteTypes {
     | '/pastoral-letters'
     | '/payment-callback'
     | '/_auth/init-admin'
-    | '/_auth/sign-in'
     | '/api/paystack-webhook'
     | '/api/upload'
     | '/chaplain-chat/$token'
@@ -520,8 +565,11 @@ export interface FileRouteTypes {
     | '/news/$slug'
     | '/news/submit'
     | '/parishes/$id'
+    | '/programmes/submit'
+    | '/documents/'
     | '/events/'
     | '/news/'
+    | '/programmes/'
     | '/_app/dashboard/news'
     | '/api/auth/$'
     | '/api/media/$'
@@ -538,6 +586,7 @@ export interface FileRouteTypes {
     | '/_app/dashboard/news/submissions'
     | '/_app/dashboard/programmes/$id'
     | '/_app/dashboard/programmes/create'
+    | '/_app/dashboard/submission-prompts/create'
     | '/_app/dashboard/admin-users/'
     | '/_app/dashboard/chaplain/'
     | '/_app/dashboard/documents/'
@@ -547,6 +596,7 @@ export interface FileRouteTypes {
     | '/_app/dashboard/news/'
     | '/_app/dashboard/programmes/'
     | '/_app/dashboard/settings/'
+    | '/_app/dashboard/submission-prompts/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -558,7 +608,6 @@ export interface RootRouteChildren {
   PastoralLettersRoute: typeof PastoralLettersRoute
   PaymentCallbackRoute: typeof PaymentCallbackRoute
   AuthInitAdminRoute: typeof AuthInitAdminRoute
-  AuthSignInRoute: typeof AuthSignInRoute
   ApiPaystackWebhookRoute: typeof ApiPaystackWebhookRoute
   ApiUploadRoute: typeof ApiUploadRoute
   ChaplainChatTokenRoute: typeof ChaplainChatTokenRoute
@@ -566,8 +615,11 @@ export interface RootRouteChildren {
   NewsSlugRoute: typeof NewsSlugRoute
   NewsSubmitRoute: typeof NewsSubmitRoute
   ParishesIdRoute: typeof ParishesIdRoute
+  ProgrammesSubmitRoute: typeof ProgrammesSubmitRoute
+  DocumentsIndexRoute: typeof DocumentsIndexRoute
   EventsIndexRoute: typeof EventsIndexRoute
   NewsIndexRoute: typeof NewsIndexRoute
+  ProgrammesIndexRoute: typeof ProgrammesIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiMediaSplatRoute: typeof ApiMediaSplatRoute
   EventsIdCancelRoute: typeof EventsIdCancelRoute
@@ -625,6 +677,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/programmes/': {
+      id: '/programmes/'
+      path: '/programmes'
+      fullPath: '/programmes/'
+      preLoaderRoute: typeof ProgrammesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/news/': {
       id: '/news/'
       path: '/news'
@@ -637,6 +696,20 @@ declare module '@tanstack/react-router' {
       path: '/events'
       fullPath: '/events/'
       preLoaderRoute: typeof EventsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/documents/': {
+      id: '/documents/'
+      path: '/documents'
+      fullPath: '/documents/'
+      preLoaderRoute: typeof DocumentsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/programmes/submit': {
+      id: '/programmes/submit'
+      path: '/programmes/submit'
+      fullPath: '/programmes/submit'
+      preLoaderRoute: typeof ProgrammesSubmitRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/parishes/$id': {
@@ -688,13 +761,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPaystackWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_auth/sign-in': {
-      id: '/_auth/sign-in'
-      path: '/sign-in'
-      fullPath: '/sign-in'
-      preLoaderRoute: typeof AuthSignInRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_auth/init-admin': {
       id: '/_auth/init-admin'
       path: '/init-admin'
@@ -742,6 +808,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard/news'
       fullPath: '/dashboard/news'
       preLoaderRoute: typeof AppDashboardNewsRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/dashboard/submission-prompts/': {
+      id: '/_app/dashboard/submission-prompts/'
+      path: '/dashboard/submission-prompts'
+      fullPath: '/dashboard/submission-prompts/'
+      preLoaderRoute: typeof AppDashboardSubmissionPromptsIndexRouteImport
       parentRoute: typeof AppRouteRoute
     }
     '/_app/dashboard/settings/': {
@@ -805,6 +878,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard/admin-users'
       fullPath: '/dashboard/admin-users/'
       preLoaderRoute: typeof AppDashboardAdminUsersIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/dashboard/submission-prompts/create': {
+      id: '/_app/dashboard/submission-prompts/create'
+      path: '/dashboard/submission-prompts/create'
+      fullPath: '/dashboard/submission-prompts/create'
+      preLoaderRoute: typeof AppDashboardSubmissionPromptsCreateRouteImport
       parentRoute: typeof AppRouteRoute
     }
     '/_app/dashboard/programmes/create': {
@@ -907,6 +987,7 @@ interface AppRouteRouteChildren {
   AppDashboardEventsRegistrantsRoute: typeof AppDashboardEventsRegistrantsRoute
   AppDashboardProgrammesIdRoute: typeof AppDashboardProgrammesIdRoute
   AppDashboardProgrammesCreateRoute: typeof AppDashboardProgrammesCreateRoute
+  AppDashboardSubmissionPromptsCreateRoute: typeof AppDashboardSubmissionPromptsCreateRoute
   AppDashboardAdminUsersIndexRoute: typeof AppDashboardAdminUsersIndexRoute
   AppDashboardChaplainIndexRoute: typeof AppDashboardChaplainIndexRoute
   AppDashboardDocumentsIndexRoute: typeof AppDashboardDocumentsIndexRoute
@@ -915,6 +996,7 @@ interface AppRouteRouteChildren {
   AppDashboardMembersIndexRoute: typeof AppDashboardMembersIndexRoute
   AppDashboardProgrammesIndexRoute: typeof AppDashboardProgrammesIndexRoute
   AppDashboardSettingsIndexRoute: typeof AppDashboardSettingsIndexRoute
+  AppDashboardSubmissionPromptsIndexRoute: typeof AppDashboardSubmissionPromptsIndexRoute
 }
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
@@ -927,6 +1009,8 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppDashboardEventsRegistrantsRoute: AppDashboardEventsRegistrantsRoute,
   AppDashboardProgrammesIdRoute: AppDashboardProgrammesIdRoute,
   AppDashboardProgrammesCreateRoute: AppDashboardProgrammesCreateRoute,
+  AppDashboardSubmissionPromptsCreateRoute:
+    AppDashboardSubmissionPromptsCreateRoute,
   AppDashboardAdminUsersIndexRoute: AppDashboardAdminUsersIndexRoute,
   AppDashboardChaplainIndexRoute: AppDashboardChaplainIndexRoute,
   AppDashboardDocumentsIndexRoute: AppDashboardDocumentsIndexRoute,
@@ -935,6 +1019,8 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppDashboardMembersIndexRoute: AppDashboardMembersIndexRoute,
   AppDashboardProgrammesIndexRoute: AppDashboardProgrammesIndexRoute,
   AppDashboardSettingsIndexRoute: AppDashboardSettingsIndexRoute,
+  AppDashboardSubmissionPromptsIndexRoute:
+    AppDashboardSubmissionPromptsIndexRoute,
 }
 
 const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
@@ -950,7 +1036,6 @@ const rootRouteChildren: RootRouteChildren = {
   PastoralLettersRoute: PastoralLettersRoute,
   PaymentCallbackRoute: PaymentCallbackRoute,
   AuthInitAdminRoute: AuthInitAdminRoute,
-  AuthSignInRoute: AuthSignInRoute,
   ApiPaystackWebhookRoute: ApiPaystackWebhookRoute,
   ApiUploadRoute: ApiUploadRoute,
   ChaplainChatTokenRoute: ChaplainChatTokenRoute,
@@ -958,8 +1043,11 @@ const rootRouteChildren: RootRouteChildren = {
   NewsSlugRoute: NewsSlugRoute,
   NewsSubmitRoute: NewsSubmitRoute,
   ParishesIdRoute: ParishesIdRoute,
+  ProgrammesSubmitRoute: ProgrammesSubmitRoute,
+  DocumentsIndexRoute: DocumentsIndexRoute,
   EventsIndexRoute: EventsIndexRoute,
   NewsIndexRoute: NewsIndexRoute,
+  ProgrammesIndexRoute: ProgrammesIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiMediaSplatRoute: ApiMediaSplatRoute,
   EventsIdCancelRoute: EventsIdCancelRoute,

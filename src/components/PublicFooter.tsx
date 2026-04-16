@@ -1,41 +1,51 @@
 import { Link } from "@tanstack/react-router"
-import { Church } from "lucide-react"
+import { Church, Mail, MapPin, Phone } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
+
+const quickLinks = [
+  { label: "News", href: "/news" },
+  { label: "Documents", href: "/documents" },
+  { label: "Submit News", href: "/news/submit" },
+  { label: "Contact Chaplain", href: "/chaplain-contact" },
+]
 
 export function PublicFooter() {
   return (
-    <footer className="border-t border-border bg-card mt-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
-        <div className="grid md:grid-cols-4 gap-8 mb-8">
+    <footer className="border-t border-border bg-muted/30">
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+        <div className="grid gap-8 md:grid-cols-4">
+          {/* Branding */}
           <div className="md:col-span-2">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded bg-primary flex items-center justify-center">
-                <Church className="w-4 h-4 text-primary-foreground" />
+            <div className="mb-4 flex items-center gap-2.5">
+              <div className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                <Church className="size-4" />
               </div>
               <div>
-                <p className="font-bold text-foreground text-sm">DYC Koforidua</p>
+                <p className="text-sm font-bold text-foreground">DYC Koforidua</p>
                 <p className="text-xs text-muted-foreground">Diocesan Youth Council</p>
               </div>
             </div>
-            <p className="text-sm text-muted-foreground mb-4">
-              Catholic Diocese of Koforidua, Eastern Region, Ghana
+            <p className="mb-4 max-w-sm text-sm leading-relaxed text-muted-foreground">
+              Fostering spiritual growth, leadership development, and community service among
+              Catholic youth across the Diocese of Koforidua.
             </p>
-            <p className="text-xs text-muted-foreground italic font-serif">
+            <p className="text-xs italic text-muted-foreground/70 font-serif">
               "Go therefore and make disciples of all nations" — Matthew 28:19
             </p>
           </div>
 
+          {/* Links */}
           <div>
-            <h4 className="font-semibold text-foreground text-sm mb-4">Quick Links</h4>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              {[
-                { label: "News", href: "/news" },
-                { label: "Pastoral Letters", href: "/pastoral-letters" },
-                { label: "Submit News", href: "/news/submit" },
-                { label: "Contact Chaplain", href: "/chaplain-contact" },
-              ].map((link) => (
+            <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-foreground">
+              Quick Links
+            </h4>
+            <ul className="space-y-2">
+              {quickLinks.map((link) => (
                 <li key={link.label}>
-                  <Link to={link.href} className="hover:text-primary transition-colors">
+                  <Link
+                    to={link.href}
+                    className="text-sm text-muted-foreground transition-colors hover:text-primary"
+                  >
                     {link.label}
                   </Link>
                 </li>
@@ -43,26 +53,35 @@ export function PublicFooter() {
             </ul>
           </div>
 
+          {/* Contact */}
           <div>
-            <h4 className="font-semibold text-foreground text-sm mb-4">Contact</h4>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>St. Joseph's Cathedral</li>
-              <li>Koforidua, Ghana</li>
-              <li>+233 XXX XXX XXX</li>
-              <li>dyc@dyckoforidua.org</li>
+            <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-foreground">
+              Contact
+            </h4>
+            <ul className="space-y-2.5 text-sm text-muted-foreground">
+              <li className="flex items-start gap-2">
+                <MapPin className="mt-0.5 size-3.5 shrink-0" />
+                <span>St. Joseph's Cathedral, Koforidua, Ghana</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Phone className="size-3.5 shrink-0" />
+                <span>+233 XXX XXX XXX</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Mail className="size-3.5 shrink-0" />
+                <span>dyc@dyckoforidua.org</span>
+              </li>
             </ul>
           </div>
         </div>
 
-        <Separator className="mb-8" />
+        <Separator className="my-8" />
 
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
+        <div className="flex flex-col items-center justify-between gap-3 text-xs text-muted-foreground md:flex-row">
           <p>&copy; {new Date().getFullYear()} Diocesan Youth Council, Koforidua. All rights reserved.</p>
-          <div className="flex items-center gap-4">
-            <Link to="/dashboard/login" className="hover:text-primary transition-colors">
-              Admin Login
-            </Link>
-          </div>
+          <Link to="/dashboard/login" className="transition-colors hover:text-primary">
+            Admin Login
+          </Link>
         </div>
       </div>
     </footer>

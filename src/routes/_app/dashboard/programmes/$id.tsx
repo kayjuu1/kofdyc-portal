@@ -15,6 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { getProgramme, reviewProgramme } from "@/functions/programmes"
+import { getProgrammeResponses } from "@/functions/submission-prompts"
 import { useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { canonicalizeRole } from "@/lib/permissions"
@@ -29,7 +30,11 @@ const STATUS_COLORS: Record<string, "default" | "outline" | "secondary" | "destr
 
 export const Route = createFileRoute("/_app/dashboard/programmes/$id")({
   loader: async ({ params }) => {
-    return getProgramme({ data: { id: parseInt(params.id) } })
+    const [programme, responses] = await Promise.all([
+      getProgramme({ data: { id: parseInt(params.id) } }),
+      getProgrammeResponses({ data: { programmeId: parseInt(params.id) } }),
+    ])
+    return { ...programme, responses }
   },
   component: ProgrammeDetailPage,
 })
@@ -80,6 +85,41 @@ function ProgrammeDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Prompt Responses */}
+      {programme.responses && programme.responses.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Programme Information</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {(programme.responses as { label: string; value: string; fieldType?: string }[]).map((response, i) => (
+              <div key={i}>
+                <Label className="text-sm font-medium text-muted-foreground">{response.label}</Label>
+                {response.fieldType === "image" && response.value ? (
+                  <img
+                    src={response.value}
+                    alt={response.label}
+                    className="mt-1 max-w-md rounded-lg border"
+                  />
+                ) : response.fieldType === "pdf" && response.value ? (
+                  <a
+                    href={response.value}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-1 inline-flex items-center gap-2 text-sm text-primary hover:underline"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    Download PDF
+                  </a>
+                ) : (
+                  <p className="mt-1">{response.value}</p>
+                )}
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>

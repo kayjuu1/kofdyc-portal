@@ -180,7 +180,7 @@ export const documents = sqliteTable('documents', {
 
 export const programmes = sqliteTable('programmes', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  parishId: integer('parish_id').references(() => parishes.id).notNull(),
+  parishId: integer('parish_id').references(() => parishes.id),
   year: integer('year').notNull(),
   status: text('status', { 
     enum: ['draft', 'submitted', 'under_review', 'approved', 'returned'] 
@@ -200,6 +200,48 @@ export const programmeActivities = sqliteTable('programme_activities', {
   description: text('description'),
   date: text('date').notNull(),
   responsiblePerson: text('responsible_person'),
+  createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
+})
+
+export const submissionPrompts = sqliteTable('submission_prompts', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  title: text('title').notNull().default(''),
+  createdBy: text('created_by').references(() => user.id),
+  isActive: integer('is_active', { mode: 'boolean' }).notNull().default(false),
+  createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
+  updatedAt: text('updated_at').notNull().default('CURRENT_TIMESTAMP'),
+})
+
+export const submissionPromptFields = sqliteTable('submission_prompt_fields', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  promptId: integer('prompt_id').references(() => submissionPrompts.id, { onDelete: 'cascade' }).notNull(),
+  label: text('label').notNull(),
+  placeholder: text('placeholder'),
+  isRequired: integer('is_required', { mode: 'boolean' }).notNull().default(false),
+  sortOrder: integer('sort_order').notNull().default(0),
+  fieldType: text('field_type').notNull().default('text'), // 'text' | 'image' | 'pdf'
+})
+
+export const programmeResponses = sqliteTable('programme_responses', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  programmeId: integer('programme_id').references(() => programmes.id, { onDelete: 'cascade' }).notNull(),
+  fieldId: integer('field_id').references(() => submissionPromptFields.id, { onDelete: 'cascade' }).notNull(),
+  value: text('value'),
+})
+
+export const newsLikes = sqliteTable('news_likes', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  newsId: integer('news_id').references(() => news.id, { onDelete: 'cascade' }).notNull(),
+  identifier: text('identifier').notNull(),
+  createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
+})
+
+export const newsComments = sqliteTable('news_comments', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  newsId: integer('news_id').references(() => news.id, { onDelete: 'cascade' }).notNull(),
+  commenterName: text('commenter_name').notNull(),
+  body: text('body').notNull(),
+  deletedAt: text('deleted_at'),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 })
 
@@ -397,6 +439,33 @@ export const programmesRelations = relations(programmes, ({ one, many }) => ({
   }),
   activities: many(programmeActivities),
   reviews: many(programmeReviews),
+  responses: many(programmeResponses),
+}))
+
+export const submissionPromptsRelations = relations(submissionPrompts, ({ one, many }) => ({
+  creator: one(user, {
+    fields: [submissionPrompts.createdBy],
+    references: [user.id],
+  }),
+  fields: many(submissionPromptFields),
+}))
+
+export const submissionPromptFieldsRelations = relations(submissionPromptFields, ({ one }) => ({
+  prompt: one(submissionPrompts, {
+    fields: [submissionPromptFields.promptId],
+    references: [submissionPrompts.id],
+  }),
+}))
+
+export const programmeResponsesRelations = relations(programmeResponses, ({ one }) => ({
+  programme: one(programmes, {
+    fields: [programmeResponses.programmeId],
+    references: [programmes.id],
+  }),
+  field: one(submissionPromptFields, {
+    fields: [programmeResponses.fieldId],
+    references: [submissionPromptFields.id],
+  }),
 }))
 
 export const programmeActivitiesRelations = relations(programmeActivities, ({ one }) => ({
@@ -417,10 +486,26 @@ export const programmeReviewsRelations = relations(programmeReviews, ({ one }) =
   }),
 }))
 
-export const newsRelations = relations(news, ({ one }) => ({
+export const newsRelations = relations(news, ({ one, many }) => ({
   author: one(user, {
     fields: [news.authorId],
     references: [user.id],
+  }),
+  likes: many(newsLikes),
+  comments: many(newsComments),
+}))
+
+export const newsLikesRelations = relations(newsLikes, ({ one }) => ({
+  article: one(news, {
+    fields: [newsLikes.newsId],
+    references: [news.id],
+  }),
+}))
+
+export const newsCommentsRelations = relations(newsComments, ({ one }) => ({
+  article: one(news, {
+    fields: [newsComments.newsId],
+    references: [news.id],
   }),
 }))
 

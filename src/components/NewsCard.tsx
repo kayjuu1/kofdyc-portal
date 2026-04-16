@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowRight } from "lucide-react"
+import { ArrowRight, ImageIcon } from "lucide-react"
 
 interface NewsCardProps {
   title: string
@@ -14,7 +14,16 @@ interface NewsCardProps {
   isPinned: boolean | null
 }
 
-export function NewsCard({ title, slug, body, scope, coverImageUrl, publishedAt, authorName, isPinned }: NewsCardProps) {
+export function NewsCard({
+  title,
+  slug,
+  body,
+  scope,
+  coverImageUrl,
+  publishedAt,
+  authorName,
+  isPinned,
+}: NewsCardProps) {
   const excerpt = body.length > 120 ? body.slice(0, 120) + "..." : body
   const date = publishedAt
     ? new Date(publishedAt).toLocaleDateString("en-US", {
@@ -24,54 +33,59 @@ export function NewsCard({ title, slug, body, scope, coverImageUrl, publishedAt,
       })
     : ""
 
-  const Wrapper = slug
-    ? ({ children }: { children: React.ReactNode }) => (
-        <Link to="/news/$slug" params={{ slug }} className="group">
-          {children}
-        </Link>
-      )
-    : ({ children }: { children: React.ReactNode }) => (
-        <div className="group">{children}</div>
-      )
-
-  return (
-    <Wrapper>
-      <Card className="h-full hover:border-primary/30 transition-colors overflow-hidden">
-        {coverImageUrl && (
-          <div className="aspect-[16/9] overflow-hidden">
-            <img
-              src={coverImageUrl}
-              alt={title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            />
+  const content = (
+    <Card className="group h-full overflow-hidden border-border/50 transition-all hover:border-primary/20 hover:shadow-md">
+      {/* Image area - always visible */}
+      <div className="relative aspect-[16/9] overflow-hidden bg-muted">
+        {coverImageUrl ? (
+          <img
+            src={coverImageUrl}
+            alt={title}
+            className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <div className="flex size-full items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10">
+            <ImageIcon className="size-8 text-primary/25" />
           </div>
         )}
-        <CardContent className={coverImageUrl ? "pt-4" : "pt-6"}>
-          <div className="flex items-center gap-2 mb-2">
-            <Badge variant="outline" className="text-xs capitalize">
-              {scope}
+        {/* Scope badge overlay */}
+        <div className="absolute left-3 top-3 flex items-center gap-1.5">
+          <Badge className="border-0 bg-background/90 text-xs capitalize text-foreground shadow-sm backdrop-blur-sm">
+            {scope}
+          </Badge>
+          {isPinned ? (
+            <Badge className="border-0 bg-primary text-xs text-primary-foreground shadow-sm">
+              Pinned
             </Badge>
-            {isPinned && (
-              <Badge variant="default" className="text-xs">
-                Pinned
-              </Badge>
-            )}
-          </div>
-          <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors leading-snug mb-2">
-            {title}
-          </h3>
-          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{excerpt}</p>
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>
-              {date}
-              {authorName && ` · ${authorName}`}
-            </span>
-            <span className="flex items-center gap-1 text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-              Read more <ArrowRight className="w-3 h-3" />
-            </span>
-          </div>
-        </CardContent>
-      </Card>
-    </Wrapper>
+          ) : null}
+        </div>
+      </div>
+
+      <CardContent className="p-4">
+        <h3 className="mb-1.5 line-clamp-2 text-base font-semibold leading-snug text-foreground transition-colors group-hover:text-primary">
+          {title}
+        </h3>
+        <p className="mb-3 line-clamp-2 text-sm text-muted-foreground">{excerpt}</p>
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <span>
+            {date}
+            {authorName ? ` · ${authorName}` : ""}
+          </span>
+          <span className="flex items-center gap-1 text-primary opacity-0 transition-opacity group-hover:opacity-100">
+            Read <ArrowRight className="size-3" />
+          </span>
+        </div>
+      </CardContent>
+    </Card>
   )
+
+  if (slug) {
+    return (
+      <Link to="/news/$slug" params={{ slug }}>
+        {content}
+      </Link>
+    )
+  }
+
+  return content
 }

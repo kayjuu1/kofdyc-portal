@@ -1,12 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
 import { useState } from "react"
-import { ArrowLeft, Save, Send } from "lucide-react"
+import { ArrowLeft, Send, Loader2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { ImageUploader, type UploadedImage } from "@/components/ImageUploader"
 import { createNewsArticle } from "@/functions/news"
 import { getDeaneries, getParishes } from "@/functions/locations"
 import { useMutation } from "@tanstack/react-query"
@@ -18,31 +19,39 @@ export const Route = createFileRoute("/_app/dashboard/news/create")({
       getDeaneries({ data: {} }),
       getParishes({ data: {} }),
     ])
-    return { deaneries, parishes }
+    return { deaneries: deaneries || [], parishes: parishes || [] }
   },
   component: CreateNewsPage,
 })
 
 function CreateNewsPage() {
-  const data = Route.useLoaderData()
+  const { deaneries, parishes } = Route.useLoaderData()
   const navigate = useNavigate()
+  const { session } = Route.useRouteContext()
 
   const [formData, setFormData] = useState({
     title: "",
     body: "",
     scope: "diocese" as "diocese" | "deanery" | "parish",
     scopeId: undefined as number | undefined,
-    coverImageUrl: "",
+    status: "draft" as "draft" | "published",
+    isPinned: false,
+    publishDate: new Date().toISOString().split("T")[0],
   })
+  const [images, setImages] = useState<UploadedImage[]>([])
+  const [coverUrl, setCoverUrl] = useState<string | null>(null)
 
-  const deaneries = data.deaneries || []
-  const parishes = data.parishes || []
+  const authorName = session.user.name ?? "Unknown"
 
   const createMutation = useMutation({
     mutationFn: (input: Parameters<typeof createNewsArticle>[0]["data"]) =>
       createNewsArticle({ data: input }),
     onSuccess: (_, variables) => {
-      toast.success(variables.status === "published" ? "Article published" : "Article saved as draft")
+      toast.success(
+        variables.status === "published"
+          ? "Article published successfully"
+          : "Article saved as draft"
+      )
       navigate({ to: "/dashboard/news" })
     },
     onError: (err) => {
@@ -50,20 +59,25 @@ function CreateNewsPage() {
     },
   })
 
-  const submitWithStatus = (status: "draft" | "published") => {
+  const handleSubmit = (status: "draft" | "published") => {
+    if (!formData.title.trim()) {
+      toast.error("Title is required")
+      return
+    }
+    if (!formData.body.trim()) {
+      toast.error("Content is required")
+      return
+    }
+
     createMutation.mutate({
       title: formData.title,
       body: formData.body,
       scope: formData.scope,
       scopeId: formData.scopeId,
-      coverImageUrl: formData.coverImageUrl || undefined,
+      coverImageUrl: coverUrl ?? undefined,
       status,
+      isPinned: formData.isPinned,
     })
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    submitWithStatus("draft")
   }
 
   return (
@@ -71,143 +85,208 @@ function CreateNewsPage() {
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
           <Link to="/dashboard/news">
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="size-5" />
           </Link>
         </Button>
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Create Article</h1>
-          <p className="text-sm text-muted-foreground">Write a new news article</p>
+          <h1 className="text-2xl font-bold text-foreground">Post Article</h1>
+          <p className="text-sm text-muted-foreground">Create a new news article</p>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Article Details</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-2">
-              <Label htmlFor="title">Title *</Label>
-              <Input
-                id="title"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                placeholder="Enter article title"
-                required
-              />
-            </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-xl font-serif">Article Details</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="title">Title *</Label>
+            <Input
+              id="title"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              placeholder="A descriptive headline for your article"
+              required
+            />
+          </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="body">Body *</Label>
-              <Textarea
-                id="body"
-                value={formData.body}
-                onChange={(e) => setFormData({ ...formData, body: e.target.value })}
-                placeholder="Write your article content..."
-                rows={10}
-                required
-              />
-            </div>
+          <div className="space-y-2">
+            <Label>Scope *</Label>
+            <Select
+              value={formData.scope}
+              onValueChange={(v) =>
+                setFormData({
+                  ...formData,
+                  scope: v as typeof formData.scope,
+                  scopeId: undefined,
+                })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="diocese">Diocese</SelectItem>
+                <SelectItem value="deanery">Deanery</SelectItem>
+                <SelectItem value="parish">Parish</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="coverImageUrl">Cover Image URL</Label>
-              <Input
-                id="coverImageUrl"
-                value={formData.coverImageUrl}
-                onChange={(e) => setFormData({ ...formData, coverImageUrl: e.target.value })}
-                placeholder="https://..."
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Scope</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-2">
-              <Label>Scope *</Label>
+          {formData.scope === "deanery" && (
+            <div className="space-y-2">
+              <Label>Deanery</Label>
               <Select
-                value={formData.scope}
-                onValueChange={(v) => setFormData({ ...formData, scope: v as typeof formData.scope, scopeId: undefined })}
+                value={formData.scopeId?.toString() || ""}
+                onValueChange={(v) =>
+                  setFormData({ ...formData, scopeId: parseInt(v) })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select deanery" />
+                </SelectTrigger>
+                <SelectContent>
+                  {deaneries.map((d) => (
+                    <SelectItem key={d.id} value={d.id.toString()}>
+                      {d.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {formData.scope === "parish" && (
+            <div className="space-y-2">
+              <Label>Parish</Label>
+              <Select
+                value={formData.scopeId?.toString() || ""}
+                onValueChange={(v) =>
+                  setFormData({ ...formData, scopeId: parseInt(v) })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select parish" />
+                </SelectTrigger>
+                <SelectContent>
+                  {parishes.map((p) => (
+                    <SelectItem key={p.id} value={p.id.toString()}>
+                      {p.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <Label htmlFor="body">Content *</Label>
+            <Textarea
+              id="body"
+              value={formData.body}
+              onChange={(e) => setFormData({ ...formData, body: e.target.value })}
+              placeholder="Write your article content here..."
+              rows={10}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Cover Image</Label>
+            <p className="text-xs text-muted-foreground mb-2">
+              Upload a cover image for your article. Click an image to set it as the cover.
+            </p>
+            <ImageUploader
+              images={images}
+              onImagesChange={setImages}
+              coverUrl={coverUrl}
+              onCoverChange={setCoverUrl}
+              maxFiles={5}
+            />
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Author</Label>
+              <Input value={authorName} disabled className="bg-muted" />
+              <p className="text-xs text-muted-foreground">Auto-filled from your profile</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="publishDate">Publish Date</Label>
+              <Input
+                id="publishDate"
+                type="date"
+                value={formData.publishDate}
+                onChange={(e) =>
+                  setFormData({ ...formData, publishDate: e.target.value })
+                }
+              />
+            </div>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Status *</Label>
+              <Select
+                value={formData.status}
+                onValueChange={(v) =>
+                  setFormData({
+                    ...formData,
+                    status: v as typeof formData.status,
+                  })
+                }
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="diocese">Diocese</SelectItem>
-                  <SelectItem value="deanery">Deanery</SelectItem>
-                  <SelectItem value="parish">Parish</SelectItem>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="published">Published</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {formData.scope === "deanery" && (
-              <div className="grid gap-2">
-                <Label>Deanery</Label>
-                <Select
-                  value={formData.scopeId?.toString() || ""}
-                  onValueChange={(v) => setFormData({ ...formData, scopeId: parseInt(v) })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select deanery" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {deaneries.map((d: { id: number; name: string }) => (
-                      <SelectItem key={d.id} value={d.id.toString()}>
-                        {d.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            <div className="space-y-2">
+              <Label>Featured</Label>
+              <div className="flex items-center gap-2 h-10">
+                <input
+                  id="isPinned"
+                  type="checkbox"
+                  checked={formData.isPinned}
+                  onChange={(e) =>
+                    setFormData({ ...formData, isPinned: e.target.checked })
+                  }
+                  className="size-4 rounded border-border"
+                />
+                <Label htmlFor="isPinned" className="font-normal cursor-pointer">
+                  Pin to homepage
+                </Label>
               </div>
-            )}
+            </div>
+          </div>
 
-            {formData.scope === "parish" && (
-              <div className="grid gap-2">
-                <Label>Parish</Label>
-                <Select
-                  value={formData.scopeId?.toString() || ""}
-                  onValueChange={(v) => setFormData({ ...formData, scopeId: parseInt(v) })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select parish" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {parishes.map((p: { id: number; name: string; deaneryId: number | null }) => (
-                      <SelectItem key={p.id} value={p.id.toString()}>
-                        {p.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <div className="flex justify-end gap-4">
-          <Button variant="outline" type="button" onClick={() => navigate({ to: "/dashboard/news" })}>
-            Cancel
-          </Button>
-          <Button type="submit" variant="outline" disabled={createMutation.isPending}>
-            <Save className="w-4 h-4 mr-2" />
-            {createMutation.isPending ? "Saving..." : "Save as Draft"}
-          </Button>
-          <Button
-            type="button"
-            disabled={createMutation.isPending}
-            onClick={() => {
-              const form = document.querySelector("form") as HTMLFormElement
-              if (form?.reportValidity()) submitWithStatus("published")
-            }}
-          >
-            <Send className="w-4 h-4 mr-2" />
-            {createMutation.isPending ? "Publishing..." : "Save & Publish"}
-          </Button>
-        </div>
-      </form>
+          <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
+            <Button
+              variant="outline"
+              onClick={() => handleSubmit("draft")}
+              disabled={createMutation.isPending}
+            >
+              {createMutation.isPending ? (
+                <Loader2 className="size-4 mr-2 animate-spin" />
+              ) : null}
+              Save as Draft
+            </Button>
+            <Button
+              onClick={() => handleSubmit("published")}
+              disabled={createMutation.isPending}
+            >
+              <Send className="size-4 mr-2" />
+              {createMutation.isPending ? "Publishing..." : "Publish"}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

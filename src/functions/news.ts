@@ -189,6 +189,7 @@ export const createNewsArticle = createServerFn({ method: "POST" })
       scopeId?: number
       coverImageUrl?: string
       status: "draft" | "published"
+      isPinned?: boolean
     }) => input
   )
   .handler(async ({ data, context }) => {
@@ -203,6 +204,7 @@ export const createNewsArticle = createServerFn({ method: "POST" })
       scopeId: data.scopeId,
       coverImageUrl: data.coverImageUrl,
       status: data.status,
+      isPinned: data.isPinned ?? false,
       authorId: context.session.user.id,
       publishedAt: data.status === "published" ? now : null,
       createdAt: now,

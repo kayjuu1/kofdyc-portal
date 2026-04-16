@@ -1,15 +1,25 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
-import { Plus, ClipboardList } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+  AlertTriangle,
+  Calendar,
+  CheckCircle2,
+  ClipboardList,
+  Clock,
+  Eye,
+  FileText,
+  Plus,
+  ScrollText,
+  Send,
+} from "lucide-react"
+
+import {
+  DashboardEmptyState,
+  DashboardFilterPills,
+  DashboardPageHeader,
+  DashboardStatCard,
+} from "@/components/dashboard-ui"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
   Select,
@@ -18,19 +28,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import { getProgrammes } from "@/functions/programmes"
 import { canonicalizeRole } from "@/lib/permissions"
 
 const currentYear = new Date().getFullYear()
 const YEARS = [currentYear - 1, currentYear, currentYear + 1]
 
-const STATUS_COLORS: Record<string, "default" | "outline" | "secondary" | "destructive"> = {
-  draft: "outline",
-  submitted: "secondary",
-  under_review: "secondary",
-  approved: "default",
-  returned: "destructive",
+const STATUS_CONFIG: Record<
+  string,
+  { variant: "default" | "outline" | "secondary" | "destructive"; icon: typeof Clock }
+> = {
+  draft: { variant: "outline", icon: FileText },
+  submitted: { variant: "secondary", icon: Send },
+  under_review: { variant: "secondary", icon: Eye },
+  approved: { variant: "default", icon: CheckCircle2 },
+  returned: { variant: "destructive", icon: AlertTriangle },
 }
+
+const statusOptions = ["draft", "submitted", "under_review", "approved", "returned"] as const
 
 type SearchParams = {
   year?: number
@@ -66,156 +89,242 @@ function ProgrammesPage() {
   const role = canonicalizeRole((session.user as { role?: string }).role)
   const canCreateProgramme = role === "coordinator"
 
-  const isOverdue = (prog: { status: string; submissionDate: string | null }) => {
-    if (prog.status !== "draft" && prog.submissionDate) return false
-    const deadline = new Date(year ?? currentYear, 2, 31) // March 31
-    return new Date() > deadline && prog.status === "draft"
-  }
+  const programmes = data.programmes
+  const stats = data.stats as Record<string, number>
+  const totalForYear = Object.values(stats).reduce((sum, n) => sum + n, 0)
+
+  const deadline = new Date(year ?? currentYear, 2, 31) // March 31
+  const isPastDeadline = new Date() > deadline
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Pastoral Programmes</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Manage parish programme submissions and reviews
-          </p>
-        </div>
-        {canCreateProgramme && (
-          <Button asChild>
-            <Link to="/dashboard/programmes/create">
-              <Plus className="w-4 h-4 mr-2" />
-              New Programme
-            </Link>
-          </Button>
-        )}
+      <DashboardPageHeader
+        title="Programmes"
+        description={`Parish programme submissions for ${year ?? currentYear}.`}
+        action={
+          canCreateProgramme
+            ? {
+                label: "New Programme",
+                href: "/dashboard/programmes/create",
+                icon: Plus,
+              }
+            : undefined
+        }
+      />
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <DashboardStatCard
+          label="Total"
+          value={totalForYear}
+          icon={ClipboardList}
+          tone="sky"
+          detail={`All submissions in ${year ?? currentYear}`}
+        />
+        <DashboardStatCard
+          label="Submitted"
+          value={(stats.submitted ?? 0) + (stats.under_review ?? 0)}
+          icon={ScrollText}
+          tone="gold"
+          detail="Awaiting review"
+        />
+        <DashboardStatCard
+          label="Approved"
+          value={stats.approved ?? 0}
+          icon={CheckCircle2}
+          tone="emerald"
+          detail="Signed off"
+        />
+        <DashboardStatCard
+          label={isPastDeadline ? "Overdue Drafts" : "Drafts"}
+          value={stats.draft ?? 0}
+          icon={isPastDeadline ? AlertTriangle : FileText}
+          tone={isPastDeadline && (stats.draft ?? 0) > 0 ? "rose" : "plum"}
+          detail={isPastDeadline ? "Past Mar 31 deadline" : "Not yet submitted"}
+        />
       </div>
 
-      <div className="flex gap-4">
-        <Select
-          value={String(year ?? currentYear)}
-          onValueChange={(v) =>
-            navigate({
-              search: (prev: Record<string, unknown>) => ({
-                ...prev,
-                year: parseInt(v),
-                page: undefined,
-              }),
-            })
-          }
-        >
-          <SelectTrigger className="w-[120px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {YEARS.map((y) => (
-              <SelectItem key={y} value={y.toString()}>
-                {y}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <Card className="border-border/50 shadow-sm">
+        <CardContent className="p-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <Select
+              value={String(year ?? currentYear)}
+              onValueChange={(value) =>
+                navigate({
+                  search: (prev: Record<string, unknown>) => ({
+                    ...prev,
+                    year: Number.parseInt(value, 10),
+                    page: undefined,
+                  }),
+                })
+              }
+            >
+              <SelectTrigger className="w-[120px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {YEARS.map((optionYear) => (
+                  <SelectItem key={optionYear} value={optionYear.toString()}>
+                    {optionYear}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-        <div className="flex gap-2">
-          {(["draft", "submitted", "under_review", "approved", "returned"] as const).map(
-            (s) => (
-              <Button
-                key={s}
-                variant={status === s ? "default" : "outline"}
-                size="sm"
-                onClick={() =>
-                  navigate({
-                    search: (prev: Record<string, unknown>) => ({
-                      ...prev,
-                      status: status === s ? undefined : s,
-                      page: undefined,
-                    }),
-                  })
-                }
-              >
-                {s.replace("_", " ").replace(/\b\w/g, (c) => c.toUpperCase())}
-              </Button>
-            )
-          )}
-        </div>
-      </div>
+            <DashboardFilterPills
+              items={statusOptions}
+              value={status as (typeof statusOptions)[number] | undefined}
+              onSelect={(nextStatus) =>
+                navigate({
+                  search: (prev: Record<string, unknown>) => ({
+                    ...prev,
+                    status: status === nextStatus ? undefined : nextStatus,
+                    page: undefined,
+                  }),
+                })
+              }
+              formatLabel={(value) =>
+                value.replace("_", " ").replace(/\b\w/g, (c) => c.toUpperCase())
+              }
+            />
+          </div>
+        </CardContent>
+      </Card>
 
-      <Card>
+      <Card className="border-border/50 shadow-sm">
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Parish</TableHead>
-                <TableHead>Year</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Submitted By</TableHead>
-                <TableHead>Submission Date</TableHead>
-                <TableHead className="w-[80px]">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data.programmes.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    <ClipboardList className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                    No programmes found
-                  </TableCell>
-                </TableRow>
-              ) : (
-                data.programmes.map((prog) => (
-                  <TableRow
-                    key={prog.id}
-                    className={isOverdue(prog) ? "bg-red-50 dark:bg-red-950/20" : ""}
-                  >
-                    <TableCell className="font-medium">
-                      {prog.parishName}
-                      {isOverdue(prog) && (
-                        <Badge variant="destructive" className="ml-2 text-xs">
-                          Overdue
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>{prog.year}</TableCell>
-                    <TableCell>
-                      <Badge variant={STATUS_COLORS[prog.status] ?? "outline"}>
-                        {prog.status.replace("_", " ")}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-sm">{prog.submitterName || "—"}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {prog.submissionDate
-                        ? new Date(prog.submissionDate).toLocaleDateString()
-                        : "—"}
-                    </TableCell>
-                    <TableCell>
-                      <Button variant="ghost" size="sm" asChild>
-                        <Link to="/dashboard/programmes/$id" params={{ id: String(prog.id) }}>
-                          View
-                        </Link>
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
+          {programmes.length === 0 ? (
+            <div className="p-6">
+              <DashboardEmptyState
+                icon={ClipboardList}
+                title="No programmes found"
+                description={
+                  status
+                    ? `No ${status.replace("_", " ")} programmes for ${year ?? currentYear}.`
+                    : `No submissions for ${year ?? currentYear} yet.`
+                }
+              />
+            </div>
+          ) : (
+            <>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Parish</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Submitted By</TableHead>
+                      <TableHead>Submitted</TableHead>
+                      <TableHead>Approved</TableHead>
+                      <TableHead className="w-20" />
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {programmes.map((programme) => {
+                      const isDraft = programme.status === "draft"
+                      const isOverdue = isDraft && isPastDeadline
+                      const statusConf = STATUS_CONFIG[programme.status]
+                      const StatusIcon = statusConf?.icon ?? Clock
+
+                      return (
+                        <TableRow
+                          key={programme.id}
+                          className={isOverdue ? "bg-destructive/5" : ""}
+                        >
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{programme.parishName}</span>
+                              {isOverdue && (
+                                <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
+                                  Overdue
+                                </Badge>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={statusConf?.variant ?? "outline"}
+                              className="gap-1 capitalize"
+                            >
+                              <StatusIcon className="size-3" />
+                              {programme.status.replace("_", " ")}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-sm">
+                            {programme.submitterName || "—"}
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {programme.submissionDate ? (
+                              <span className="inline-flex items-center gap-1">
+                                <Calendar className="size-3" />
+                                {new Date(programme.submissionDate).toLocaleDateString("en-GB", {
+                                  day: "numeric",
+                                  month: "short",
+                                  year: "numeric",
+                                })}
+                              </span>
+                            ) : (
+                              "—"
+                            )}
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {programme.finalApprovalDate ? (
+                              <span className="inline-flex items-center gap-1 text-emerald-600">
+                                <CheckCircle2 className="size-3" />
+                                {new Date(programme.finalApprovalDate).toLocaleDateString("en-GB", {
+                                  day: "numeric",
+                                  month: "short",
+                                  year: "numeric",
+                                })}
+                              </span>
+                            ) : (
+                              "—"
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Button variant="ghost" size="sm" asChild>
+                              <Link
+                                to="/dashboard/programmes/$id"
+                                params={{ id: String(programme.id) }}
+                              >
+                                View
+                              </Link>
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {data.total > 0 && (
+                <div className="border-t px-4 py-3 text-xs text-muted-foreground">
+                  Showing {(data.page - 1) * 20 + 1}–
+                  {Math.min(data.page * 20, data.total)} of {data.total}{" "}
+                  {status ? status.replace("_", " ") + " " : ""}programme
+                  {data.total !== 1 ? "s" : ""}
+                </div>
               )}
-            </TableBody>
-          </Table>
+            </>
+          )}
         </CardContent>
       </Card>
 
       {data.totalPages > 1 && (
-        <div className="flex justify-center gap-2">
-          {Array.from({ length: data.totalPages }, (_, i) => i + 1).map((p) => (
+        <div className="flex justify-center gap-1">
+          {Array.from({ length: data.totalPages }, (_, i) => i + 1).map((page) => (
             <Button
-              key={p}
-              variant={p === data.page ? "default" : "outline"}
+              key={page}
+              variant={page === data.page ? "default" : "outline"}
               size="sm"
+              className="size-8 p-0"
               onClick={() =>
                 navigate({
-                  search: (prev: Record<string, unknown>) => ({ ...prev, page: p }),
+                  search: (prev: Record<string, unknown>) => ({ ...prev, page }),
                 })
               }
             >
-              {p}
+              {page}
             </Button>
           ))}
         </div>

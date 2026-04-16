@@ -1,14 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
 import {
-  Newspaper,
-  FileText,
-  MapPin,
   ChevronRight,
-  ArrowRight,
+  Download,
+  FileText,
+  ImageIcon,
+  MapPin,
+  Newspaper,
+  PenLine,
 } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
 import { PublicHeader } from "@/components/PublicHeader"
 import { PublicFooter } from "@/components/PublicFooter"
 import { NewsCard } from "@/components/NewsCard"
@@ -17,6 +20,7 @@ import { ScopeFilter } from "@/components/ScopeFilter"
 import { getPublishedNews } from "@/functions/news"
 import { getUpcomingEvents } from "@/functions/events"
 import { getDocuments, getDocumentDownloadUrl } from "@/functions/documents"
+import { getActiveSubmissionPrompt } from "@/functions/submission-prompts"
 
 type SearchParams = {
   scope?: "diocese" | "deanery" | "parish"
@@ -52,22 +56,6 @@ interface EventItem {
   feeCurrency: string
 }
 
-export const Route = createFileRoute("/")({
-  validateSearch: (search: Record<string, unknown>): SearchParams => ({
-    scope: search.scope as SearchParams["scope"],
-  }),
-  loaderDeps: ({ search }) => ({ scope: search.scope }),
-  loader: async ({ deps }) => {
-    const [newsData, eventsData, docsData] = await Promise.all([
-      getPublishedNews({ data: { limit: 6, scope: deps.scope } }),
-      getUpcomingEvents({ data: { limit: 4, scope: deps.scope } }),
-      getDocuments({ data: { limit: 6 } }),
-    ])
-    return { news: newsData, events: eventsData, documents: docsData }
-  },
-  component: HomePage,
-})
-
 interface DocumentItem {
   id: number
   title: string
@@ -83,8 +71,25 @@ interface DocumentItem {
   createdAt: string
 }
 
+export const Route = createFileRoute("/")({
+  validateSearch: (search: Record<string, unknown>): SearchParams => ({
+    scope: search.scope as SearchParams["scope"],
+  }),
+  loaderDeps: ({ search }) => ({ scope: search.scope }),
+  loader: async ({ deps }) => {
+    const [newsData, eventsData, docsData, activePrompt] = await Promise.all([
+      getPublishedNews({ data: { limit: 6, scope: deps.scope } }),
+      getUpcomingEvents({ data: { limit: 4, scope: deps.scope } }),
+      getDocuments({ data: { limit: 6 } }),
+      getActiveSubmissionPrompt(),
+    ])
+    return { news: newsData, events: eventsData, documents: docsData, activePrompt }
+  },
+  component: HomePage,
+})
+
 function HomePage() {
-  const { news, events, documents } = Route.useLoaderData()
+  const { news, events, documents, activePrompt } = Route.useLoaderData()
   const articles = news.articles as NewsArticle[]
   const eventList = events as EventItem[]
   const docList = documents.documents as DocumentItem[]
@@ -95,7 +100,8 @@ function HomePage() {
     <div className="min-h-screen bg-background">
       <PublicHeader />
       <main>
-        <FeaturedSection article={featured} events={eventList} />
+        <HeroSection article={featured} events={eventList} />
+        {activePrompt && <SubmissionPromptBanner title={activePrompt.title} />}
         <NewsSection articles={restArticles} />
         <EventsSection events={eventList} />
         <DocumentsSection documents={docList} />
@@ -106,7 +112,9 @@ function HomePage() {
   )
 }
 
-function FeaturedSection({
+/* ─── Hero / Featured ─── */
+
+function HeroSection({
   article,
   events,
 }: {
@@ -114,26 +122,58 @@ function FeaturedSection({
   events: EventItem[]
 }) {
   return (
-    <section className="border-b border-border">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        <div className="mb-4">
+    <section className="border-b border-border/40 bg-gradient-to-b from-muted/40 to-background">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:py-10">
+        <div className="mb-6 flex items-center justify-between">
           <ScopeFilter />
+          <Button variant="ghost" size="sm" asChild className="text-muted-foreground">
+            <Link to="/news/submit">
+              <PenLine className="mr-1.5 size-3.5" />
+              Submit a Story
+            </Link>
+          </Button>
         </div>
-        <div className="grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
-            {article ? (
-              <>
-                <Badge variant="outline" className="mb-4 text-primary border-primary/30 bg-primary/5">
-                  {article.isPinned ? "Pinned" : "Latest"}
-                </Badge>
-                <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight mb-4 font-serif">
+
+        {article ? (
+          <div className="grid gap-8 lg:grid-cols-5">
+            {/* Featured article - 3 cols */}
+            <div className="lg:col-span-3">
+              <Link
+                to={article.slug ? "/news/$slug" : "/news"}
+                params={article.slug ? { slug: article.slug } : undefined}
+                className="group block"
+              >
+                {/* Cover image */}
+                <div className="relative mb-5 overflow-hidden rounded-xl bg-muted">
+                  {article.coverImageUrl ? (
+                    <img
+                      src={article.coverImageUrl}
+                      alt={article.title}
+                      className="aspect-[2/1] w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                    />
+                  ) : (
+                    <div className="flex aspect-[2/1] w-full items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10">
+                      <ImageIcon className="size-12 text-primary/20" />
+                    </div>
+                  )}
+                  <div className="absolute left-3 top-3 flex gap-1.5">
+                    <Badge className="border-0 bg-background/90 text-xs capitalize shadow-sm backdrop-blur-sm">
+                      {article.isPinned ? "Pinned" : "Latest"}
+                    </Badge>
+                    <Badge className="border-0 bg-background/90 text-xs capitalize shadow-sm backdrop-blur-sm">
+                      {article.scope}
+                    </Badge>
+                  </div>
+                </div>
+
+                <h1 className="mb-3 font-serif text-2xl font-bold leading-tight text-foreground transition-colors group-hover:text-primary sm:text-3xl lg:text-4xl">
                   {article.title}
                 </h1>
-                <p className="text-lg text-muted-foreground leading-relaxed mb-6">
-                  {article.body.length > 250 ? article.body.slice(0, 250) + "..." : article.body}
+                <p className="mb-4 line-clamp-3 text-base leading-relaxed text-muted-foreground sm:text-lg">
+                  {article.body.length > 220 ? article.body.slice(0, 220) + "..." : article.body}
                 </p>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                  {article.publishedAt && (
+                <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                  {article.publishedAt ? (
                     <span>
                       {new Date(article.publishedAt).toLocaleDateString("en-US", {
                         month: "long",
@@ -141,117 +181,145 @@ function FeaturedSection({
                         year: "numeric",
                       })}
                     </span>
-                  )}
-                  {article.authorName && (
+                  ) : null}
+                  {article.authorName ? (
                     <>
-                      <span className="text-border">|</span>
+                      <Separator orientation="vertical" className="h-3" />
                       <span>By {article.authorName}</span>
                     </>
-                  )}
+                  ) : null}
                 </div>
-                {article.slug && (
-                  <Button asChild className="mt-6" variant="outline">
-                    <Link to="/news/$slug" params={{ slug: article.slug }}>
-                      Read Full Story <ArrowRight className="w-4 h-4 ml-2" />
-                    </Link>
-                  </Button>
-                )}
-              </>
-            ) : (
-              <div className="text-muted-foreground">
-                <h1 className="text-3xl font-bold text-foreground font-serif mb-4">
-                  Welcome to DYC Koforidua
-                </h1>
-                <p className="text-lg">No news articles published yet. Check back soon!</p>
-              </div>
-            )}
-          </div>
+              </Link>
+            </div>
 
-          <div className="space-y-4">
-            <Card className="bg-muted/50 border-0">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                  Quick Links
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {[
-                  { icon: Newspaper, label: "Latest News", href: "/news" },
-                  { icon: FileText, label: "Pastoral Letters", href: "/pastoral-letters" },
-                  { icon: Newspaper, label: "Submit News", href: "/news/submit" },
-                ].map((item, i) => (
-                  <Link
-                    key={i}
-                    to={item.href}
-                    className="flex items-center gap-3 p-2 -mx-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors"
-                  >
-                    <item.icon className="w-4 h-4 text-primary" />
-                    {item.label}
-                  </Link>
-                ))}
-              </CardContent>
-            </Card>
-
-            {events.length > 0 && (
-              <Card className="bg-primary/5 border-primary/10">
+            {/* Sidebar - 2 cols */}
+            <div className="space-y-5 lg:col-span-2">
+              {/* Quick Links */}
+              <Card className="border-border/50">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-semibold uppercase tracking-wide text-primary">
-                    Upcoming Events
+                  <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Quick Links
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  {events.slice(0, 3).map((event) => {
-                    const d = new Date(event.startAt)
-                    const month = d.toLocaleDateString("en-US", { month: "short" })
-                    const day = d.getDate()
-                    return (
-                      <div key={event.id} className="flex gap-3">
-                        <div className="flex flex-col items-center justify-center w-12 h-12 rounded bg-primary/10 text-primary shrink-0">
-                          <span className="text-xs font-medium">{month}</span>
-                          <span className="text-lg font-bold leading-none">{day}</span>
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-foreground">{event.title}</p>
-                          {event.venue && (
-                            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                              <MapPin className="w-3 h-3" /> {event.venue}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    )
-                  })}
+                <CardContent className="space-y-1">
+                  {[
+                    { icon: Newspaper, label: "All News", href: "/news" },
+                    { icon: FileText, label: "Documents", href: "/documents" },
+                    { icon: PenLine, label: "Submit a Story", href: "/news/submit" },
+                  ].map((item) => (
+                    <Link
+                      key={item.label}
+                      to={item.href}
+                      className="flex items-center gap-3 rounded-md px-2 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                    >
+                      <item.icon className="size-4 text-primary/70" />
+                      {item.label}
+                      <ChevronRight className="ml-auto size-3.5 text-muted-foreground/40" />
+                    </Link>
+                  ))}
                 </CardContent>
               </Card>
-            )}
+
+              {/* Upcoming Events sidebar */}
+              {events.length > 0 ? (
+                <Card className="border-border/50">
+                  <CardHeader className="flex-row items-center justify-between pb-2">
+                    <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Upcoming Events
+                    </CardTitle>
+                    <Button variant="ghost" size="sm" asChild className="h-auto p-0 text-xs text-primary">
+                      <a href="#events">See all</a>
+                    </Button>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {events.slice(0, 3).map((event) => {
+                      const d = new Date(event.startAt)
+                      const month = d.toLocaleDateString("en-US", { month: "short" })
+                      const day = d.getDate()
+                      return (
+                        <div key={event.id} className="flex gap-3">
+                          <div className="flex size-11 shrink-0 flex-col items-center justify-center rounded-lg bg-primary/5 text-primary">
+                            <span className="text-[10px] font-semibold uppercase">{month}</span>
+                            <span className="text-base font-bold leading-none">{day}</span>
+                          </div>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-medium text-foreground">{event.title}</p>
+                            {event.venue ? (
+                              <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+                                <MapPin className="size-3 shrink-0" />
+                                <span className="truncate">{event.venue}</span>
+                              </p>
+                            ) : null}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </CardContent>
+                </Card>
+              ) : null}
+            </div>
           </div>
+        ) : (
+          <div className="py-12 text-center">
+            <Newspaper className="mx-auto mb-4 size-10 text-muted-foreground/40" />
+            <h1 className="mb-2 font-serif text-2xl font-bold text-foreground">
+              Welcome to DYC Koforidua
+            </h1>
+            <p className="text-muted-foreground">No news published yet. Check back soon!</p>
+          </div>
+        )}
+      </div>
+    </section>
+  )
+}
+
+/* ─── Submission Prompt Banner ─── */
+
+function SubmissionPromptBanner({ title }: { title: string }) {
+  return (
+    <section className="border-b border-border/40 bg-primary/5">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+        <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
+          <div className="flex-1">
+            <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Submissions are now open. Fill in the required details to submit your programme.
+            </p>
+          </div>
+          <Button asChild>
+            <Link to="/programmes/submit">
+              Submit Now <ChevronRight className="ml-1 size-4" />
+            </Link>
+          </Button>
         </div>
       </div>
     </section>
   )
 }
 
+/* ─── Latest News Grid ─── */
+
 function NewsSection({ articles }: { articles: NewsArticle[] }) {
   if (articles.length === 0) return null
 
   return (
     <section id="news" className="py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between mb-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="mb-8 flex items-end justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-foreground font-serif">Latest News</h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              Stay informed with updates from across the diocese
+            <h2 className="font-serif text-2xl font-bold text-foreground">Latest News</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Updates from across the diocese
             </p>
           </div>
           <Button variant="ghost" size="sm" asChild>
             <Link to="/news">
-              View All <ChevronRight className="w-4 h-4 ml-1" />
+              View all <ChevronRight className="ml-1 size-3.5" />
             </Link>
           </Button>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {articles.map((article) => (
             <NewsCard key={article.id} {...article} />
           ))}
@@ -261,20 +329,22 @@ function NewsSection({ articles }: { articles: NewsArticle[] }) {
   )
 }
 
+/* ─── Upcoming Events ─── */
+
 function EventsSection({ events }: { events: EventItem[] }) {
   if (events.length === 0) return null
 
   return (
-    <section id="events" className="py-12 border-t border-border">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between mb-8">
+    <section id="events" className="border-t border-border/40 bg-muted/20 py-12">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="mb-8 flex items-end justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-foreground font-serif">Upcoming Events</h2>
-            <p className="text-sm text-muted-foreground mt-1">Mark your calendar for these gatherings</p>
+            <h2 className="font-serif text-2xl font-bold text-foreground">Upcoming Events</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Mark your calendar</p>
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {events.map((event) => (
             <EventCard key={event.id} {...event} />
           ))}
@@ -284,6 +354,8 @@ function EventsSection({ events }: { events: EventItem[] }) {
   )
 }
 
+/* ─── Documents ─── */
+
 function DocumentsSection({ documents }: { documents: DocumentItem[] }) {
   if (documents.length === 0) return null
 
@@ -292,63 +364,74 @@ function DocumentsSection({ documents }: { documents: DocumentItem[] }) {
       const { url } = await getDocumentDownloadUrl({ data: { id } })
       window.open(url, "_blank")
     } catch {
-      // fallback - ignore
+      // fallback
     }
   }
 
   const categoryLabels: Record<string, string> = {
     pastoral_letters: "Pastoral Letter",
     circulars: "Circular",
-    minutes: "Minutes",
+    meeting_minutes: "Minutes",
     reports: "Report",
+    constitution_guidelines: "Guidelines",
+    pastoral_programmes: "Programme",
     forms: "Form",
     other: "Document",
   }
 
   return (
-    <section id="documents" className="py-12 border-t border-border">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between mb-8">
+    <section id="documents" className="border-t border-border/40 py-12">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="mb-8 flex items-end justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-foreground font-serif">Documents & Resources</h2>
-            <p className="text-sm text-muted-foreground mt-1">Access important documents and resources</p>
+            <h2 className="font-serif text-2xl font-bold text-foreground">
+              Documents & Resources
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Access important diocesan documents
+            </p>
           </div>
           <Button variant="ghost" size="sm" asChild>
             <Link to="/dashboard/documents">
-              View All <ChevronRight className="w-4 h-4 ml-1" />
+              View all <ChevronRight className="ml-1 size-3.5" />
             </Link>
           </Button>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {documents.map((doc) => (
-            <Card key={doc.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-4 space-y-3">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-foreground text-sm truncate">{doc.title}</h3>
-                    {doc.dateIssued && (
-                      <p className="text-xs text-muted-foreground mt-1">
+            <Card
+              key={doc.id}
+              className="group border-border/50 transition-all hover:border-primary/20 hover:shadow-sm"
+            >
+              <CardContent className="flex items-center gap-4 p-4">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                  <FileText className="size-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-foreground">{doc.title}</p>
+                  <div className="mt-0.5 flex items-center gap-2">
+                    <Badge variant="secondary" className="text-[10px]">
+                      {categoryLabels[doc.category] ?? doc.category}
+                    </Badge>
+                    {doc.dateIssued ? (
+                      <span className="text-[11px] text-muted-foreground">
                         {new Date(doc.dateIssued).toLocaleDateString("en-US", {
                           month: "short",
                           day: "numeric",
                           year: "numeric",
                         })}
-                      </p>
-                    )}
+                      </span>
+                    ) : null}
                   </div>
-                  <Badge variant="secondary" className="text-xs shrink-0">
-                    {categoryLabels[doc.category] ?? doc.category}
-                  </Badge>
                 </div>
                 <Button
-                  size="sm"
-                  variant="outline"
-                  className="w-full"
+                  variant="ghost"
+                  size="icon"
+                  className="size-8 shrink-0 text-muted-foreground hover:text-primary"
                   onClick={() => handleDownload(doc.id)}
                 >
-                  <FileText className="w-4 h-4 mr-2" />
-                  Download
+                  <Download className="size-4" />
                 </Button>
               </CardContent>
             </Card>
@@ -359,28 +442,28 @@ function DocumentsSection({ documents }: { documents: DocumentItem[] }) {
   )
 }
 
+/* ─── About ─── */
+
 function AboutSection() {
   return (
-    <section id="about" className="py-12 border-t border-border">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="grid lg:grid-cols-2 gap-12">
-          <div>
-            <h2 className="text-2xl font-bold text-foreground font-serif mb-4">About DYC</h2>
-            <p className="text-muted-foreground leading-relaxed mb-4">
-              The Diocesan Youth Council (DYC) of Koforidua is committed to fostering spiritual growth,
-              leadership development, and community service among Catholic youth across our diocese.
-            </p>
-            <p className="text-muted-foreground leading-relaxed mb-6">
-              Through our various programmes and events, we aim to strengthen the faith of our young people
-              and prepare them to be active witnesses of Christ's love in their communities.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              {["Faith Formation", "Youth Empowerment", "Community Service"].map((item, i) => (
-                <Badge key={i} variant="secondary">
-                  {item}
-                </Badge>
-              ))}
-            </div>
+    <section id="about" className="border-t border-border/40 bg-muted/20 py-12">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="mb-4 font-serif text-2xl font-bold text-foreground">About DYC</h2>
+          <p className="mb-4 leading-relaxed text-muted-foreground">
+            The Diocesan Youth Council (DYC) of Koforidua is committed to fostering spiritual growth,
+            leadership development, and community service among Catholic youth across our diocese.
+          </p>
+          <p className="mb-6 leading-relaxed text-muted-foreground">
+            Through our various programmes and events, we aim to strengthen the faith of our young people
+            and prepare them to be active witnesses of Christ's love in their communities.
+          </p>
+          <div className="flex flex-wrap justify-center gap-2">
+            {["Faith Formation", "Youth Empowerment", "Community Service"].map((item) => (
+              <Badge key={item} variant="secondary" className="px-3 py-1">
+                {item}
+              </Badge>
+            ))}
           </div>
         </div>
       </div>

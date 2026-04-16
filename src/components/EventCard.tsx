@@ -1,6 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, MapPin, Clock } from "lucide-react"
+import { MapPin, Clock } from "lucide-react"
 
 interface EventCardProps {
   title: string
@@ -23,44 +23,47 @@ export function EventCard({
   feeCurrency,
 }: EventCardProps) {
   const startDate = new Date(startAt)
-  const dateStr = startDate.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  })
+  const month = startDate.toLocaleDateString("en-US", { month: "short" })
+  const day = startDate.getDate()
   const timeStr = startDate.toLocaleTimeString("en-US", {
     hour: "numeric",
     minute: "2-digit",
   })
 
   return (
-    <Card className="hover:border-primary/30 transition-colors">
-      <CardHeader className="pb-2">
-        <div className="flex items-center gap-2">
-          <Badge className="w-fit text-xs capitalize">{eventType}</Badge>
-          {registrationType === "paid" && feeAmount && (
-            <Badge variant="outline" className="text-xs">
-              {feeCurrency} {feeAmount.toFixed(2)}
-            </Badge>
-          )}
+    <Card className="group border-border/50 transition-all hover:border-primary/20 hover:shadow-md">
+      <CardContent className="flex gap-4 p-4">
+        {/* Date block */}
+        <div className="flex size-14 shrink-0 flex-col items-center justify-center rounded-lg bg-primary/5 text-primary">
+          <span className="text-[10px] font-semibold uppercase tracking-wider">{month}</span>
+          <span className="text-xl font-bold leading-none">{day}</span>
         </div>
-        <CardTitle className="text-base font-semibold mt-2">{title}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-2 text-sm text-muted-foreground">
-        <div className="flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-primary shrink-0" />
-          {dateStr}
-        </div>
-        <div className="flex items-center gap-2">
-          <Clock className="w-4 h-4 text-primary shrink-0" />
-          {timeStr}
-        </div>
-        {venue && (
-          <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-primary shrink-0" />
-            <span className="truncate">{venue}</span>
+
+        <div className="min-w-0 flex-1">
+          <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
+            <Badge variant="secondary" className="text-[10px] capitalize">{eventType}</Badge>
+            {registrationType === "paid" && feeAmount ? (
+              <Badge variant="outline" className="text-[10px]">
+                {feeCurrency} {feeAmount.toFixed(2)}
+              </Badge>
+            ) : null}
           </div>
-        )}
+          <h3 className="mb-2 text-sm font-semibold leading-snug text-foreground group-hover:text-primary">
+            {title}
+          </h3>
+          <div className="space-y-1 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1.5">
+              <Clock className="size-3 shrink-0 text-muted-foreground/60" />
+              {timeStr}
+            </div>
+            {venue ? (
+              <div className="flex items-center gap-1.5">
+                <MapPin className="size-3 shrink-0 text-muted-foreground/60" />
+                <span className="truncate">{venue}</span>
+              </div>
+            ) : null}
+          </div>
+        </div>
       </CardContent>
     </Card>
   )

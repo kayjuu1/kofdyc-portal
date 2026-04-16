@@ -25,11 +25,25 @@ CREATE TABLE `audit_log` (
 	`created_at` text DEFAULT 'CURRENT_TIMESTAMP' NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE `chaplain_conversation_access_tokens` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`conversation_id` integer NOT NULL,
+	`email` text NOT NULL,
+	`selector` text NOT NULL,
+	`token_hash` text NOT NULL,
+	`expires_at` text NOT NULL,
+	`last_used_at` text,
+	`revoked_at` text,
+	`created_at` text DEFAULT 'CURRENT_TIMESTAMP' NOT NULL,
+	FOREIGN KEY (`conversation_id`) REFERENCES `chaplain_conversations`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `chaplain_conversation_access_tokens_selector_unique` ON `chaplain_conversation_access_tokens` (`selector`);--> statement-breakpoint
 CREATE TABLE `chaplain_conversations` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`user_id` text NOT NULL,
-	`alias` text(20),
-	`is_anonymous` integer DEFAULT false NOT NULL,
+	`user_id` text,
+	`alias` text(20) NOT NULL,
+	`is_anonymous` integer DEFAULT true NOT NULL,
 	`status` text DEFAULT 'active' NOT NULL,
 	`created_at` text DEFAULT 'CURRENT_TIMESTAMP' NOT NULL,
 	`updated_at` text DEFAULT 'CURRENT_TIMESTAMP' NOT NULL,
@@ -138,6 +152,24 @@ CREATE TABLE `news` (
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `news_slug_unique` ON `news` (`slug`);--> statement-breakpoint
+CREATE TABLE `news_comments` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`news_id` integer NOT NULL,
+	`commenter_name` text NOT NULL,
+	`body` text NOT NULL,
+	`deleted_at` text,
+	`created_at` text DEFAULT 'CURRENT_TIMESTAMP' NOT NULL,
+	FOREIGN KEY (`news_id`) REFERENCES `news`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
+CREATE TABLE `news_likes` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`news_id` integer NOT NULL,
+	`identifier` text NOT NULL,
+	`created_at` text DEFAULT 'CURRENT_TIMESTAMP' NOT NULL,
+	FOREIGN KEY (`news_id`) REFERENCES `news`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
 CREATE TABLE `news_submissions` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`submitter_name` text NOT NULL,
@@ -187,6 +219,15 @@ CREATE TABLE `programme_activities` (
 	FOREIGN KEY (`programme_id`) REFERENCES `programmes`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
+CREATE TABLE `programme_responses` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`programme_id` integer NOT NULL,
+	`field_id` integer NOT NULL,
+	`value` text,
+	FOREIGN KEY (`programme_id`) REFERENCES `programmes`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`field_id`) REFERENCES `submission_prompt_fields`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
 CREATE TABLE `programme_reviews` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`programme_id` integer NOT NULL,
@@ -201,7 +242,7 @@ CREATE TABLE `programme_reviews` (
 --> statement-breakpoint
 CREATE TABLE `programmes` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`parish_id` integer NOT NULL,
+	`parish_id` integer,
 	`year` integer NOT NULL,
 	`status` text DEFAULT 'draft' NOT NULL,
 	`submitting_officer` text,
@@ -251,6 +292,27 @@ CREATE TABLE `session` (
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `session_token_unique` ON `session` (`token`);--> statement-breakpoint
+CREATE TABLE `submission_prompt_fields` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`prompt_id` integer NOT NULL,
+	`label` text NOT NULL,
+	`placeholder` text,
+	`is_required` integer DEFAULT false NOT NULL,
+	`sort_order` integer DEFAULT 0 NOT NULL,
+	`field_type` text DEFAULT 'text' NOT NULL,
+	FOREIGN KEY (`prompt_id`) REFERENCES `submission_prompts`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
+CREATE TABLE `submission_prompts` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`title` text DEFAULT '' NOT NULL,
+	`created_by` text,
+	`is_active` integer DEFAULT false NOT NULL,
+	`created_at` text DEFAULT 'CURRENT_TIMESTAMP' NOT NULL,
+	`updated_at` text DEFAULT 'CURRENT_TIMESTAMP' NOT NULL,
+	FOREIGN KEY (`created_by`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
 CREATE TABLE `user` (
 	`id` text PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
@@ -259,7 +321,7 @@ CREATE TABLE `user` (
 	`image` text,
 	`created_at` integer NOT NULL,
 	`updated_at` integer NOT NULL,
-	`role` text DEFAULT 'member' NOT NULL,
+	`role` text DEFAULT 'coordinator' NOT NULL,
 	`phone` text,
 	`parish_id` integer,
 	`deanery_id` integer,

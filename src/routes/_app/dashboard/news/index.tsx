@@ -1,9 +1,33 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router"
 import { useState } from "react"
-import { Plus, Search, Pencil, Eye, Archive, MoreHorizontal } from "lucide-react"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
+import {
+  Archive,
+  Eye,
+  MoreHorizontal,
+  Newspaper,
+  Pencil,
+  Pin,
+  Plus,
+  Search,
+} from "lucide-react"
+import { useMutation } from "@tanstack/react-query"
+
+import {
+  DashboardEmptyState,
+  DashboardFilterPills,
+  DashboardPageHeader,
+  DashboardStatCard,
+} from "@/components/dashboard-ui"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Input } from "@/components/ui/input"
 import {
   Table,
   TableBody,
@@ -12,15 +36,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Card, CardContent } from "@/components/ui/card"
-import { getNewsForAdmin, archiveNewsArticle } from "@/functions/news"
-import { useMutation } from "@tanstack/react-query"
+import { archiveNewsArticle, getNewsForAdmin } from "@/functions/news"
 
 type SearchParams = {
   status?: "draft" | "published" | "archived"
@@ -38,6 +54,8 @@ interface NewsItem {
   createdAt: string
   authorName: string | null
 }
+
+const statusOptions = ["draft", "published", "archived"] as const
 
 export const Route = createFileRoute("/_app/dashboard/news/")({
   validateSearch: (search: Record<string, unknown>): SearchParams => ({
@@ -60,6 +78,10 @@ export const Route = createFileRoute("/_app/dashboard/news/")({
   component: NewsAdminPage,
 })
 
+function formatStatusLabel(status: string) {
+  return status.charAt(0).toUpperCase() + status.slice(1)
+}
+
 function NewsAdminPage() {
   const data = Route.useLoaderData()
   const { status } = Route.useSearch()
@@ -76,159 +98,176 @@ function NewsAdminPage() {
   })
 
   const filteredArticles = search
-    ? articles.filter((a) =>
-        a.title.toLowerCase().includes(search.toLowerCase())
-      )
+    ? articles.filter((article) => article.title.toLowerCase().includes(search.toLowerCase()))
     : articles
+
+  const publishedCount = articles.filter((article) => article.status === "published").length
+  const draftCount = articles.filter((article) => article.status === "draft").length
+  const featuredCount = articles.filter((article) => article.isPinned).length
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">News Management</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Create, edit, and manage news articles
-          </p>
-        </div>
-        <Button asChild>
-          <Link to="/dashboard/news/create">
-            <Plus className="w-4 h-4 mr-2" />
-            Create Article
-          </Link>
-        </Button>
+      <DashboardPageHeader
+        title="News"
+        description="Draft, publish, and manage articles."
+        action={{
+          label: "Create Article",
+          href: "/dashboard/news/create",
+          icon: Plus,
+        }}
+      />
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <DashboardStatCard
+          label="Published"
+          value={publishedCount}
+          icon={Newspaper}
+          tone="gold"
+          detail="Visible to public"
+        />
+        <DashboardStatCard
+          label="Drafts"
+          value={draftCount}
+          icon={Pencil}
+          tone="sky"
+          detail="In progress"
+        />
+        <DashboardStatCard
+          label="Featured"
+          value={featuredCount}
+          icon={Pin}
+          tone="emerald"
+          detail="Pinned articles"
+        />
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Search articles..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
-          />
-        </div>
-        <div className="flex gap-2">
-          {(["draft", "published", "archived"] as const).map((s) => (
-            <Button
-              key={s}
-              variant={status === s ? "default" : "outline"}
-              size="sm"
-              onClick={() =>
+      <Card className="border-border/50 shadow-sm">
+        <CardContent className="p-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="relative max-w-sm flex-1">
+              <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search articles..."
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <DashboardFilterPills
+              items={statusOptions}
+              value={status}
+              onSelect={(nextStatus) =>
                 navigate({
                   search: (prev: Record<string, unknown>) => ({
                     ...prev,
-                    status: s,
+                    status: nextStatus,
                     page: undefined,
                   }),
                 })
               }
-            >
-              {s.charAt(0).toUpperCase() + s.slice(1)}
-            </Button>
-          ))}
-        </div>
-      </div>
+              formatLabel={formatStatusLabel}
+            />
+          </div>
+        </CardContent>
+      </Card>
 
-      <Card>
+      <Card className="border-border/50 shadow-sm">
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Scope</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Author</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead className="w-[50px]"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredArticles.length === 0 ? (
+          {filteredArticles.length === 0 ? (
+            <div className="p-6">
+              <DashboardEmptyState
+                icon={Newspaper}
+                title="No articles found"
+                description="Adjust the search or filter to find what you're looking for."
+              />
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    No articles found
-                  </TableCell>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Scope</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Author</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead className="w-10" />
                 </TableRow>
-              ) : (
-                filteredArticles.map((article) => (
+              </TableHeader>
+              <TableBody>
+                {filteredArticles.map((article) => (
                   <TableRow key={article.id}>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        {article.isPinned && (
+                        <span className="font-medium">{article.title}</span>
+                        {article.isPinned ? (
                           <Badge variant="secondary" className="text-xs">
                             Featured
                           </Badge>
-                        )}
-                        <span className="font-medium">{article.title}</span>
+                        ) : null}
                       </div>
                     </TableCell>
-                    <TableCell className="capitalize">{article.scope}</TableCell>
+                    <TableCell className="text-sm capitalize">{article.scope}</TableCell>
                     <TableCell>
                       <Badge
                         variant={
                           article.status === "published"
                             ? "default"
                             : article.status === "draft"
-                            ? "outline"
-                            : "secondary"
+                              ? "outline"
+                              : "secondary"
                         }
+                        className="capitalize"
                       >
                         {article.status}
                       </Badge>
                     </TableCell>
-                    <TableCell>{article.authorName || "—"}</TableCell>
+                    <TableCell className="text-sm">{article.authorName || "-"}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {article.publishedAt
-                        ? new Date(article.publishedAt).toLocaleDateString()
-                        : new Date(article.createdAt).toLocaleDateString()}
+                      {(article.publishedAt
+                        ? new Date(article.publishedAt)
+                        : new Date(article.createdAt)
+                      ).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreHorizontal className="w-4 h-4" />
+                          <Button variant="ghost" size="icon" className="size-8">
+                            <MoreHorizontal className="size-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem asChild>
                             <Link to="/news/$slug" params={{ slug: article.slug ?? "" }} target="_blank">
-                              <Eye className="w-4 h-4 mr-2" />
+                              <Eye className="mr-2 size-4" />
                               View
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
                             <Link to="/dashboard/news/$id" params={{ id: String(article.id) }}>
-                              <Pencil className="w-4 h-4 mr-2" />
+                              <Pencil className="mr-2 size-4" />
                               Edit
                             </Link>
                           </DropdownMenuItem>
-                          {article.status !== "archived" && (
-                            <DropdownMenuItem
-                              onClick={() => archiveMutation.mutate(article.id)}
-                            >
-                              <Archive className="w-4 h-4 mr-2" />
+                          {article.status !== "archived" ? (
+                            <DropdownMenuItem onClick={() => archiveMutation.mutate(article.id)}>
+                              <Archive className="mr-2 size-4" />
                               Archive
                             </DropdownMenuItem>
-                          )}
+                          ) : null}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
-
-      <div className="flex items-center justify-between">
-        <Button variant="outline" asChild>
-          <Link to="/dashboard/news/submissions">
-            View Submissions Queue
-          </Link>
-        </Button>
-      </div>
     </div>
   )
 }
