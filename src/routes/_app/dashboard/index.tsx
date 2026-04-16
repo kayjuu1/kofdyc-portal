@@ -25,7 +25,7 @@ import { hasPermission, type UserRole } from "@/lib/permissions"
 
 export const Route = createFileRoute("/_app/dashboard/")({
   head: () => ({
-    meta: [{ title: "Dashboard | DYC Koforidua" }],
+    meta: [{ title: "Dashboard | KOFDYC" }],
   }),
   loader: async () => {
     const [stats, upcomingEvents, leaderboard] = await Promise.all([

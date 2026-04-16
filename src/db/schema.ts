@@ -208,6 +208,8 @@ export const submissionPrompts = sqliteTable('submission_prompts', {
   title: text('title').notNull().default(''),
   createdBy: text('created_by').references(() => user.id),
   isActive: integer('is_active', { mode: 'boolean' }).notNull().default(false),
+  isSuspended: integer('is_suspended', { mode: 'boolean' }).notNull().default(false),
+  expiresAt: text('expires_at'),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
   updatedAt: text('updated_at').notNull().default('CURRENT_TIMESTAMP'),
 })

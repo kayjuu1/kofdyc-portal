@@ -100,7 +100,7 @@ export const Route = createFileRoute("/api/paystack-webhook")({
                     ${eventInfo ? `<p><strong>Date:</strong> ${new Date(eventInfo.startAt).toLocaleDateString()}</p>` : ""}
                     ${eventInfo?.venue ? `<p><strong>Venue:</strong> ${eventInfo.venue}</p>` : ""}
                     <p>Your registration is now confirmed. See you there!</p>
-                    <p>God bless,<br/>DYC Koforidua</p>
+                    <p>God bless,<br/>KOFDYC</p>
                   `,
                 })
               }

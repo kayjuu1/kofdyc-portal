@@ -44,7 +44,7 @@ function InitAdminPage() {
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Initialize Admin User</CardTitle>
           <CardDescription>
-            This will create the initial system administrator account for the DYC Koforidua Portal.
+            This will create the initial system administrator account for the KOFDYC Portal.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">

@@ -80,7 +80,7 @@ VALUES ('DYC Executive Council Meeting Highlights', 'dyc-executive-meeting-febru
 
 INSERT INTO news (title, slug, body, scope, is_featured, status, published_at, author_id, created_at, updated_at)
 VALUES ('New Portal Launch Announcement', 'new-portal-launch',
-'We are excited to announce the launch of our new digital platform for the Diocese of Koforidua. The DYC Koforidua Portal will serve as the central hub for all youth activities, events, news, and communications within our diocese. Members can register for events, access documents, and stay connected with their parish community.',
+'We are excited to announce the launch of our new digital platform for the Diocese of Koforidua. The KOFDYC Portal will serve as the central hub for all youth activities, events, news, and communications within our diocese. Members can register for events, access documents, and stay connected with their parish community.',
 'diocese', 0, 'published', datetime('now'), 'usr-admin-001', datetime('now'), datetime('now'));
 
 INSERT INTO news (title, slug, body, scope, is_featured, status, published_at, author_id, created_at, updated_at)

@@ -301,7 +301,7 @@ export const registerGuest = createServerFn({ method: "POST" })
             <p>The event <strong>${event[0].title}</strong> is currently full. You have been added to the waitlist and will be notified if a spot opens up.</p>
             <p><strong>Date:</strong> ${new Date(event[0].startAt).toLocaleDateString()}</p>
             <p><strong>Venue:</strong> ${event[0].venue || "TBA"}</p>
-            <p>God bless,<br/>DYC Koforidua</p>
+            <p>God bless,<br/>KOFDYC</p>
           `,
         })
       } else {
@@ -317,7 +317,7 @@ export const registerGuest = createServerFn({ method: "POST" })
             <p>Keep this email for your records.</p>
             <p>To cancel your registration, use this link:<br/>
             ${env.BETTER_AUTH_URL ?? "http://localhost:3000"}/events/${data.eventId}/cancel?token=${cancellationToken}</p>
-            <p>God bless,<br/>DYC Koforidua</p>
+            <p>God bless,<br/>KOFDYC</p>
           `,
         })
       }
@@ -383,7 +383,7 @@ export const cancelRegistration = createServerFn({ method: "POST" })
               <p>A spot has opened up and your registration for <strong>${event[0].title}</strong> has been confirmed!</p>
               <p><strong>Date:</strong> ${new Date(event[0].startAt).toLocaleDateString()}</p>
               <p><strong>Venue:</strong> ${event[0].venue || "TBA"}</p>
-              <p>God bless,<br/>DYC Koforidua</p>
+              <p>God bless,<br/>KOFDYC</p>
             `,
           })
         }

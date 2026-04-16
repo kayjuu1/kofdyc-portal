@@ -16,7 +16,7 @@ export async function sendEmail(params: {
     const fromEmail = env.RESEND_FROM_EMAIL ?? "noreply@dyckoforidua.org"
     const resend = getResendClient()
     await resend.emails.send({
-      from: `DYC Koforidua <${fromEmail}>`,
+      from: `KOFDYC <${fromEmail}>`,
       to: params.to,
       subject: params.subject,
       html: params.html,

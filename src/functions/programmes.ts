@@ -332,7 +332,7 @@ export const reviewProgramme = createServerFn({ method: "POST" })
             <p>Your pastoral programme for <strong>${prog[0].parishName} (${prog[0].year})</strong> has been <strong>${data.decision}</strong> by the ${stageLabel}.</p>
             ${data.comment ? `<p><strong>Comment:</strong> ${data.comment}</p>` : ""}
             ${data.decision === "returned" ? "<p>Please review the feedback and resubmit.</p>" : "<p>Congratulations!</p>"}
-            <p>God bless,<br/>DYC Koforidua</p>
+            <p>God bless,<br/>KOFDYC</p>
           `,
 })
        }

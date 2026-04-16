@@ -2,8 +2,8 @@ import { useEffect, useState } from "react"
 import { Moon, Sun } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
-function getInitialTheme(): "light" | "dark" {
-  if (typeof window === "undefined") return "light"
+function getInitialTheme(): "dark" | "light" {
+  if (typeof window === "undefined") return "dark"
   return document.documentElement.classList.contains("dark") ? "dark" : "light"
 }
 

@@ -43,6 +43,13 @@ const FIELD_TYPE_LABELS: Record<FieldType, string> = {
   pdf: "PDF",
 }
 
+function toLocalDateTimeInput(iso: string): string {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ""
+  const pad = (n: number) => String(n).padStart(2, "0")
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
 export const Route = createFileRoute("/_app/dashboard/submission-prompts/create")({
   validateSearch: (search: Record<string, unknown>): SearchParams => ({
     edit: search.edit ? Number(search.edit) : undefined,
@@ -71,6 +78,9 @@ function CreateSubmissionPromptPage() {
   const isEditing = !!edit && !!prompt
 
   const [title, setTitle] = useState(prompt?.title ?? "")
+  const [expiresAt, setExpiresAt] = useState<string>(
+    prompt?.expiresAt ? toLocalDateTimeInput(prompt.expiresAt) : ""
+  )
   const [fields, setFields] = useState<PromptField[]>(
     prompt?.fields?.map((f) => ({
       id: f.id,
@@ -84,6 +94,8 @@ function CreateSubmissionPromptPage() {
   const [newFieldPlaceholder, setNewFieldPlaceholder] = useState("")
   const [newFieldType, setNewFieldType] = useState<FieldType>("text")
 
+  const expiresAtIso = expiresAt ? new Date(expiresAt).toISOString() : null
+
   const createMutation = useMutation({
     mutationFn: (activate: boolean) =>
       createSubmissionPrompt({
@@ -91,6 +103,7 @@ function CreateSubmissionPromptPage() {
           title,
           fields: fields.filter((f) => f.label.trim()),
           activate,
+          expiresAt: expiresAtIso,
         },
       }),
     onSuccess: (_, activate) => {
@@ -108,6 +121,7 @@ function CreateSubmissionPromptPage() {
           title,
           fields: fields.filter((f) => f.label.trim()),
           activate,
+          expiresAt: expiresAtIso,
         },
       }),
     onSuccess: (_, activate) => {
@@ -194,6 +208,19 @@ function CreateSubmissionPromptPage() {
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. 2026 Programme Submission Template"
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="expiresAt">Expires at (optional)</Label>
+            <Input
+              id="expiresAt"
+              type="datetime-local"
+              value={expiresAt}
+              onChange={(e) => setExpiresAt(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              Leave blank to never expire.
+            </p>
           </div>
 
           {/* Existing fields */}

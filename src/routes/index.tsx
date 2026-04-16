@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
 import {
+  ArrowRight,
+  Calendar,
   ChevronRight,
   Download,
   FileText,
@@ -7,6 +9,7 @@ import {
   MapPin,
   Newspaper,
   PenLine,
+  Sparkles,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -100,7 +103,12 @@ function HomePage() {
     <div className="min-h-screen bg-background">
       <PublicHeader />
       <main>
-        <HeroSection article={featured} events={eventList} />
+        <DarkHero
+          newsCount={news.total ?? articles.length}
+          eventsCount={eventList.length}
+          docsCount={docList.length}
+        />
+        <FeaturedSection article={featured} events={eventList} />
         {activePrompt && <SubmissionPromptBanner title={activePrompt.title} />}
         <NewsSection articles={restArticles} />
         <EventsSection events={eventList} />
@@ -112,9 +120,150 @@ function HomePage() {
   )
 }
 
-/* ─── Hero / Featured ─── */
+/* ─── Dark Marketing Hero with light rays ─── */
 
-function HeroSection({
+function DarkHero({
+  newsCount,
+  eventsCount,
+  docsCount,
+}: {
+  newsCount: number
+  eventsCount: number
+  docsCount: number
+}) {
+  return (
+    <section className="relative -mt-20 flex w-full items-center justify-center overflow-hidden bg-slate-900">
+      {/* Light rays backdrop */}
+      <div
+        className="pointer-events-none absolute inset-0 isolate overflow-hidden"
+        style={{
+          ["--light-rays-color" as string]: "color-mix(in srgb, var(--primary) 60%, transparent)",
+        }}
+      >
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 opacity-70"
+          style={{
+            background:
+              "radial-gradient(circle at 20% 15%, color-mix(in srgb, var(--primary) 45%, transparent), transparent 65%)",
+          }}
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 opacity-60"
+          style={{
+            background:
+              "radial-gradient(circle at 85% 10%, color-mix(in srgb, var(--primary) 35%, transparent), transparent 70%)",
+          }}
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 opacity-40"
+          style={{
+            background:
+              "radial-gradient(circle at 50% 110%, color-mix(in srgb, var(--primary) 40%, transparent), transparent 55%)",
+          }}
+        />
+      </div>
+
+      <div className="relative z-10 w-full max-w-7xl px-4 pb-20 pt-32 sm:px-6 sm:pb-28 sm:pt-40 lg:px-8">
+        <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-2">
+          {/* Left column */}
+          <div className="flex flex-col justify-center space-y-8">
+            <span className="w-fit text-xs font-semibold uppercase tracking-[0.35em] text-slate-300/70">
+              Catholic Diocese of Koforidua
+            </span>
+            <div>
+              <h1 className="mb-6 text-5xl font-black leading-tight text-white sm:text-6xl lg:text-7xl">
+                Youth in Faith,{" "}
+                <span className="text-primary">Made Alive.</span>
+              </h1>
+              <p className="max-w-xl text-lg leading-relaxed text-slate-400">
+                The official portal of the Koforidua Diocesan Youth Council. News, events,
+                programmes, and formation resources for young Catholics across the diocese.
+              </p>
+            </div>
+            <div className="flex flex-col gap-4 pt-4 sm:flex-row">
+              <Link
+                to="/news"
+                className="group inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-8 py-4 text-base font-bold text-primary-foreground shadow-lg shadow-primary/30 transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/50 sm:text-lg"
+              >
+                Explore News
+                <ArrowRight className="size-5 transition-transform group-hover:translate-x-1" />
+              </Link>
+              <Link
+                to="/events"
+                className="group inline-flex items-center justify-center gap-2 rounded-lg border border-slate-700 bg-slate-800/50 px-8 py-4 text-base font-bold text-white backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-600 hover:bg-slate-800/70 sm:text-lg"
+              >
+                Upcoming Events
+                <Calendar className="size-5" />
+              </Link>
+            </div>
+            <div className="grid grid-cols-3 gap-6 border-t border-slate-800 pt-12">
+              <div>
+                <p className="text-3xl font-bold text-primary">{newsCount}+</p>
+                <p className="mt-2 text-sm text-slate-400">Published Stories</p>
+              </div>
+              <div>
+                <p className="text-3xl font-bold text-primary">{eventsCount}+</p>
+                <p className="mt-2 text-sm text-slate-400">Upcoming Events</p>
+              </div>
+              <div>
+                <p className="text-3xl font-bold text-primary">{docsCount}+</p>
+                <p className="mt-2 text-sm text-slate-400">Resources & Docs</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Right column - feature cards */}
+          <div className="relative hidden flex-col items-center justify-center space-y-6 lg:flex">
+            <FeatureCard
+              icon={<Newspaper className="size-6 text-primary" />}
+              title="Diocesan News"
+              description="Stay updated on happenings across the diocese, deaneries, and parishes."
+            />
+            <FeatureCard
+              icon={<Calendar className="size-6 text-primary" />}
+              title="Events & Programmes"
+              description="Find retreats, rallies, formation programmes, and register online."
+            />
+            <FeatureCard
+              icon={<Sparkles className="size-6 text-primary" />}
+              title="Faith Formation"
+              description="Access pastoral documents, guidelines, and resources for youth ministry."
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function FeatureCard({
+  icon,
+  title,
+  description,
+}: {
+  icon: React.ReactNode
+  title: string
+  description: string
+}) {
+  return (
+    <div className="w-full max-w-sm rounded-lg border border-slate-700 bg-slate-800/50 p-6 backdrop-blur-sm transition-colors duration-300 hover:bg-slate-800/70">
+      <div className="flex items-start gap-4">
+        <div className="mt-1 flex-shrink-0">{icon}</div>
+        <div>
+          <h3 className="text-lg font-bold text-white">{title}</h3>
+          <p className="mt-2 text-sm text-slate-400">{description}</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ─── Featured Article + Sidebar (light section) ─── */
+
+function FeaturedSection({
   article,
   events,
 }: {
@@ -122,10 +271,15 @@ function HeroSection({
   events: EventItem[]
 }) {
   return (
-    <section className="border-b border-border/40 bg-gradient-to-b from-muted/40 to-background">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:py-10">
-        <div className="mb-6 flex items-center justify-between">
-          <ScopeFilter />
+    <section className="border-b border-border/40 bg-background">
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:py-16">
+        <div className="mb-8 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary">
+              Featured
+            </span>
+            <ScopeFilter />
+          </div>
           <Button variant="ghost" size="sm" asChild className="text-muted-foreground">
             <Link to="/news/submit">
               <PenLine className="mr-1.5 size-3.5" />
@@ -166,9 +320,9 @@ function HeroSection({
                   </div>
                 </div>
 
-                <h1 className="mb-3 font-serif text-2xl font-bold leading-tight text-foreground transition-colors group-hover:text-primary sm:text-3xl lg:text-4xl">
+                <h2 className="mb-3 text-2xl font-black leading-tight text-foreground transition-colors group-hover:text-primary sm:text-3xl lg:text-4xl">
                   {article.title}
-                </h1>
+                </h2>
                 <p className="mb-4 line-clamp-3 text-base leading-relaxed text-muted-foreground sm:text-lg">
                   {article.body.length > 220 ? article.body.slice(0, 220) + "..." : article.body}
                 </p>
@@ -238,7 +392,7 @@ function HeroSection({
                       const day = d.getDate()
                       return (
                         <div key={event.id} className="flex gap-3">
-                          <div className="flex size-11 shrink-0 flex-col items-center justify-center rounded-lg bg-primary/5 text-primary">
+                          <div className="flex size-11 shrink-0 flex-col items-center justify-center rounded-lg bg-primary/10 text-primary">
                             <span className="text-[10px] font-semibold uppercase">{month}</span>
                             <span className="text-base font-bold leading-none">{day}</span>
                           </div>
@@ -262,10 +416,8 @@ function HeroSection({
         ) : (
           <div className="py-12 text-center">
             <Newspaper className="mx-auto mb-4 size-10 text-muted-foreground/40" />
-            <h1 className="mb-2 font-serif text-2xl font-bold text-foreground">
-              Welcome to DYC Koforidua
-            </h1>
-            <p className="text-muted-foreground">No news published yet. Check back soon!</p>
+            <h2 className="mb-2 text-2xl font-bold text-foreground">No stories yet</h2>
+            <p className="text-muted-foreground">Check back soon for the latest news.</p>
           </div>
         )}
       </div>
@@ -281,16 +433,17 @@ function SubmissionPromptBanner({ title }: { title: string }) {
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
         <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+            <h3 className="text-lg font-bold text-foreground">{title}</h3>
             <p className="mt-1 text-sm text-muted-foreground">
               Submissions are now open. Fill in the required details to submit your programme.
             </p>
           </div>
-          <Button asChild>
-            <Link to="/programmes/submit">
-              Submit Now <ChevronRight className="ml-1 size-4" />
-            </Link>
-          </Button>
+          <Link
+            to="/programmes/submit"
+            className="inline-flex items-center gap-1.5 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md"
+          >
+            Submit Now <ChevronRight className="size-4" />
+          </Link>
         </div>
       </div>
     </section>
@@ -303,13 +456,18 @@ function NewsSection({ articles }: { articles: NewsArticle[] }) {
   if (articles.length === 0) return null
 
   return (
-    <section id="news" className="py-12">
+    <section id="news" className="py-16 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="mb-8 flex items-end justify-between">
+        <div className="mb-10 flex items-end justify-between">
           <div>
-            <h2 className="font-serif text-2xl font-bold text-foreground">Latest News</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Updates from across the diocese
+            <span className="mb-2 inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary">
+              Latest
+            </span>
+            <h2 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">
+              News across the diocese
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Stories from parishes, deaneries, and youth groups.
             </p>
           </div>
           <Button variant="ghost" size="sm" asChild>
@@ -335,12 +493,17 @@ function EventsSection({ events }: { events: EventItem[] }) {
   if (events.length === 0) return null
 
   return (
-    <section id="events" className="border-t border-border/40 bg-muted/20 py-12">
+    <section id="events" className="border-t border-border/40 bg-muted/20 py-16 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="mb-8 flex items-end justify-between">
+        <div className="mb-10 flex items-end justify-between">
           <div>
-            <h2 className="font-serif text-2xl font-bold text-foreground">Upcoming Events</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Mark your calendar</p>
+            <span className="mb-2 inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary">
+              Events
+            </span>
+            <h2 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">
+              What's coming up
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">Mark your calendar and register early.</p>
           </div>
         </div>
 
@@ -380,15 +543,18 @@ function DocumentsSection({ documents }: { documents: DocumentItem[] }) {
   }
 
   return (
-    <section id="documents" className="border-t border-border/40 py-12">
+    <section id="documents" className="border-t border-border/40 py-16 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="mb-8 flex items-end justify-between">
+        <div className="mb-10 flex items-end justify-between">
           <div>
-            <h2 className="font-serif text-2xl font-bold text-foreground">
+            <span className="mb-2 inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary">
+              Resources
+            </span>
+            <h2 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">
               Documents & Resources
             </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Access important diocesan documents
+            <p className="mt-2 text-sm text-muted-foreground">
+              Pastoral letters, programmes, guidelines, and more.
             </p>
           </div>
           <Button variant="ghost" size="sm" asChild>
@@ -402,7 +568,7 @@ function DocumentsSection({ documents }: { documents: DocumentItem[] }) {
           {documents.map((doc) => (
             <Card
               key={doc.id}
-              className="group border-border/50 transition-all hover:border-primary/20 hover:shadow-sm"
+              className="group border-border/50 transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md"
             >
               <CardContent className="flex items-center gap-4 p-4">
                 <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
@@ -446,10 +612,16 @@ function DocumentsSection({ documents }: { documents: DocumentItem[] }) {
 
 function AboutSection() {
   return (
-    <section id="about" className="border-t border-border/40 bg-muted/20 py-12">
+    <section id="about" className="border-t border-border/40 bg-muted/20 py-16 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="mb-4 font-serif text-2xl font-bold text-foreground">About DYC</h2>
+          <span className="mb-3 inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary">
+            About DYC
+          </span>
+          <h2 className="mb-6 text-3xl font-black tracking-tight text-foreground sm:text-4xl">
+            Forming young disciples across{" "}
+            <span className="text-primary">the diocese.</span>
+          </h2>
           <p className="mb-4 leading-relaxed text-muted-foreground">
             The Diocesan Youth Council (DYC) of Koforidua is committed to fostering spiritual growth,
             leadership development, and community service among Catholic youth across our diocese.
@@ -460,7 +632,7 @@ function AboutSection() {
           </p>
           <div className="flex flex-wrap justify-center gap-2">
             {["Faith Formation", "Youth Empowerment", "Community Service"].map((item) => (
-              <Badge key={item} variant="secondary" className="px-3 py-1">
+              <Badge key={item} variant="secondary" className="rounded-full px-3 py-1">
                 {item}
               </Badge>
             ))}

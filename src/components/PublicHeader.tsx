@@ -1,10 +1,11 @@
-import { Link } from "@tanstack/react-router"
-import { useState } from "react"
+import { Link, useRouterState } from "@tanstack/react-router"
+import { useEffect, useState } from "react"
 import { Church, Menu, X, LogIn } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { LiturgicalBanner } from "@/components/LiturgicalBanner"
 import { ThemeToggle } from "@/components/ThemeToggle"
+import { cn } from "@/lib/utils"
 
 const navLinks = [
   { label: "News", href: "/news" },
@@ -16,6 +17,15 @@ const navLinks = [
 
 export function PublicHeader() {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8)
+    onScroll()
+    window.addEventListener("scroll", onScroll, { passive: true })
+    return () => window.removeEventListener("scroll", onScroll)
+  }, [])
 
   const today = new Date().toLocaleDateString("en-US", {
     weekday: "long",
@@ -24,89 +34,135 @@ export function PublicHeader() {
     year: "numeric",
   })
 
-  return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-lg">
-      {/* Top info bar */}
-      <div className="hidden border-b border-border/30 bg-muted/30 md:block">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-1.5 text-xs text-muted-foreground sm:px-6">
-          <span>{today}</span>
-          <div className="flex items-center gap-4">
-            <LiturgicalBanner />
-            <Separator orientation="vertical" className="h-3" />
-            <span>Catholic Diocese of Koforidua</span>
-          </div>
-        </div>
-      </div>
+  const isLinkActive = (href: string) =>
+    href === "/" ? pathname === "/" : pathname.startsWith(href)
 
-      {/* Main nav */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="flex h-14 items-center justify-between">
-          <Link to="/" className="flex items-center gap-2.5">
-            <div className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+  return (
+    <>
+      {/* Spacer to offset the fixed navbar */}
+      <div className="h-20" />
+
+      <header className="fixed inset-x-0 top-0 z-50 w-full">
+        {/* Desktop floating pill navbar */}
+        <div
+          className={cn(
+            "relative z-[60] mx-auto mt-3 hidden w-full max-w-7xl items-center justify-between self-start rounded-full border px-4 py-2 transition-all duration-300 lg:flex",
+            scrolled
+              ? "border-border/40 bg-background/80 shadow-sm backdrop-blur-md"
+              : "border-transparent bg-transparent"
+          )}
+          style={{ minWidth: 900 }}
+        >
+          <Link to="/" className="relative z-20 flex items-center gap-2.5 px-2 py-1">
+            <div className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
               <Church className="size-4" />
             </div>
             <div>
-              <p className="text-sm font-bold leading-tight text-foreground">DYC Koforidua</p>
+              <p className="text-sm font-bold leading-tight text-foreground">KOFDYC</p>
               <p className="text-[11px] leading-tight text-muted-foreground">Diocesan Youth Council</p>
             </div>
           </Link>
 
-          <nav className="hidden items-center gap-1 md:flex">
-            {navLinks.map((link) => (
-              <Link
-                key={link.label}
-                to={link.href}
-                className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-              >
-                {link.label}
-              </Link>
-            ))}
+          <nav className="absolute inset-0 hidden flex-1 flex-row items-center justify-center space-x-1 text-sm font-medium lg:flex">
+            {navLinks.map((link) => {
+              const active = isLinkActive(link.href)
+              return (
+                <Link
+                  key={link.label}
+                  to={link.href}
+                  className={cn(
+                    "relative px-4 py-2 transition-colors",
+                    active
+                      ? "font-semibold text-primary"
+                      : "text-muted-foreground hover:text-primary"
+                  )}
+                >
+                  {active ? (
+                    <span className="absolute inset-0 rounded-full bg-primary/10" />
+                  ) : null}
+                  <span className="relative z-20">{link.label}</span>
+                </Link>
+              )
+            })}
           </nav>
 
-          <div className="flex items-center gap-2">
+          <div className="relative z-20 flex items-center gap-2">
+            <LiturgicalBanner />
             <ThemeToggle />
-            <Button asChild size="sm" variant="outline" className="hidden sm:inline-flex">
-              <Link to="/dashboard/login">
-                <LogIn className="mr-1.5 size-3.5" />
-                Admin
-              </Link>
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden"
-              onClick={() => setMobileOpen(!mobileOpen)}
+            <Link
+              to="/dashboard/login"
+              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md"
             >
-              {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
-            </Button>
+              <LogIn className="size-3.5" />
+              Admin
+            </Link>
           </div>
         </div>
-      </div>
 
-      {/* Mobile menu */}
-      {mobileOpen ? (
-        <div className="border-t border-border/40 bg-background px-4 py-3 md:hidden">
-          <nav className="space-y-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.label}
-                to={link.href}
-                onClick={() => setMobileOpen(false)}
-                className="block rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
-          <Separator className="my-3" />
-          <Button asChild variant="outline" size="sm" className="w-full">
-            <Link to="/dashboard/login" onClick={() => setMobileOpen(false)}>
-              <LogIn className="mr-1.5 size-3.5" />
-              Admin Login
+        {/* Mobile bar */}
+        <div className="relative z-50 w-full border-b border-border/40 bg-background/95 px-4 py-3 shadow-sm backdrop-blur lg:hidden">
+          <div className="flex w-full flex-row items-center justify-between">
+            <Link to="/" className="relative z-20 flex items-center gap-2.5">
+              <div className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                <Church className="size-4" />
+              </div>
+              <div>
+                <p className="text-sm font-bold leading-tight text-foreground">KOFDYC</p>
+                <p className="text-[11px] leading-tight text-muted-foreground">Diocesan Youth Council</p>
+              </div>
             </Link>
-          </Button>
+            <div className="flex items-center gap-1">
+              <ThemeToggle />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setMobileOpen(!mobileOpen)}
+                aria-label="Toggle menu"
+              >
+                {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+              </Button>
+            </div>
+          </div>
+
+          {mobileOpen ? (
+            <div className="mt-3 w-full border-t border-border/40 pt-3">
+              <div className="mb-3 flex items-center justify-between text-xs text-muted-foreground">
+                <span>{today}</span>
+                <LiturgicalBanner />
+              </div>
+              <nav className="space-y-1">
+                {navLinks.map((link) => {
+                  const active = isLinkActive(link.href)
+                  return (
+                    <Link
+                      key={link.label}
+                      to={link.href}
+                      onClick={() => setMobileOpen(false)}
+                      className={cn(
+                        "block rounded-full px-4 py-2 text-sm font-medium transition-colors",
+                        active
+                          ? "bg-primary/10 font-semibold text-primary"
+                          : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                      )}
+                    >
+                      {link.label}
+                    </Link>
+                  )
+                })}
+              </nav>
+              <Separator className="my-3" />
+              <Link
+                to="/dashboard/login"
+                onClick={() => setMobileOpen(false)}
+                className="flex w-full items-center justify-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-bold text-primary-foreground transition-all hover:-translate-y-0.5 hover:bg-primary/90"
+              >
+                <LogIn className="size-3.5" />
+                Admin Login
+              </Link>
+            </div>
+          ) : null}
         </div>
-      ) : null}
-    </header>
+      </header>
+    </>
   )
 }

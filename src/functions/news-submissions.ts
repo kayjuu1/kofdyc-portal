@@ -55,13 +55,13 @@ export const submitPublicNews = createServerFn({ method: "POST" })
     if (data.submitterEmail) {
       await sendEmail({
         to: data.submitterEmail,
-        subject: "News Submission Received — DYC Koforidua",
+        subject: "News Submission Received — KOFDYC",
         html: `
           <h2>Thank you for your submission!</h2>
           <p>Dear ${data.submitterName},</p>
           <p>We have received your news story: <strong>${data.title}</strong></p>
           <p>Our editorial team will review your submission and get back to you soon.</p>
-          <p>God bless,<br/>DYC Koforidua Communications</p>
+          <p>God bless,<br/>KOFDYC Communications</p>
         `,
       })
     }
@@ -182,15 +182,15 @@ export const reviewNewsSubmission = createServerFn({ method: "POST" })
       await sendEmail({
         to: sub.submitterEmail,
         subject: isApproved
-          ? "Your News Story Has Been Published — DYC Koforidua"
-          : "Update on Your News Submission — DYC Koforidua",
+          ? "Your News Story Has Been Published — KOFDYC"
+          : "Update on Your News Submission — KOFDYC",
         html: isApproved
           ? `
             <h2>Your story has been published!</h2>
             <p>Dear ${sub.submitterName},</p>
-            <p>We're pleased to inform you that your news story "<strong>${sub.title}</strong>" has been approved and published on the DYC Koforidua portal.</p>
+            <p>We're pleased to inform you that your news story "<strong>${sub.title}</strong>" has been approved and published on the KOFDYC portal.</p>
             <p>Thank you for your contribution!</p>
-            <p>God bless,<br/>DYC Koforidua Communications</p>
+            <p>God bless,<br/>KOFDYC Communications</p>
           `
           : `
             <h2>Update on your submission</h2>
@@ -199,7 +199,7 @@ export const reviewNewsSubmission = createServerFn({ method: "POST" })
             <p>After review, our editorial team was unable to publish it at this time.</p>
             ${data.reviewComment ? `<p><strong>Feedback:</strong> ${data.reviewComment}</p>` : ""}
             <p>You are welcome to submit again in the future.</p>
-            <p>God bless,<br/>DYC Koforidua Communications</p>
+            <p>God bless,<br/>KOFDYC Communications</p>
           `,
       })
     }

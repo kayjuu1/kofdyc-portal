@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 
 export const Route = createFileRoute("/dashboard/login")({
   head: () => ({
-    meta: [{ title: "Admin Login | DYC Koforidua" }],
+    meta: [{ title: "Admin Login | KOFDYC" }],
   }),
   beforeLoad: async () => {
     const session = await getSession()

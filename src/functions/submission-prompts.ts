@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start"
 import { db } from "@/db"
 import { submissionPrompts, submissionPromptFields, programmeResponses } from "@/db/schema"
-import { eq, desc, asc, sql } from "drizzle-orm"
+import { eq, desc, asc, sql, and, or, gt, isNull } from "drizzle-orm"
 import { requireRole, requirePermission } from "@/middleware/role.middleware"
 
 export const getSubmissionPrompts = createServerFn({ method: "GET" })
@@ -36,8 +36,13 @@ export const getSubmissionPromptById = createServerFn({ method: "GET" })
   })
 
 export const getActiveSubmissionPrompt = createServerFn({ method: "GET" }).handler(async () => {
+  const now = new Date().toISOString()
   const activePrompt = await db.query.submissionPrompts.findFirst({
-    where: eq(submissionPrompts.isActive, true),
+    where: and(
+      eq(submissionPrompts.isActive, true),
+      eq(submissionPrompts.isSuspended, false),
+      or(isNull(submissionPrompts.expiresAt), gt(submissionPrompts.expiresAt, now))
+    ),
     with: {
       fields: {
         orderBy: [asc(submissionPromptFields.sortOrder)],
@@ -60,6 +65,8 @@ export const createSubmissionPrompt = createServerFn({ method: "POST" })
         fieldType?: 'text' | 'image' | 'pdf'
       }>
       activate?: boolean
+      expiresAt?: string | null
+      isSuspended?: boolean
     }) => input
   )
   .handler(async ({ data, context }) => {
@@ -73,6 +80,8 @@ export const createSubmissionPrompt = createServerFn({ method: "POST" })
       title: data.title,
       createdBy: context.session.user.id,
       isActive: data.activate ?? false,
+      isSuspended: data.activate ? false : (data.isSuspended ?? false),
+      expiresAt: data.expiresAt ?? null,
       createdAt: now,
       updatedAt: now,
     }).returning()
@@ -107,6 +116,8 @@ export const updateSubmissionPrompt = createServerFn({ method: "POST" })
         fieldType?: 'text' | 'image' | 'pdf'
       }>
       activate?: boolean
+      expiresAt?: string | null
+      isSuspended?: boolean
     }) => input
   )
   .handler(async ({ data }) => {
@@ -135,6 +146,8 @@ export const updateSubmissionPrompt = createServerFn({ method: "POST" })
     await db.update(submissionPrompts).set({
       title: data.title,
       isActive: data.activate ? true : undefined,
+      isSuspended: data.activate ? false : data.isSuspended,
+      expiresAt: data.expiresAt,
       updatedAt: now,
     }).where(eq(submissionPrompts.id, data.id))
 
@@ -150,12 +163,23 @@ export const activateSubmissionPrompt = createServerFn({ method: "POST" })
     // Deactivate all prompts
     await db.update(submissionPrompts).set({ isActive: false })
 
-    // Activate the selected one
+    // Activate the selected one (and clear any prior suspension)
     await db.update(submissionPrompts).set({
       isActive: true,
+      isSuspended: false,
       updatedAt: now,
     }).where(eq(submissionPrompts.id, data.id))
 
+    return { success: true }
+  })
+
+export const setPromptSuspended = createServerFn({ method: "POST" })
+  .middleware([requirePermission("manageSettings")])
+  .inputValidator((input: { id: number; suspended: boolean }) => input)
+  .handler(async ({ data }) => {
+    await db.update(submissionPrompts)
+      .set({ isSuspended: data.suspended, updatedAt: new Date().toISOString() })
+      .where(eq(submissionPrompts.id, data.id))
     return { success: true }
   })
 
@@ -234,8 +258,10 @@ export const submitPublicResponses = createServerFn({ method: "POST" })
       },
     })
 
-    if (!prompt || !prompt.isActive) {
-      throw new Error("No active submission prompt found")
+    const nowIso = new Date().toISOString()
+    const expired = !!(prompt?.expiresAt && prompt.expiresAt <= nowIso)
+    if (!prompt || !prompt.isActive || prompt.isSuspended || expired) {
+      throw new Error("Submissions are closed")
     }
 
     // Validate required fields

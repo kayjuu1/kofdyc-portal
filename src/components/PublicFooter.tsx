@@ -11,8 +11,8 @@ const quickLinks = [
 
 export function PublicFooter() {
   return (
-    <footer className="border-t border-border bg-muted/30">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+    <footer className="border-t border-border bg-slate-900 text-slate-300">
+      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
         <div className="grid gap-8 md:grid-cols-4">
           {/* Branding */}
           <div className="md:col-span-2">
@@ -21,22 +21,22 @@ export function PublicFooter() {
                 <Church className="size-4" />
               </div>
               <div>
-                <p className="text-sm font-bold text-foreground">DYC Koforidua</p>
-                <p className="text-xs text-muted-foreground">Diocesan Youth Council</p>
+                <p className="text-sm font-bold text-white">KOFDYC</p>
+                <p className="text-xs text-slate-400">Diocesan Youth Council</p>
               </div>
             </div>
-            <p className="mb-4 max-w-sm text-sm leading-relaxed text-muted-foreground">
+            <p className="mb-4 max-w-sm text-sm leading-relaxed text-slate-400">
               Fostering spiritual growth, leadership development, and community service among
               Catholic youth across the Diocese of Koforidua.
             </p>
-            <p className="text-xs italic text-muted-foreground/70 font-serif">
+            <p className="font-serif text-xs italic text-slate-500">
               "Go therefore and make disciples of all nations" — Matthew 28:19
             </p>
           </div>
 
           {/* Links */}
           <div>
-            <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-foreground">
+            <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-white">
               Quick Links
             </h4>
             <ul className="space-y-2">
@@ -44,7 +44,7 @@ export function PublicFooter() {
                 <li key={link.label}>
                   <Link
                     to={link.href}
-                    className="text-sm text-muted-foreground transition-colors hover:text-primary"
+                    className="text-sm text-slate-400 transition-colors hover:text-primary"
                   >
                     {link.label}
                   </Link>
@@ -55,10 +55,10 @@ export function PublicFooter() {
 
           {/* Contact */}
           <div>
-            <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-foreground">
+            <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-white">
               Contact
             </h4>
-            <ul className="space-y-2.5 text-sm text-muted-foreground">
+            <ul className="space-y-2.5 text-sm text-slate-400">
               <li className="flex items-start gap-2">
                 <MapPin className="mt-0.5 size-3.5 shrink-0" />
                 <span>St. Joseph's Cathedral, Koforidua, Ghana</span>
@@ -75,9 +75,9 @@ export function PublicFooter() {
           </div>
         </div>
 
-        <Separator className="my-8" />
+        <Separator className="my-8 bg-slate-800" />
 
-        <div className="flex flex-col items-center justify-between gap-3 text-xs text-muted-foreground md:flex-row">
+        <div className="flex flex-col items-center justify-between gap-3 text-xs text-slate-500 md:flex-row">
           <p>&copy; {new Date().getFullYear()} Diocesan Youth Council, Koforidua. All rights reserved.</p>
           <Link to="/dashboard/login" className="transition-colors hover:text-primary">
             Admin Login

@@ -6,7 +6,9 @@ import {
   FileText,
   Loader2,
   MoreHorizontal,
+  PauseCircle,
   Pencil,
+  PlayCircle,
   Plus,
   PowerOff,
   Trash2,
@@ -48,6 +50,7 @@ import {
   getSubmissionPrompts,
   activateSubmissionPrompt,
   deleteSubmissionPrompt,
+  setPromptSuspended,
 } from "@/functions/submission-prompts"
 import { hasPermission, type UserRole } from "@/lib/permissions"
 
@@ -63,6 +66,8 @@ interface Prompt {
   id: number
   title: string
   isActive: boolean
+  isSuspended: boolean
+  expiresAt: string | null
   createdAt: string
   updatedAt: string
   fields: PromptField[]
@@ -103,6 +108,16 @@ function SubmissionPromptsPage() {
     mutationFn: (id: number) => activateSubmissionPrompt({ data: { id } }),
     onSuccess: () => {
       toast.success("Prompt activated")
+      router.invalidate()
+    },
+    onError: (err) => toast.error(err.message),
+  })
+
+  const suspendMutation = useMutation({
+    mutationFn: (vars: { id: number; suspended: boolean }) =>
+      setPromptSuspended({ data: vars }),
+    onSuccess: (_, vars) => {
+      toast.success(vars.suspended ? "Prompt suspended" : "Prompt resumed")
       router.invalidate()
     },
     onError: (err) => toast.error(err.message),
@@ -169,12 +184,16 @@ function SubmissionPromptsPage() {
                   <TableHead>Title</TableHead>
                   <TableHead>Fields</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Expires</TableHead>
                   <TableHead>Last Updated</TableHead>
                   <TableHead className="w-10" />
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {prompts.map((prompt) => (
+                {prompts.map((prompt) => {
+                  const isExpired =
+                    !!prompt.expiresAt && new Date(prompt.expiresAt).getTime() <= Date.now()
+                  return (
                   <TableRow key={prompt.id}>
                     <TableCell className="font-medium">
                       {prompt.title || `Prompt #${prompt.id}`}
@@ -183,9 +202,34 @@ function SubmissionPromptsPage() {
                       {prompt.fields.length} {prompt.fields.length === 1 ? "field" : "fields"}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={prompt.isActive ? "default" : "outline"}>
-                        {prompt.isActive ? "Active" : "Inactive"}
-                      </Badge>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <Badge variant={prompt.isActive ? "default" : "outline"}>
+                          {prompt.isActive ? "Active" : "Inactive"}
+                        </Badge>
+                        {prompt.isSuspended && (
+                          <Badge variant="secondary">Suspended</Badge>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {prompt.expiresAt ? (
+                        <div className="flex items-center gap-1.5">
+                          <span>
+                            {new Date(prompt.expiresAt).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })}
+                          </span>
+                          {isExpired && (
+                            <Badge variant="outline" className="text-muted-foreground">
+                              Expired
+                            </Badge>
+                          )}
+                        </div>
+                      ) : (
+                        <span>—</span>
+                      )}
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {new Date(prompt.updatedAt).toLocaleDateString("en-US", {
@@ -220,6 +264,29 @@ function SubmissionPromptsPage() {
                               Activate
                             </DropdownMenuItem>
                           )}
+                          {prompt.isActive && (
+                            <DropdownMenuItem
+                              onClick={() =>
+                                suspendMutation.mutate({
+                                  id: prompt.id,
+                                  suspended: !prompt.isSuspended,
+                                })
+                              }
+                              disabled={suspendMutation.isPending}
+                            >
+                              {prompt.isSuspended ? (
+                                <>
+                                  <PlayCircle className="mr-2 size-4" />
+                                  Resume
+                                </>
+                              ) : (
+                                <>
+                                  <PauseCircle className="mr-2 size-4" />
+                                  Suspend
+                                </>
+                              )}
+                            </DropdownMenuItem>
+                          )}
                           <DropdownMenuItem
                             className="text-destructive focus:text-destructive"
                             onClick={() => setDeleteTarget(prompt)}
@@ -231,7 +298,8 @@ function SubmissionPromptsPage() {
                       </DropdownMenu>
                     </TableCell>
                   </TableRow>
-                ))}
+                  )
+                })}
               </TableBody>
             </Table>
           )}

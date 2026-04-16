@@ -137,7 +137,7 @@ function AppLayout() {
                     <Church className="size-4" />
                   </div>
                   <div className="grid flex-1 text-left leading-tight group-data-[collapsible=icon]:hidden">
-                    <span className="text-sm font-semibold">DYC Koforidua</span>
+                    <span className="text-sm font-semibold">KOFDYC</span>
                     <span className="text-xs text-muted-foreground">Youth Portal</span>
                   </div>
                 </Link>
