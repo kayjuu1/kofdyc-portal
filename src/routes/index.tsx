@@ -17,6 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { PublicHeader } from "@/components/PublicHeader"
 import { PublicFooter } from "@/components/PublicFooter"
+import LiturgicalBanner from "@/components/liturgical-banner/LiturgicalBanner"
 import { NewsCard } from "@/components/NewsCard"
 import { EventCard } from "@/components/EventCard"
 import { ScopeFilter } from "@/components/ScopeFilter"
@@ -103,6 +104,7 @@ function HomePage() {
     <div className="min-h-screen bg-background">
       <PublicHeader />
       <main>
+        <LiturgicalBanner />
         <DarkHero
           newsCount={news.total ?? articles.length}
           eventsCount={eventList.length}
@@ -132,7 +134,7 @@ function DarkHero({
   docsCount: number
 }) {
   return (
-    <section className="relative -mt-20 flex w-full items-center justify-center overflow-hidden bg-slate-900">
+    <section className="relative flex w-full items-center justify-center overflow-hidden bg-slate-900">
       {/* Light rays backdrop */}
       <div
         className="pointer-events-none absolute inset-0 isolate overflow-hidden"
