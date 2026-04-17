@@ -45,6 +45,8 @@ CREATE TABLE `chaplain_conversations` (
 	`alias` text(20) NOT NULL,
 	`is_anonymous` integer DEFAULT true NOT NULL,
 	`status` text DEFAULT 'active' NOT NULL,
+	`member_typing_at` text,
+	`chaplain_typing_at` text,
 	`created_at` text DEFAULT 'CURRENT_TIMESTAMP' NOT NULL,
 	`updated_at` text DEFAULT 'CURRENT_TIMESTAMP' NOT NULL,
 	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action
@@ -55,8 +57,11 @@ CREATE TABLE `chaplain_messages` (
 	`conversation_id` integer NOT NULL,
 	`sender_role` text NOT NULL,
 	`body` text NOT NULL,
+	`attachments` text,
 	`sent_at` text DEFAULT 'CURRENT_TIMESTAMP' NOT NULL,
 	`read_at` text,
+	`edited_at` text,
+	`deleted_at` text,
 	FOREIGN KEY (`conversation_id`) REFERENCES `chaplain_conversations`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
@@ -308,6 +313,8 @@ CREATE TABLE `submission_prompts` (
 	`title` text DEFAULT '' NOT NULL,
 	`created_by` text,
 	`is_active` integer DEFAULT false NOT NULL,
+	`is_suspended` integer DEFAULT false NOT NULL,
+	`expires_at` text,
 	`created_at` text DEFAULT 'CURRENT_TIMESTAMP' NOT NULL,
 	`updated_at` text DEFAULT 'CURRENT_TIMESTAMP' NOT NULL,
 	FOREIGN KEY (`created_by`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action

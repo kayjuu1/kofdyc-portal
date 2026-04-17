@@ -318,6 +318,8 @@ export const chaplainConversations = sqliteTable('chaplain_conversations', {
   status: text('status', {
     enum: ['active', 'resolved']
   }).notNull().default('active'),
+  memberTypingAt: text('member_typing_at'),
+  chaplainTypingAt: text('chaplain_typing_at'),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
   updatedAt: text('updated_at').notNull().default('CURRENT_TIMESTAMP'),
 })
@@ -341,8 +343,11 @@ export const chaplainMessages = sqliteTable('chaplain_messages', {
     enum: ['member', 'chaplain']
   }).notNull(),
   body: text('body').notNull(),
+  attachments: text('attachments'),
   sentAt: text('sent_at').notNull().default('CURRENT_TIMESTAMP'),
   readAt: text('read_at'),
+  editedAt: text('edited_at'),
+  deletedAt: text('deleted_at'),
 })
 
 export const payments = sqliteTable('payments', {

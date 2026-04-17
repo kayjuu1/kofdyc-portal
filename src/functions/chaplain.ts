@@ -6,17 +6,43 @@ import {
   chaplainMessages,
   user,
 } from "@/db/schema"
-import { and, desc, eq, isNull, sql } from "drizzle-orm"
+import { and, desc, eq, gt, isNull, sql } from "drizzle-orm"
 import { requirePermission } from "@/middleware/role.middleware"
 import { logAudit } from "@/functions/audit"
 import { sendEmail } from "@/lib/resend"
+import { auth } from "@/lib/auth"
+import { hasPermission, canonicalizeRole } from "@/lib/permissions"
+import { getRequest } from "@tanstack/react-start/server"
 import { env } from "cloudflare:workers"
 
 const ACCESS_TOKEN_TTL_DAYS = 30
+const EDIT_WINDOW_MS = 15 * 60 * 1000 // 15 minutes
+
+export type ChatAttachment = {
+  key: string
+  filename: string
+  size: number
+  mimeType: string
+}
+
+export type ChatMessage = {
+  id: number
+  senderRole: "member" | "chaplain"
+  body: string
+  attachments: ChatAttachment[] | null
+  sentAt: string
+  readAt: string | null
+  editedAt: string | null
+}
 
 type PublicConversationAccess = {
   conversationId: number
   email: string
+}
+
+export type CallerIdentity = {
+  conversationId: number
+  senderRole: "member" | "chaplain"
 }
 
 function validateMessage(body: string, fieldName = "Message") {
@@ -168,7 +194,7 @@ async function issueMagicLink(params: {
   return { link }
 }
 
-async function resolveConversationAccess(token: string): Promise<PublicConversationAccess> {
+export async function resolveConversationAccess(token: string): Promise<PublicConversationAccess> {
   const [selector, validator] = token.split(".")
   if (!selector || !validator) {
     throw new Error("This chat link is invalid.")
@@ -210,6 +236,36 @@ async function resolveConversationAccess(token: string): Promise<PublicConversat
   }
 }
 
+/**
+ * Dual-auth helper: resolves caller identity from either a token (anonymous member)
+ * or session cookie (chaplain). Used by edit/delete/typing/SSE.
+ */
+export async function resolveCallerIdentity(
+  request: Request,
+  tokenParam?: string | null,
+): Promise<CallerIdentity> {
+  // Try token-based auth first (anonymous member)
+  if (tokenParam) {
+    const access = await resolveConversationAccess(tokenParam)
+    return { conversationId: access.conversationId, senderRole: "member" }
+  }
+
+  // Fall back to session-based auth (chaplain)
+  const session = await auth.api.getSession({ headers: request.headers })
+  if (!session) {
+    throw new Error("Unauthorized")
+  }
+
+  const rawRole = (session.user as { role?: string }).role
+  const userRole = canonicalizeRole(rawRole)
+  if (!userRole || !hasPermission(userRole, "manageChaplainInbox")) {
+    throw new Error("Forbidden")
+  }
+
+  // For chaplain, conversationId must come from the caller
+  return { conversationId: 0, senderRole: "chaplain" }
+}
+
 async function getConversationById(conversationId: number) {
   const [conversation] = await db
     .select({
@@ -239,23 +295,148 @@ async function markMessagesAsRead(conversationId: number, senderRole: "member" |
         eq(chaplainMessages.conversationId, conversationId),
         eq(chaplainMessages.senderRole, senderRole),
         isNull(chaplainMessages.readAt),
+        isNull(chaplainMessages.deletedAt),
       ),
     )
 }
 
-async function getConversationMessages(conversationId: number) {
-  return db
+function parseAttachments(raw: string | null): ChatAttachment[] | null {
+  if (!raw) return null
+  try {
+    return JSON.parse(raw)
+  } catch {
+    return null
+  }
+}
+
+async function getConversationMessages(conversationId: number): Promise<ChatMessage[]> {
+  const rows = await db
     .select({
       id: chaplainMessages.id,
       senderRole: chaplainMessages.senderRole,
       body: chaplainMessages.body,
+      attachments: chaplainMessages.attachments,
       sentAt: chaplainMessages.sentAt,
       readAt: chaplainMessages.readAt,
+      editedAt: chaplainMessages.editedAt,
     })
     .from(chaplainMessages)
-    .where(eq(chaplainMessages.conversationId, conversationId))
+    .where(
+      and(
+        eq(chaplainMessages.conversationId, conversationId),
+        isNull(chaplainMessages.deletedAt),
+      ),
+    )
     .orderBy(chaplainMessages.sentAt)
+
+  return rows.map((r) => ({
+    ...r,
+    senderRole: r.senderRole as "member" | "chaplain",
+    attachments: parseAttachments(r.attachments),
+  }))
 }
+
+/**
+ * Fetch new/edited/deleted messages since lastMessageId and lastPollTime.
+ * Used by the SSE endpoint.
+ */
+export async function getMessageUpdates(
+  conversationId: number,
+  lastMessageId: number,
+  lastPollTime: string,
+) {
+  // New messages
+  const newMessages = await db
+    .select({
+      id: chaplainMessages.id,
+      senderRole: chaplainMessages.senderRole,
+      body: chaplainMessages.body,
+      attachments: chaplainMessages.attachments,
+      sentAt: chaplainMessages.sentAt,
+      readAt: chaplainMessages.readAt,
+      editedAt: chaplainMessages.editedAt,
+    })
+    .from(chaplainMessages)
+    .where(
+      and(
+        eq(chaplainMessages.conversationId, conversationId),
+        gt(chaplainMessages.id, lastMessageId),
+        isNull(chaplainMessages.deletedAt),
+      ),
+    )
+    .orderBy(chaplainMessages.sentAt)
+
+  // Edits on previously seen messages
+  const editedMessages = lastMessageId > 0
+    ? await db
+        .select({
+          id: chaplainMessages.id,
+          body: chaplainMessages.body,
+          attachments: chaplainMessages.attachments,
+          editedAt: chaplainMessages.editedAt,
+        })
+        .from(chaplainMessages)
+        .where(
+          and(
+            eq(chaplainMessages.conversationId, conversationId),
+            sql`${chaplainMessages.id} <= ${lastMessageId}`,
+            gt(chaplainMessages.editedAt, lastPollTime),
+            isNull(chaplainMessages.deletedAt),
+          ),
+        )
+    : []
+
+  // Deletes on previously seen messages
+  const deletedMessages = lastMessageId > 0
+    ? await db
+        .select({ id: chaplainMessages.id })
+        .from(chaplainMessages)
+        .where(
+          and(
+            eq(chaplainMessages.conversationId, conversationId),
+            sql`${chaplainMessages.id} <= ${lastMessageId}`,
+            gt(chaplainMessages.deletedAt, lastPollTime),
+          ),
+        )
+    : []
+
+  return {
+    newMessages: newMessages.map((r) => ({
+      ...r,
+      senderRole: r.senderRole as "member" | "chaplain",
+      attachments: parseAttachments(r.attachments),
+    })),
+    editedMessages: editedMessages.map((r) => ({
+      ...r,
+      attachments: parseAttachments(r.attachments),
+    })),
+    deletedMessages,
+  }
+}
+
+/**
+ * Check typing status of the other party.
+ */
+export async function getTypingStatus(conversationId: number, myRole: "member" | "chaplain") {
+  const [conv] = await db
+    .select({
+      memberTypingAt: chaplainConversations.memberTypingAt,
+      chaplainTypingAt: chaplainConversations.chaplainTypingAt,
+    })
+    .from(chaplainConversations)
+    .where(eq(chaplainConversations.id, conversationId))
+    .limit(1)
+
+  if (!conv) return false
+
+  const otherTypingAt = myRole === "member" ? conv.chaplainTypingAt : conv.memberTypingAt
+  if (!otherTypingAt) return false
+
+  // Typing indicator expires after 4 seconds
+  return Date.now() - new Date(otherTypingAt).getTime() < 4000
+}
+
+// ─── Server Functions ───────────────────────────────────────────────
 
 export const startAnonymousConversation = createServerFn({ method: "POST" })
   .inputValidator((input: { email: string; message: string }) => ({
@@ -335,26 +516,29 @@ export const getPublicMessages = createServerFn({ method: "GET" })
   })
 
 export const sendPublicMessage = createServerFn({ method: "POST" })
-  .inputValidator((input: { token: string; body: string }) => ({
+  .inputValidator((input: { token: string; body: string; attachments?: string }) => ({
     token: input.token,
     body: validateMessage(input.body),
+    attachments: input.attachments,
   }))
   .handler(async ({ data }) => {
     const access = await resolveConversationAccess(data.token)
     const now = new Date().toISOString()
 
-    await db.insert(chaplainMessages).values({
+    const [message] = await db.insert(chaplainMessages).values({
       conversationId: access.conversationId,
       senderRole: "member",
       body: data.body,
+      attachments: data.attachments ?? null,
       sentAt: now,
-    })
+    }).returning()
 
     await db
       .update(chaplainConversations)
       .set({
         status: "active",
         updatedAt: now,
+        memberTypingAt: null,
       })
       .where(eq(chaplainConversations.id, access.conversationId))
 
@@ -364,7 +548,7 @@ export const sendPublicMessage = createServerFn({ method: "POST" })
       resourceId: String(access.conversationId),
     })
 
-    return { success: true }
+    return { success: true, messageId: message.id }
   })
 
 export const resendConversationAccessLink = createServerFn({ method: "POST" })
@@ -416,10 +600,16 @@ export const getChaplainConversations = createServerFn({ method: "GET" })
         const [latestMessage] = await db
           .select({
             body: chaplainMessages.body,
+            attachments: chaplainMessages.attachments,
             sentAt: chaplainMessages.sentAt,
           })
           .from(chaplainMessages)
-          .where(eq(chaplainMessages.conversationId, conversation.id))
+          .where(
+            and(
+              eq(chaplainMessages.conversationId, conversation.id),
+              isNull(chaplainMessages.deletedAt),
+            ),
+          )
           .orderBy(desc(chaplainMessages.sentAt))
           .limit(1)
 
@@ -431,13 +621,17 @@ export const getChaplainConversations = createServerFn({ method: "GET" })
               eq(chaplainMessages.conversationId, conversation.id),
               eq(chaplainMessages.senderRole, "member"),
               isNull(chaplainMessages.readAt),
+              isNull(chaplainMessages.deletedAt),
             ),
           )
+
+        const hasAttachments = latestMessage?.attachments ? true : false
 
         return {
           ...conversation,
           displayName: conversation.alias,
           latestMessagePreview: latestMessage?.body?.slice(0, 80) ?? "",
+          hasAttachments,
           unreadCount: unreadCount?.count ?? 0,
         }
       }),
@@ -466,9 +660,10 @@ export const getChaplainMessages = createServerFn({ method: "GET" })
 
 export const sendChaplainMessage = createServerFn({ method: "POST" })
   .middleware([requirePermission("manageChaplainInbox")])
-  .inputValidator((input: { conversationId: number; body: string }) => ({
+  .inputValidator((input: { conversationId: number; body: string; attachments?: string }) => ({
     conversationId: input.conversationId,
     body: validateMessage(input.body),
+    attachments: input.attachments,
   }))
   .handler(async ({ data, context }) => {
     await getConversationById(data.conversationId)
@@ -480,6 +675,7 @@ export const sendChaplainMessage = createServerFn({ method: "POST" })
         conversationId: data.conversationId,
         senderRole: "chaplain",
         body: data.body,
+        attachments: data.attachments ?? null,
         sentAt: now,
       })
       .returning()
@@ -489,6 +685,7 @@ export const sendChaplainMessage = createServerFn({ method: "POST" })
       .set({
         status: "active",
         updatedAt: now,
+        chaplainTypingAt: null,
       })
       .where(eq(chaplainConversations.id, data.conversationId))
 
@@ -500,6 +697,120 @@ export const sendChaplainMessage = createServerFn({ method: "POST" })
     })
 
     return message
+  })
+
+export const editMessage = createServerFn({ method: "POST" })
+  .inputValidator((input: {
+    messageId: number
+    body: string
+    token?: string
+    conversationId?: number
+  }) => ({
+    messageId: input.messageId,
+    body: validateMessage(input.body),
+    token: input.token,
+    conversationId: input.conversationId,
+  }))
+  .handler(async ({ data }) => {
+    const identity = await resolveCallerIdentity(getRequest(), data.token)
+    const convId = identity.senderRole === "member"
+      ? identity.conversationId
+      : data.conversationId
+
+    if (!convId) throw new Error("Conversation ID required.")
+
+    const [msg] = await db
+      .select({
+        id: chaplainMessages.id,
+        senderRole: chaplainMessages.senderRole,
+        conversationId: chaplainMessages.conversationId,
+        sentAt: chaplainMessages.sentAt,
+        deletedAt: chaplainMessages.deletedAt,
+      })
+      .from(chaplainMessages)
+      .where(eq(chaplainMessages.id, data.messageId))
+      .limit(1)
+
+    if (!msg || msg.deletedAt) throw new Error("Message not found.")
+    if (msg.conversationId !== convId) throw new Error("Message not in this conversation.")
+    if (msg.senderRole !== identity.senderRole) throw new Error("You can only edit your own messages.")
+
+    const sentTime = new Date(msg.sentAt).getTime()
+    if (Date.now() - sentTime > EDIT_WINDOW_MS) {
+      throw new Error("Messages can only be edited within 15 minutes of sending.")
+    }
+
+    const now = new Date().toISOString()
+    await db
+      .update(chaplainMessages)
+      .set({ body: data.body, editedAt: now })
+      .where(eq(chaplainMessages.id, data.messageId))
+
+    return { success: true }
+  })
+
+export const deleteMessage = createServerFn({ method: "POST" })
+  .inputValidator((input: {
+    messageId: number
+    token?: string
+    conversationId?: number
+  }) => input)
+  .handler(async ({ data }) => {
+    const identity = await resolveCallerIdentity(getRequest(), data.token)
+    const convId = identity.senderRole === "member"
+      ? identity.conversationId
+      : data.conversationId
+
+    if (!convId) throw new Error("Conversation ID required.")
+
+    const [msg] = await db
+      .select({
+        id: chaplainMessages.id,
+        senderRole: chaplainMessages.senderRole,
+        conversationId: chaplainMessages.conversationId,
+        deletedAt: chaplainMessages.deletedAt,
+      })
+      .from(chaplainMessages)
+      .where(eq(chaplainMessages.id, data.messageId))
+      .limit(1)
+
+    if (!msg || msg.deletedAt) throw new Error("Message not found.")
+    if (msg.conversationId !== convId) throw new Error("Message not in this conversation.")
+    if (msg.senderRole !== identity.senderRole) throw new Error("You can only delete your own messages.")
+
+    const now = new Date().toISOString()
+    await db
+      .update(chaplainMessages)
+      .set({ deletedAt: now })
+      .where(eq(chaplainMessages.id, data.messageId))
+
+    return { success: true }
+  })
+
+export const reportTyping = createServerFn({ method: "POST" })
+  .inputValidator((input: {
+    token?: string
+    conversationId?: number
+  }) => input)
+  .handler(async ({ data }) => {
+    const identity = await resolveCallerIdentity(getRequest(), data.token)
+    const convId = identity.senderRole === "member"
+      ? identity.conversationId
+      : data.conversationId
+
+    if (!convId) throw new Error("Conversation ID required.")
+
+    const now = new Date().toISOString()
+    const field = identity.senderRole === "member"
+      ? { memberTypingAt: now }
+      : { chaplainTypingAt: now }
+
+    await db
+      .update(chaplainConversations)
+      .set(field)
+      .where(eq(chaplainConversations.id, convId))
+
+    return { success: true }
   })
 
 export const updateConversationStatus = createServerFn({ method: "POST" })
@@ -540,6 +851,7 @@ export const getChaplainStats = createServerFn({ method: "GET" })
           and(
             eq(chaplainMessages.senderRole, "member"),
             isNull(chaplainMessages.readAt),
+            isNull(chaplainMessages.deletedAt),
           ),
         ),
     ])

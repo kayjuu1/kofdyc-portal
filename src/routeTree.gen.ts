@@ -33,6 +33,8 @@ import { Route as EventsIdIndexRouteImport } from './routes/events/$id/index'
 import { Route as AppDashboardIndexRouteImport } from './routes/_app/dashboard/index'
 import { Route as EventsIdCancelRouteImport } from './routes/events/$id/cancel'
 import { Route as ApiMediaSplatRouteImport } from './routes/api/media/$'
+import { Route as ApiChatUploadRouteImport } from './routes/api/chat/upload'
+import { Route as ApiChatSseRouteImport } from './routes/api/chat/sse'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AppDashboardNewsRouteImport } from './routes/_app/dashboard/news'
 import { Route as AppDashboardSubmissionPromptsIndexRouteImport } from './routes/_app/dashboard/submission-prompts/index'
@@ -174,6 +176,16 @@ const EventsIdCancelRoute = EventsIdCancelRouteImport.update({
 const ApiMediaSplatRoute = ApiMediaSplatRouteImport.update({
   id: '/api/media/$',
   path: '/api/media/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiChatUploadRoute = ApiChatUploadRouteImport.update({
+  id: '/api/chat/upload',
+  path: '/api/chat/upload',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiChatSseRoute = ApiChatSseRouteImport.update({
+  id: '/api/chat/sse',
+  path: '/api/chat/sse',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
@@ -329,6 +341,8 @@ export interface FileRoutesByFullPath {
   '/programmes/': typeof ProgrammesIndexRoute
   '/dashboard/news': typeof AppDashboardNewsRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/chat/sse': typeof ApiChatSseRoute
+  '/api/chat/upload': typeof ApiChatUploadRoute
   '/api/media/$': typeof ApiMediaSplatRoute
   '/events/$id/cancel': typeof EventsIdCancelRoute
   '/dashboard/': typeof AppDashboardIndexRoute
@@ -376,6 +390,8 @@ export interface FileRoutesByTo {
   '/news': typeof NewsIndexRoute
   '/programmes': typeof ProgrammesIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/chat/sse': typeof ApiChatSseRoute
+  '/api/chat/upload': typeof ApiChatUploadRoute
   '/api/media/$': typeof ApiMediaSplatRoute
   '/events/$id/cancel': typeof EventsIdCancelRoute
   '/dashboard': typeof AppDashboardIndexRoute
@@ -426,6 +442,8 @@ export interface FileRoutesById {
   '/programmes/': typeof ProgrammesIndexRoute
   '/_app/dashboard/news': typeof AppDashboardNewsRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/chat/sse': typeof ApiChatSseRoute
+  '/api/chat/upload': typeof ApiChatUploadRoute
   '/api/media/$': typeof ApiMediaSplatRoute
   '/events/$id/cancel': typeof EventsIdCancelRoute
   '/_app/dashboard/': typeof AppDashboardIndexRoute
@@ -476,6 +494,8 @@ export interface FileRouteTypes {
     | '/programmes/'
     | '/dashboard/news'
     | '/api/auth/$'
+    | '/api/chat/sse'
+    | '/api/chat/upload'
     | '/api/media/$'
     | '/events/$id/cancel'
     | '/dashboard/'
@@ -523,6 +543,8 @@ export interface FileRouteTypes {
     | '/news'
     | '/programmes'
     | '/api/auth/$'
+    | '/api/chat/sse'
+    | '/api/chat/upload'
     | '/api/media/$'
     | '/events/$id/cancel'
     | '/dashboard'
@@ -572,6 +594,8 @@ export interface FileRouteTypes {
     | '/programmes/'
     | '/_app/dashboard/news'
     | '/api/auth/$'
+    | '/api/chat/sse'
+    | '/api/chat/upload'
     | '/api/media/$'
     | '/events/$id/cancel'
     | '/_app/dashboard/'
@@ -621,6 +645,8 @@ export interface RootRouteChildren {
   NewsIndexRoute: typeof NewsIndexRoute
   ProgrammesIndexRoute: typeof ProgrammesIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiChatSseRoute: typeof ApiChatSseRoute
+  ApiChatUploadRoute: typeof ApiChatUploadRoute
   ApiMediaSplatRoute: typeof ApiMediaSplatRoute
   EventsIdCancelRoute: typeof EventsIdCancelRoute
   EventsIdIndexRoute: typeof EventsIdIndexRoute
@@ -794,6 +820,20 @@ declare module '@tanstack/react-router' {
       path: '/api/media/$'
       fullPath: '/api/media/$'
       preLoaderRoute: typeof ApiMediaSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/chat/upload': {
+      id: '/api/chat/upload'
+      path: '/api/chat/upload'
+      fullPath: '/api/chat/upload'
+      preLoaderRoute: typeof ApiChatUploadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/chat/sse': {
+      id: '/api/chat/sse'
+      path: '/api/chat/sse'
+      fullPath: '/api/chat/sse'
+      preLoaderRoute: typeof ApiChatSseRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/auth/$': {
@@ -1049,6 +1089,8 @@ const rootRouteChildren: RootRouteChildren = {
   NewsIndexRoute: NewsIndexRoute,
   ProgrammesIndexRoute: ProgrammesIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiChatSseRoute: ApiChatSseRoute,
+  ApiChatUploadRoute: ApiChatUploadRoute,
   ApiMediaSplatRoute: ApiMediaSplatRoute,
   EventsIdCancelRoute: EventsIdCancelRoute,
   EventsIdIndexRoute: EventsIdIndexRoute,

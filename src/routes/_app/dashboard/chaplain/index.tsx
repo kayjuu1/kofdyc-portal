@@ -1,6 +1,6 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router"
 import { useState } from "react"
-import { MessageSquare, Clock, CheckCircle } from "lucide-react"
+import { MessageSquare, Clock, CheckCircle, Paperclip } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
@@ -108,7 +108,10 @@ function ChaplainPage() {
                       )}
                     </div>
                     {conv.latestMessagePreview && (
-                      <p className="text-sm text-muted-foreground truncate mt-1">{conv.latestMessagePreview}</p>
+                      <p className="text-sm text-muted-foreground truncate mt-1 flex items-center gap-1">
+                        {conv.hasAttachments && <Paperclip className="w-3 h-3 shrink-0" />}
+                        {conv.latestMessagePreview}
+                      </p>
                     )}
                     <p className="text-xs text-muted-foreground mt-0.5">
                       Updated {new Date(conv.updatedAt).toLocaleDateString()}

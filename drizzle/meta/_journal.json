@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1776292853553,
-      "tag": "0000_futuristic_avengers",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1776335184281,
-      "tag": "0001_right_infant_terrible",
+      "when": 1776388383561,
+      "tag": "0000_friendly_mandroid",
       "breakpoints": true
     }
   ]

@@ -1,18 +1,25 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router"
-import { useState, useEffect, useRef } from "react"
-import { ArrowLeft, Send, CheckCircle, XCircle } from "lucide-react"
+import { useEffect, useRef, useCallback } from "react"
+import { ArrowLeft, CheckCircle, XCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
 import {
   getChaplainMessages,
   sendChaplainMessage,
   updateConversationStatus,
+  editMessage,
+  deleteMessage,
+  reportTyping,
 } from "@/functions/chaplain"
-import { useMutation, useQuery } from "@tanstack/react-query"
+import type { ChatAttachment } from "@/functions/chaplain"
+import { useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { hasPermission, type UserRole } from "@/lib/permissions"
+import { useSSEChat } from "@/components/chat/useSSEChat"
+import { ChatMessageBubble } from "@/components/chat/ChatMessageBubble"
+import { ChatInput } from "@/components/chat/ChatInput"
+import { ChatTypingIndicator } from "@/components/chat/ChatTypingIndicator"
 
 export const Route = createFileRoute("/_app/dashboard/chaplain/$id")({
   beforeLoad: ({ context }) => {
@@ -30,50 +37,73 @@ export const Route = createFileRoute("/_app/dashboard/chaplain/$id")({
 function ChatPage() {
   const initialData = Route.useLoaderData()
   const { id } = Route.useParams()
-  const [newMessage, setNewMessage] = useState("")
+  const conversationId = parseInt(id)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const conversation = initialData.conversation
 
-  const { data } = useQuery({
-    queryKey: ["chaplain-messages", id],
-    queryFn: () => getChaplainMessages({ data: { conversationId: parseInt(id) } }),
-    initialData,
-    refetchInterval: 5000,
+  const { messages, isOtherTyping } = useSSEChat({
+    conversationId,
+    initialMessages: initialData.messages,
   })
-
-  const messages = data.messages
-  const conversation = data.conversation
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages.length])
+  }, [messages.length, isOtherTyping])
 
   const sendMutation = useMutation({
-    mutationFn: (body: string) =>
-      sendChaplainMessage({ data: { conversationId: parseInt(id), body } }),
-    onSuccess: () => {
-      setNewMessage("")
-    },
+    mutationFn: (params: { body: string; attachments?: string }) =>
+      sendChaplainMessage({
+        data: { conversationId, body: params.body, attachments: params.attachments },
+      }),
     onError: (err) => toast.error(err instanceof Error ? err.message : "Unable to send message."),
+  })
+
+  const editMutation = useMutation({
+    mutationFn: (params: { messageId: number; body: string }) =>
+      editMessage({ data: { messageId: params.messageId, body: params.body, conversationId } }),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Unable to edit message."),
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: (messageId: number) =>
+      deleteMessage({ data: { messageId, conversationId } }),
+    onError: (err) =>
+      toast.error(err instanceof Error ? err.message : "Unable to delete message."),
   })
 
   const statusMutation = useMutation({
     mutationFn: (status: "active" | "resolved") =>
-      updateConversationStatus({ data: { conversationId: parseInt(id), status } }),
+      updateConversationStatus({ data: { conversationId, status } }),
     onSuccess: () => toast.success("Status updated"),
-    onError: (err) => toast.error(err instanceof Error ? err.message : "Unable to update status."),
+    onError: (err) =>
+      toast.error(err instanceof Error ? err.message : "Unable to update status."),
   })
 
-  const handleSend = () => {
-    if (!newMessage.trim()) return
-    sendMutation.mutate(newMessage.trim())
-  }
+  const handleSend = useCallback(
+    (body: string, attachments: ChatAttachment[]) => {
+      const attachmentsJson = attachments.length > 0 ? JSON.stringify(attachments) : undefined
+      sendMutation.mutate({ body, attachments: attachmentsJson })
+    },
+    [sendMutation],
+  )
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
-      handleSend()
-    }
-  }
+  const handleTyping = useCallback(() => {
+    reportTyping({ data: { conversationId } }).catch(() => {})
+  }, [conversationId])
+
+  const handleEdit = useCallback(
+    (messageId: number, newBody: string) => {
+      editMutation.mutate({ messageId, body: newBody })
+    },
+    [editMutation],
+  )
+
+  const handleDelete = useCallback(
+    (messageId: number) => {
+      deleteMutation.mutate(messageId)
+    },
+    [deleteMutation],
+  )
 
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)] max-w-3xl mx-auto">
@@ -117,36 +147,17 @@ function ChatPage() {
       </div>
 
       <div className="flex-1 overflow-y-auto space-y-3 pb-4">
-        {messages.map((msg) => {
-          const isMine = msg.senderRole === "chaplain"
-
-          return (
-            <div
-              key={msg.id}
-              className={`flex ${isMine ? "justify-end" : "justify-start"}`}
-            >
-              <div
-                className={`max-w-[75%] rounded-lg px-4 py-2.5 ${
-                  isMine
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-foreground"
-                }`}
-              >
-                <p className="text-sm whitespace-pre-wrap">{msg.body}</p>
-                <p
-                  className={`text-[10px] mt-1 ${
-                    isMine ? "text-primary-foreground/70" : "text-muted-foreground"
-                  }`}
-                >
-                  {new Date(msg.sentAt).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </p>
-              </div>
-            </div>
-          )
-        })}
+        {messages.map((msg) => (
+          <ChatMessageBubble
+            key={msg.id}
+            message={msg}
+            isMine={msg.senderRole === "chaplain"}
+            senderLabel={msg.senderRole === "chaplain" ? "You" : conversation.alias}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
+        ))}
+        {isOtherTyping && <ChatTypingIndicator name={conversation.alias} />}
         <div ref={messagesEndRef} />
       </div>
 
@@ -158,23 +169,12 @@ function ChatPage() {
             </CardContent>
           </Card>
         )}
-        <div className="flex gap-2">
-          <Textarea
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Reply to this anonymous conversation..."
-            rows={2}
-            className="flex-1 resize-none"
-          />
-          <Button
-            onClick={handleSend}
-            disabled={!newMessage.trim() || sendMutation.isPending}
-            className="self-end"
-          >
-            <Send className="w-4 h-4" />
-          </Button>
-        </div>
+        <ChatInput
+          onSend={handleSend}
+          onTyping={handleTyping}
+          disabled={sendMutation.isPending}
+          placeholder="Reply to this anonymous conversation..."
+        />
       </div>
     </div>
   )

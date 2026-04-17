@@ -1,20 +1,27 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
-import { useEffect, useRef, useState } from "react"
-import { useMutation, useQuery } from "@tanstack/react-query"
-import { ArrowLeft, RefreshCw, Send } from "lucide-react"
+import { useEffect, useRef, useCallback } from "react"
+import { useMutation } from "@tanstack/react-query"
+import { ArrowLeft, RefreshCw } from "lucide-react"
 import { toast } from "sonner"
 import { PublicHeader } from "@/components/PublicHeader"
 import { PublicFooter } from "@/components/PublicFooter"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Textarea } from "@/components/ui/textarea"
 import {
   getPublicConversation,
   getPublicMessages,
   resendConversationAccessLink,
   sendPublicMessage,
+  editMessage,
+  deleteMessage,
+  reportTyping,
 } from "@/functions/chaplain"
+import type { ChatAttachment } from "@/functions/chaplain"
+import { useSSEChat } from "@/components/chat/useSSEChat"
+import { ChatMessageBubble } from "@/components/chat/ChatMessageBubble"
+import { ChatInput } from "@/components/chat/ChatInput"
+import { ChatTypingIndicator } from "@/components/chat/ChatTypingIndicator"
 
 export const Route = createFileRoute("/chaplain-chat/$token")({
   loader: async ({ params }) => {
@@ -56,38 +63,40 @@ export const Route = createFileRoute("/chaplain-chat/$token")({
 function PublicChaplainChatPage() {
   const initialData = Route.useLoaderData()
   const { token } = Route.useParams()
-  const [message, setMessage] = useState("")
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const conversation = initialData.conversation
 
-  const conversationQuery = useQuery({
-    queryKey: ["public-chaplain-conversation", token],
-    queryFn: () => getPublicConversation({ data: { token } }),
-    initialData: { conversation: initialData.conversation },
-    refetchInterval: 5000,
-  })
-
-  const messagesQuery = useQuery({
-    queryKey: ["public-chaplain-messages", token],
-    queryFn: () => getPublicMessages({ data: { token } }),
-    initialData: { messages: initialData.messages },
-    refetchInterval: 5000,
+  const { messages, isOtherTyping } = useSSEChat({
+    conversationId: conversation.id,
+    token,
+    initialMessages: initialData.messages,
   })
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messagesQuery.data?.messages.length])
+  }, [messages.length, isOtherTyping])
 
   const sendMutation = useMutation({
-    mutationFn: (body: string) => sendPublicMessage({ data: { token, body } }),
-    onSuccess: async () => {
-      setMessage("")
-      await Promise.all([
-        conversationQuery.refetch(),
-        messagesQuery.refetch(),
-      ])
-    },
+    mutationFn: (params: { body: string; attachments?: string }) =>
+      sendPublicMessage({ data: { token, body: params.body, attachments: params.attachments } }),
     onError: (error) => {
       toast.error(error instanceof Error ? error.message : "Unable to send your message.")
+    },
+  })
+
+  const editMutation = useMutation({
+    mutationFn: (params: { messageId: number; body: string }) =>
+      editMessage({ data: { messageId: params.messageId, body: params.body, token } }),
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Unable to edit message.")
+    },
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: (messageId: number) =>
+      deleteMessage({ data: { messageId, token } }),
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Unable to delete message.")
     },
   })
 
@@ -99,21 +108,31 @@ function PublicChaplainChatPage() {
     },
   })
 
-  const conversation = conversationQuery.data?.conversation ?? initialData.conversation
-  const messages = messagesQuery.data?.messages ?? initialData.messages
+  const handleSend = useCallback(
+    (body: string, attachments: ChatAttachment[]) => {
+      const attachmentsJson = attachments.length > 0 ? JSON.stringify(attachments) : undefined
+      sendMutation.mutate({ body, attachments: attachmentsJson })
+    },
+    [sendMutation],
+  )
 
-  function handleSend() {
-    const trimmed = message.trim()
-    if (!trimmed) return
-    sendMutation.mutate(trimmed)
-  }
+  const handleTyping = useCallback(() => {
+    reportTyping({ data: { token } }).catch(() => {})
+  }, [token])
 
-  function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault()
-      handleSend()
-    }
-  }
+  const handleEdit = useCallback(
+    (messageId: number, newBody: string) => {
+      editMutation.mutate({ messageId, body: newBody })
+    },
+    [editMutation],
+  )
+
+  const handleDelete = useCallback(
+    (messageId: number) => {
+      deleteMutation.mutate(messageId)
+    },
+    [deleteMutation],
+  )
 
   return (
     <div className="min-h-screen bg-background">
@@ -153,36 +172,17 @@ function PublicChaplainChatPage() {
 
         <div className="rounded-lg border bg-card min-h-[32rem] flex flex-col">
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {messages.map((msg) => {
-              const isMine = msg.senderRole === "member"
-
-              return (
-                <div key={msg.id} className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
-                  <div
-                    className={`max-w-[80%] rounded-lg px-4 py-2.5 ${
-                      isMine
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-foreground"
-                    }`}
-                  >
-                    <p className="text-xs font-medium mb-1 opacity-80">
-                      {isMine ? conversation.alias : "Chaplain"}
-                    </p>
-                    <p className="text-sm whitespace-pre-wrap">{msg.body}</p>
-                    <p
-                      className={`text-[10px] mt-1 ${
-                        isMine ? "text-primary-foreground/70" : "text-muted-foreground"
-                      }`}
-                    >
-                      {new Date(msg.sentAt).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </p>
-                  </div>
-                </div>
-              )
-            })}
+            {messages.map((msg) => (
+              <ChatMessageBubble
+                key={msg.id}
+                message={msg}
+                isMine={msg.senderRole === "member"}
+                senderLabel={msg.senderRole === "member" ? conversation.alias : "Chaplain"}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            ))}
+            {isOtherTyping && <ChatTypingIndicator name="Chaplain" />}
             <div ref={messagesEndRef} />
           </div>
 
@@ -192,23 +192,13 @@ function PublicChaplainChatPage() {
                 This conversation is currently resolved. Sending a new message will reopen it.
               </p>
             )}
-            <div className="flex gap-2">
-              <Textarea
-                value={message}
-                onChange={(event) => setMessage(event.target.value)}
-                onKeyDown={handleKeyDown}
-                rows={2}
-                className="flex-1 resize-none"
-                placeholder="Write your reply here..."
-              />
-              <Button
-                onClick={handleSend}
-                disabled={!message.trim() || sendMutation.isPending}
-                className="self-end"
-              >
-                <Send className="w-4 h-4" />
-              </Button>
-            </div>
+            <ChatInput
+              token={token}
+              onSend={handleSend}
+              onTyping={handleTyping}
+              disabled={sendMutation.isPending}
+              placeholder="Write your reply here..."
+            />
           </div>
         </div>
       </main>

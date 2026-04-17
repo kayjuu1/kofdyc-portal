@@ -15,10 +15,10 @@ export const Route = createFileRoute("/api/media/$")({
         const expires = url.searchParams.get("expires")
         const sig = url.searchParams.get("sig")
 
-        // Documents require signed URLs
-        if (key.startsWith("documents/")) {
+        // Documents and chat files require signed URLs
+        if (key.startsWith("documents/") || key.startsWith("chat/")) {
           if (!expires || !sig) {
-            return new Response("Forbidden: signed URL required for documents", { status: 403 })
+            return new Response("Forbidden: signed URL required", { status: 403 })
           }
         }
 
