@@ -78,6 +78,7 @@ export const auth = betterAuth({
   trustedOrigins: [
     "http://localhost:3000",
     "https://dyckoforidua.org",
+    "https://kofdyc-portal.owusu.workers.dev",
   ],
 })
 
