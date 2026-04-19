@@ -4,7 +4,6 @@ dist
 dist-ssr
 *.local
 .env
-.env.production*
 .nitro
 .tanstack
 .wrangler
@@ -16,3 +15,4 @@ todos.json
 .dev.vars*
 !.dev.vars.example
 !.env.example
+.env.production
