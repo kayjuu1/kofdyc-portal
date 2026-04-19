@@ -18,7 +18,6 @@ declare namespace Cloudflare {
 		DATABASE_URL: string;
 		R2_ACCOUNT_ID: string;
 		R2_BUCKET_NAME: string;
-		PAYSTACK_SECRET_KEY: string;
 	}
 }
 interface Env extends Cloudflare.Env {}
