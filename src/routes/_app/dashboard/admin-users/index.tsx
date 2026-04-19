@@ -1,6 +1,6 @@
 import { createFileRoute, redirect, useRouter } from "@tanstack/react-router"
 import { useState } from "react"
-import { Search, Shield } from "lucide-react"
+import { Search, Shield, Plus } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -20,7 +20,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { getAdminUsers, updateUserRole, toggleUserActive } from "@/functions/members"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { getAdminUsers, updateUserRole, toggleUserActive, createUser } from "@/functions/members"
 import { useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
 import {
@@ -29,6 +37,15 @@ import {
   ROLE_LABELS,
   type UserRole,
 } from "@/lib/permissions"
+
+function generateTempPassword() {
+  const chars = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789"
+  let password = ""
+  for (let i = 0; i < 10; i++) {
+    password += chars[Math.floor(Math.random() * chars.length)]
+  }
+  return password
+}
 
 const ROLES = Object.entries(ROLE_LABELS).map(([value, label]) => ({ value, label })) as Array<{
   value: UserRole
@@ -79,6 +96,14 @@ function AdminUsersPage() {
   )
 
   const [searchInput, setSearchInput] = useState(searchParam ?? "")
+  const [addUserOpen, setAddUserOpen] = useState(false)
+  const [newUser, setNewUser] = useState({
+    name: "",
+    email: "",
+    password: generateTempPassword(),
+    role: "coordinator" as UserRole,
+    phone: "",
+  })
 
   const roleMutation = useMutation({
     mutationFn: (data: Parameters<typeof updateUserRole>[0]["data"]) =>
@@ -86,6 +111,24 @@ function AdminUsersPage() {
     onSuccess: () => {
       toast.success("Role updated")
       router.invalidate()
+    },
+  })
+
+  const createMutation = useMutation({
+    mutationFn: (data: Parameters<typeof createUser>[0]["data"]) =>
+      createUser({ data }),
+    onSuccess: (result) => {
+      if (result.success) {
+        toast.success("User created successfully")
+        setAddUserOpen(false)
+        setNewUser({ name: "", email: "", password: generateTempPassword(), role: "coordinator", phone: "" })
+        router.invalidate()
+      } else {
+        toast.error(result.error ?? "Failed to create user")
+      }
+    },
+    onError: () => {
+      toast.error("Failed to create user")
     },
   })
 
@@ -117,11 +160,110 @@ function AdminUsersPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Admin Users</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          {data.total} admin accounts
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Admin Users</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            {data.total} admin accounts
+          </p>
+        </div>
+        {canManageAdminUsers && (
+          <Dialog open={addUserOpen} onOpenChange={setAddUserOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                Add User
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add New User</DialogTitle>
+              </DialogHeader>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  createMutation.mutate({
+                    name: newUser.name,
+                    email: newUser.email,
+                    password: newUser.password,
+                    role: newUser.role,
+                    ...(newUser.phone ? { phone: newUser.phone } : {}),
+                  })
+                }}
+                className="space-y-4"
+              >
+                <div className="space-y-2">
+                  <Label htmlFor="name">Name</Label>
+                  <Input
+                    id="name"
+                    required
+                    value={newUser.name}
+                    onChange={(e) => setNewUser((p) => ({ ...p, name: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    required
+                    value={newUser.email}
+                    onChange={(e) => setNewUser((p) => ({ ...p, email: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Temporary Password</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="password"
+                      required
+                      minLength={6}
+                      value={newUser.password}
+                      onChange={(e) => setNewUser((p) => ({ ...p, password: e.target.value }))}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setNewUser((p) => ({ ...p, password: generateTempPassword() }))}
+                    >
+                      Generate
+                    </Button>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="role">Role</Label>
+                  <Select
+                    value={newUser.role}
+                    onValueChange={(v) => setNewUser((p) => ({ ...p, role: v as UserRole }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ROLES.map((r) => (
+                        <SelectItem key={r.value} value={r.value}>
+                          {r.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone (optional)</Label>
+                  <Input
+                    id="phone"
+                    value={newUser.phone}
+                    onChange={(e) => setNewUser((p) => ({ ...p, phone: e.target.value }))}
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={createMutation.isPending}>
+                  {createMutation.isPending ? "Creating..." : "Create User"}
+                </Button>
+              </form>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4">

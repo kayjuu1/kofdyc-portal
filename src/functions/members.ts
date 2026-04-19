@@ -4,6 +4,7 @@ import { user, parishes } from "@/db/schema"
 import { eq, sql, and, desc } from "drizzle-orm"
 import { requirePermission } from "@/middleware/role.middleware"
 import { logAudit } from "@/functions/audit"
+import { auth } from "@/lib/auth"
 import { type UserRole } from "@/lib/permissions"
 
 export const getAdminUsers = createServerFn({ method: "GET" })
@@ -91,6 +92,58 @@ export const updateUserRole = createServerFn({ method: "POST" })
     })
 
     return { success: true }
+  })
+
+export const createUser = createServerFn({ method: "POST" })
+  .middleware([requirePermission("manageAdminUsers")])
+  .inputValidator(
+    (input: {
+      name: string
+      email: string
+      password: string
+      role: UserRole
+      phone?: string
+      parishId?: number
+    }) => input
+  )
+  .handler(async ({ data, context }) => {
+    try {
+      const result = await auth.api.signUpEmail({
+        body: {
+          email: data.email,
+          password: data.password,
+          name: data.name,
+        },
+      })
+
+      if (!result?.user?.id) {
+        return { success: false, error: "Failed to create user account" }
+      }
+
+      await db.update(user)
+        .set({
+          role: data.role,
+          ...(data.phone ? { phone: data.phone } : {}),
+          ...(data.parishId ? { parishId: data.parishId } : {}),
+        })
+        .where(eq(user.id, result.user.id))
+
+      await logAudit({
+        userId: context.session.user.id,
+        action: "user.created",
+        resourceType: "user",
+        resourceId: result.user.id,
+        metadata: { email: data.email, role: data.role },
+      })
+
+      return { success: true, userId: result.user.id }
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Unknown error"
+      if (message.includes("already exists") || message.includes("USER_ALREADY_EXISTS")) {
+        return { success: false, error: "A user with this email already exists" }
+      }
+      return { success: false, error: message }
+    }
   })
 
 export const toggleUserActive = createServerFn({ method: "POST" })

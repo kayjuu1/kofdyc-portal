@@ -32,7 +32,7 @@ export const PERMISSIONS: Record<Permission, readonly UserRole[]> = {
   manageNews: ADMIN_ROLES,
   manageDocuments: ADMIN_ROLES,
   manageSettings: ["system_admin", "youth_chaplain", "diocesan_executive"],
-  manageAdminUsers: ["system_admin"],
+  manageAdminUsers: ["system_admin", "youth_chaplain", "diocesan_executive"],
   manageChaplainInbox: ["youth_chaplain"],
 }
 
