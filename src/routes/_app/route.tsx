@@ -268,7 +268,7 @@ function AppLayout() {
           </div>
           <div className="ml-auto flex items-center gap-2">
             <ThemeToggle />
-            <Button variant="ghost" size="sm" asChild>
+            <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
               <Link to="/">View site</Link>
             </Button>
           </div>

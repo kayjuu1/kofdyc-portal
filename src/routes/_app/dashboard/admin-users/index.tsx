@@ -289,7 +289,7 @@ function AdminUsersPage() {
             })
           }
         >
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="All roles" />
           </SelectTrigger>
           <SelectContent>
@@ -305,6 +305,7 @@ function AdminUsersPage() {
 
       <Card>
         <CardContent className="p-0">
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -340,7 +341,7 @@ function AdminUsersPage() {
                             })
                           }
                         >
-                          <SelectTrigger className="w-[180px] h-8">
+                          <SelectTrigger className="w-full sm:w-[180px] h-8">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -384,6 +385,7 @@ function AdminUsersPage() {
               )}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 

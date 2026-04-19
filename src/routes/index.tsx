@@ -201,7 +201,7 @@ function DarkHero({
                 <Calendar className="size-5" />
               </Link>
             </div>
-            <div className="grid grid-cols-3 gap-6 border-t border-slate-800 pt-12">
+            <div className="grid grid-cols-3 gap-4 border-t border-slate-800 pt-8 sm:gap-6 sm:pt-12">
               <div>
                 <p className="text-3xl font-bold text-primary">{newsCount}+</p>
                 <p className="mt-2 text-sm text-slate-400">Published Stories</p>
@@ -275,7 +275,7 @@ function FeaturedSection({
   return (
     <section className="border-b border-border/40 bg-background">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:py-16">
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <span className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary">
               Featured
@@ -460,7 +460,7 @@ function NewsSection({ articles }: { articles: NewsArticle[] }) {
   return (
     <section id="news" className="py-16 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="mb-10 flex items-end justify-between">
+        <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <span className="mb-2 inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary">
               Latest
@@ -547,7 +547,7 @@ function DocumentsSection({ documents }: { documents: DocumentItem[] }) {
   return (
     <section id="documents" className="border-t border-border/40 py-16 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="mb-10 flex items-end justify-between">
+        <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <span className="mb-2 inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary">
               Resources
@@ -560,7 +560,7 @@ function DocumentsSection({ documents }: { documents: DocumentItem[] }) {
             </p>
           </div>
           <Button variant="ghost" size="sm" asChild>
-            <Link to="/dashboard/documents">
+            <Link to="/documents">
               View all <ChevronRight className="ml-1 size-3.5" />
             </Link>
           </Button>

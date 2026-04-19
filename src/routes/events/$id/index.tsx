@@ -194,7 +194,7 @@ function EventDetailPage() {
           </div>
 
           <div>
-            <Card className="sticky top-8">
+            <Card className="lg:sticky lg:top-8">
               <CardHeader>
                 <CardTitle>Register</CardTitle>
               </CardHeader>

@@ -169,7 +169,7 @@ function DocumentsPage() {
                 className="pl-9"
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Select
                 value={category ?? "all"}
                 onValueChange={(value) =>
@@ -182,7 +182,7 @@ function DocumentsPage() {
                   })
                 }
               >
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-full sm:w-[180px]">
                   <SelectValue placeholder="All categories" />
                 </SelectTrigger>
                 <SelectContent>
@@ -206,7 +206,7 @@ function DocumentsPage() {
                   })
                 }
               >
-                <SelectTrigger className="w-[140px]">
+                <SelectTrigger className="w-full sm:w-[140px]">
                   <SelectValue placeholder="All scopes" />
                 </SelectTrigger>
                 <SelectContent>
@@ -232,6 +232,7 @@ function DocumentsPage() {
               />
             </div>
           ) : (
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -295,6 +296,7 @@ function DocumentsPage() {
                 ))}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardContent>
       </Card>

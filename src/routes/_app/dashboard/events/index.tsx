@@ -185,6 +185,7 @@ function EventsAdminPage() {
               />
             </div>
           ) : (
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -272,6 +273,7 @@ function EventsAdminPage() {
                 ))}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardContent>
       </Card>

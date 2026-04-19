@@ -109,7 +109,7 @@ function RegistrantsPage() {
         </Button>
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         {statusFilters.map((f) => (
           <Button
             key={f.label}
@@ -128,6 +128,7 @@ function RegistrantsPage() {
 
       <Card>
         <CardContent className="p-0">
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -186,6 +187,7 @@ function RegistrantsPage() {
               )}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

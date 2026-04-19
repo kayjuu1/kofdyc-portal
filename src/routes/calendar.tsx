@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { ChevronLeft, ChevronRight, List, Grid3X3 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -63,7 +63,13 @@ function CalendarPage() {
   const { events, feastDays } = Route.useLoaderData()
   const { year, month, scope } = Route.useSearch()
   const navigate = Route.useNavigate()
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
+  const [viewMode, setViewMode] = useState<"grid" | "list">(
+    typeof window !== "undefined" && window.innerWidth < 768 ? "list" : "grid"
+  )
+
+  useEffect(() => {
+    if (window.innerWidth < 768) setViewMode("list")
+  }, [])
 
   const y = year ?? new Date().getFullYear()
   const m = month ?? new Date().getMonth() + 1
@@ -134,7 +140,7 @@ function CalendarPage() {
                 navigate({ search: { year: y, month: m, scope: v === "all" ? undefined : v as "diocese" | "deanery" | "parish" } })
               }
             >
-              <SelectTrigger className="w-[140px]">
+              <SelectTrigger className="w-full sm:w-[140px]">
                 <SelectValue placeholder="All scopes" />
               </SelectTrigger>
               <SelectContent>
@@ -174,7 +180,7 @@ function CalendarPage() {
         </div>
 
         {viewMode === "grid" ? (
-          <div className="border rounded-lg overflow-hidden">
+          <div className="border rounded-lg overflow-x-auto">
             <div className="grid grid-cols-7 bg-muted">
               {DAYS.map((day) => (
                 <div key={day} className="px-2 py-2 text-center text-xs font-medium text-muted-foreground">

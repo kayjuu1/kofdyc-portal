@@ -27,7 +27,6 @@ import { Route as NewsSlugRouteImport } from './routes/news/$slug'
 import { Route as DashboardLoginRouteImport } from './routes/dashboard/login'
 import { Route as ChaplainChatTokenRouteImport } from './routes/chaplain-chat/$token'
 import { Route as ApiUploadRouteImport } from './routes/api/upload'
-import { Route as ApiPaystackWebhookRouteImport } from './routes/api/paystack-webhook'
 import { Route as AuthInitAdminRouteImport } from './routes/_auth/init-admin'
 import { Route as EventsIdIndexRouteImport } from './routes/events/$id/index'
 import { Route as AppDashboardIndexRouteImport } from './routes/_app/dashboard/index'
@@ -146,11 +145,6 @@ const ChaplainChatTokenRoute = ChaplainChatTokenRouteImport.update({
 const ApiUploadRoute = ApiUploadRouteImport.update({
   id: '/api/upload',
   path: '/api/upload',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPaystackWebhookRoute = ApiPaystackWebhookRouteImport.update({
-  id: '/api/paystack-webhook',
-  path: '/api/paystack-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthInitAdminRoute = AuthInitAdminRouteImport.update({
@@ -327,7 +321,6 @@ export interface FileRoutesByFullPath {
   '/pastoral-letters': typeof PastoralLettersRoute
   '/payment-callback': typeof PaymentCallbackRoute
   '/init-admin': typeof AuthInitAdminRoute
-  '/api/paystack-webhook': typeof ApiPaystackWebhookRoute
   '/api/upload': typeof ApiUploadRoute
   '/chaplain-chat/$token': typeof ChaplainChatTokenRoute
   '/dashboard/login': typeof DashboardLoginRoute
@@ -377,7 +370,6 @@ export interface FileRoutesByTo {
   '/pastoral-letters': typeof PastoralLettersRoute
   '/payment-callback': typeof PaymentCallbackRoute
   '/init-admin': typeof AuthInitAdminRoute
-  '/api/paystack-webhook': typeof ApiPaystackWebhookRoute
   '/api/upload': typeof ApiUploadRoute
   '/chaplain-chat/$token': typeof ChaplainChatTokenRoute
   '/dashboard/login': typeof DashboardLoginRoute
@@ -428,7 +420,6 @@ export interface FileRoutesById {
   '/pastoral-letters': typeof PastoralLettersRoute
   '/payment-callback': typeof PaymentCallbackRoute
   '/_auth/init-admin': typeof AuthInitAdminRoute
-  '/api/paystack-webhook': typeof ApiPaystackWebhookRoute
   '/api/upload': typeof ApiUploadRoute
   '/chaplain-chat/$token': typeof ChaplainChatTokenRoute
   '/dashboard/login': typeof DashboardLoginRoute
@@ -480,7 +471,6 @@ export interface FileRouteTypes {
     | '/pastoral-letters'
     | '/payment-callback'
     | '/init-admin'
-    | '/api/paystack-webhook'
     | '/api/upload'
     | '/chaplain-chat/$token'
     | '/dashboard/login'
@@ -530,7 +520,6 @@ export interface FileRouteTypes {
     | '/pastoral-letters'
     | '/payment-callback'
     | '/init-admin'
-    | '/api/paystack-webhook'
     | '/api/upload'
     | '/chaplain-chat/$token'
     | '/dashboard/login'
@@ -580,7 +569,6 @@ export interface FileRouteTypes {
     | '/pastoral-letters'
     | '/payment-callback'
     | '/_auth/init-admin'
-    | '/api/paystack-webhook'
     | '/api/upload'
     | '/chaplain-chat/$token'
     | '/dashboard/login'
@@ -632,7 +620,6 @@ export interface RootRouteChildren {
   PastoralLettersRoute: typeof PastoralLettersRoute
   PaymentCallbackRoute: typeof PaymentCallbackRoute
   AuthInitAdminRoute: typeof AuthInitAdminRoute
-  ApiPaystackWebhookRoute: typeof ApiPaystackWebhookRoute
   ApiUploadRoute: typeof ApiUploadRoute
   ChaplainChatTokenRoute: typeof ChaplainChatTokenRoute
   DashboardLoginRoute: typeof DashboardLoginRoute
@@ -778,13 +765,6 @@ declare module '@tanstack/react-router' {
       path: '/api/upload'
       fullPath: '/api/upload'
       preLoaderRoute: typeof ApiUploadRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/paystack-webhook': {
-      id: '/api/paystack-webhook'
-      path: '/api/paystack-webhook'
-      fullPath: '/api/paystack-webhook'
-      preLoaderRoute: typeof ApiPaystackWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_auth/init-admin': {
@@ -1076,7 +1056,6 @@ const rootRouteChildren: RootRouteChildren = {
   PastoralLettersRoute: PastoralLettersRoute,
   PaymentCallbackRoute: PaymentCallbackRoute,
   AuthInitAdminRoute: AuthInitAdminRoute,
-  ApiPaystackWebhookRoute: ApiPaystackWebhookRoute,
   ApiUploadRoute: ApiUploadRoute,
   ChaplainChatTokenRoute: ChaplainChatTokenRoute,
   DashboardLoginRoute: DashboardLoginRoute,

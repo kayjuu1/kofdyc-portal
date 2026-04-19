@@ -196,16 +196,16 @@ function DocumentsPage() {
                         )}
                       </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex shrink-0 gap-2">
                       {canPreview(doc) && (
-                        <Button variant="outline" size="sm" onClick={() => handlePreview(doc)}>
+                        <Button variant="outline" size="sm" onClick={() => handlePreview(doc)} className="hidden sm:inline-flex">
                           Preview
                         </Button>
                       )}
                       <Button asChild variant="outline" size="sm">
                         <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer">
-                          <Download className="w-4 h-4 mr-1" />
-                          Download
+                          <Download className="w-4 h-4 sm:mr-1" />
+                          <span className="hidden sm:inline">Download</span>
                         </a>
                       </Button>
                     </div>
