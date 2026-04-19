@@ -1,5 +1,5 @@
-import path from 'node:path'
 import {defineConfig, type Plugin} from 'vite'
+import tsconfigPaths from 'vite-tsconfig-paths'
 
 import {tanstackStart} from '@tanstack/react-start/plugin/vite'
 
@@ -33,15 +33,16 @@ const config = defineConfig({
     plugins: [
         cloudflareWorkersStub(),
         cloudflare({viteEnvironment: {name: 'ssr'}}),
+        tsconfigPaths({projects: ['./tsconfig.json']}),
         tailwindcss(),
         tanstackStart(),
         viteReact(),
     ],
-    resolve: {
-        alias: {
-            '@': path.resolve(__dirname, './src'),
-        },
-    },
+    build: {
+        rollupOptions: {
+            external: ['cloudflare:workers', 'cloudflare:env']
+        }
+    }
 })
 
 export default config
