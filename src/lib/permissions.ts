@@ -14,6 +14,9 @@ export type Permission =
   | "manageSettings"
   | "manageAdminUsers"
   | "manageChaplainInbox"
+  | "manageFeaturedEvents"
+  | "manageLeadership"
+  | "manageHierarchy"
 
 const LEGACY_ROLE_MAP = {
   diocesan_youth_chaplain: "youth_chaplain",
@@ -34,6 +37,9 @@ export const PERMISSIONS: Record<Permission, readonly UserRole[]> = {
   manageSettings: ["system_admin", "youth_chaplain", "diocesan_executive"],
   manageAdminUsers: ["system_admin", "youth_chaplain", "diocesan_executive"],
   manageChaplainInbox: ["youth_chaplain"],
+  manageFeaturedEvents: ["system_admin", "diocesan_executive"],
+  manageLeadership: ["system_admin"],
+  manageHierarchy: ["system_admin", "diocesan_executive"],
 }
 
 export function canonicalizeRole(role: string | null | undefined): UserRole | null {
@@ -47,6 +53,10 @@ export function canonicalizeRole(role: string | null | undefined): UserRole | nu
 
 export function isAdminRole(role: string | null | undefined): role is UserRole {
   return canonicalizeRole(role) !== null
+}
+
+export function canAccessDashboard(role: UserRole | null): boolean {
+  return isAdminRole(role)
 }
 
 export function hasPermission(

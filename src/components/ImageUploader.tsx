@@ -15,6 +15,8 @@ interface ImageUploaderProps {
   coverUrl: string | null
   onCoverChange: (url: string | null) => void
   maxFiles?: number
+  /** Return an error message to reject a file before upload, or null to accept. */
+  validateFile?: (file: File) => Promise<string | null>
 }
 
 export function ImageUploader({
@@ -23,6 +25,7 @@ export function ImageUploader({
   coverUrl,
   onCoverChange,
   maxFiles = 10,
+  validateFile,
 }: ImageUploaderProps) {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -39,6 +42,18 @@ export function ImageUploader({
 
     const filesToUpload = Array.from(fileList).slice(0, remaining)
     setError(null)
+
+    if (validateFile) {
+      for (const file of filesToUpload) {
+        const validationError = await validateFile(file)
+        if (validationError) {
+          setError(validationError)
+          if (inputRef.current) inputRef.current.value = ""
+          return
+        }
+      }
+    }
+
     setUploading(true)
 
     try {

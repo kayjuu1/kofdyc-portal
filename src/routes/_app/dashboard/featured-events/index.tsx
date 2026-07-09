@@ -35,6 +35,7 @@ import {
   createFeaturedEvent,
   deleteFeaturedEvent,
   getAllFeaturedEvents,
+  toggleFeaturedEventActive,
   updateFeaturedEvent,
 } from "@/functions/featured-events"
 import { getUpcomingEvents } from "@/functions/events"
@@ -152,19 +153,8 @@ function FeaturedEventsAdminPage() {
 
   const toggleMutation = useMutation({
     mutationFn: (row: FeaturedRow) =>
-      updateFeaturedEvent({
-        data: {
-          id: row.id,
-          eventId: row.eventId,
-          displayTitle: row.displayTitle,
-          artworkUrl: row.artworkUrl,
-          targetDate: row.targetDate,
-          ctaLabel: row.ctaLabel,
-          ctaUrl: row.ctaUrl,
-          supportLine: row.supportLine,
-          isActive: !row.isActive,
-          sortOrder: row.sortOrder,
-        },
+      toggleFeaturedEventActive({
+        data: { id: row.id, isActive: !row.isActive },
       }),
     onSuccess: () => {
       toast.success("Featured event updated")

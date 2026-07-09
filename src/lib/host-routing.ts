@@ -27,6 +27,16 @@ export function resolveHostAction(
 
   // Unknown hosts (localhost, *.workers.dev previews) degrade to path-based routing
   if (host !== publicHost && host !== adminHost) {
+    // …except subdomains of the public domain (www., stray custom domains):
+    // COOKIE_DOMAIN makes the admin session valid there, so passing them
+    // through would serve /dashboard outside the admin host. Canonicalize.
+    if (host.endsWith(`.${publicHost}`)) {
+      return {
+        kind: "redirect",
+        status: 301,
+        location: `https://${env.publicHost}${pathname}${search}`,
+      }
+    }
     return { kind: "pass" }
   }
 

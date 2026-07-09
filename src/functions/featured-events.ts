@@ -161,6 +161,34 @@ export const updateFeaturedEvent = createServerFn({ method: "POST" })
     return row
   })
 
+// Partial update on purpose: toggling must stay possible even when the row no
+// longer passes full validation (e.g. its linked event was deleted and the FK
+// set eventId to null), and must not overwrite fields from a stale snapshot
+export const toggleFeaturedEventActive = createServerFn({ method: "POST" })
+  .middleware([requirePermission("manageFeaturedEvents")])
+  .inputValidator((input: { id: number; isActive: boolean }) => input)
+  .handler(async ({ data, context }) => {
+    const [row] = await db
+      .update(featuredEvents)
+      .set({
+        isActive: data.isActive,
+        updatedAt: new Date().toISOString(),
+      })
+      .where(eq(featuredEvents.id, data.id))
+      .returning()
+    if (!row) throw new Error("Featured event not found")
+
+    await logAudit({
+      userId: context.session.user.id,
+      action: "featured_event.update",
+      resourceType: "featured_event",
+      resourceId: String(row.id),
+      metadata: { displayTitle: row.displayTitle, isActive: row.isActive },
+    })
+
+    return row
+  })
+
 export const deleteFeaturedEvent = createServerFn({ method: "POST" })
   .middleware([requirePermission("manageFeaturedEvents")])
   .inputValidator((input: { id: number }) => input)

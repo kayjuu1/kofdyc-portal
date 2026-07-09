@@ -31,6 +31,25 @@ describe("resolveHostAction", () => {
     expect(resolveHostAction(null, "/dashboard", "", env)).toEqual({ kind: "pass" })
   })
 
+  it("canonicalizes stray subdomains of the public domain to the public host", () => {
+    expect(resolveHostAction("www.kofdyc.org", "/news", "?x=1", env)).toEqual({
+      kind: "redirect",
+      status: 301,
+      location: "https://kofdyc.org/news?x=1",
+    })
+    // /dashboard must never be served outside the admin host
+    expect(resolveHostAction("www.kofdyc.org", "/dashboard", "", env)).toEqual({
+      kind: "redirect",
+      status: 301,
+      location: "https://kofdyc.org/dashboard",
+    })
+    expect(resolveHostAction("staging.kofdyc.org", "/", "", env)).toEqual({
+      kind: "redirect",
+      status: 301,
+      location: "https://kofdyc.org/",
+    })
+  })
+
   it("strips ports and ignores case when matching hosts", () => {
     expect(resolveHostAction("KOFDYC.ORG:443", "/news", "", env)).toEqual({ kind: "pass" })
     expect(resolveHostAction("admin.kofdyc.org:8787", "/", "", env)).toEqual({

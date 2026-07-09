@@ -18,12 +18,16 @@ import { Route as AppRouteRouteImport } from './routes/_app/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProgrammesIndexRouteImport } from './routes/programmes/index'
 import { Route as NewsIndexRouteImport } from './routes/news/index'
+import { Route as LeadershipIndexRouteImport } from './routes/leadership/index'
+import { Route as HierarchyIndexRouteImport } from './routes/hierarchy/index'
 import { Route as EventsIndexRouteImport } from './routes/events/index'
 import { Route as DocumentsIndexRouteImport } from './routes/documents/index'
 import { Route as ProgrammesSubmitRouteImport } from './routes/programmes/submit'
 import { Route as ParishesIdRouteImport } from './routes/parishes/$id'
 import { Route as NewsSubmitRouteImport } from './routes/news/submit'
 import { Route as NewsSlugRouteImport } from './routes/news/$slug'
+import { Route as LeadershipMemberIdRouteImport } from './routes/leadership/$memberId'
+import { Route as HierarchySlugRouteImport } from './routes/hierarchy/$slug'
 import { Route as DashboardLoginRouteImport } from './routes/dashboard/login'
 import { Route as ChaplainChatTokenRouteImport } from './routes/chaplain-chat/$token'
 import { Route as ApiUploadRouteImport } from './routes/api/upload'
@@ -41,6 +45,9 @@ import { Route as AppDashboardSettingsIndexRouteImport } from './routes/_app/das
 import { Route as AppDashboardProgrammesIndexRouteImport } from './routes/_app/dashboard/programmes/index'
 import { Route as AppDashboardNewsIndexRouteImport } from './routes/_app/dashboard/news/index'
 import { Route as AppDashboardMembersIndexRouteImport } from './routes/_app/dashboard/members/index'
+import { Route as AppDashboardLeadershipIndexRouteImport } from './routes/_app/dashboard/leadership/index'
+import { Route as AppDashboardHierarchyIndexRouteImport } from './routes/_app/dashboard/hierarchy/index'
+import { Route as AppDashboardFeaturedEventsIndexRouteImport } from './routes/_app/dashboard/featured-events/index'
 import { Route as AppDashboardExecutiveIndexRouteImport } from './routes/_app/dashboard/executive/index'
 import { Route as AppDashboardEventsIndexRouteImport } from './routes/_app/dashboard/events/index'
 import { Route as AppDashboardDocumentsIndexRouteImport } from './routes/_app/dashboard/documents/index'
@@ -102,6 +109,16 @@ const NewsIndexRoute = NewsIndexRouteImport.update({
   path: '/news/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LeadershipIndexRoute = LeadershipIndexRouteImport.update({
+  id: '/leadership/',
+  path: '/leadership/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HierarchyIndexRoute = HierarchyIndexRouteImport.update({
+  id: '/hierarchy/',
+  path: '/hierarchy/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EventsIndexRoute = EventsIndexRouteImport.update({
   id: '/events/',
   path: '/events/',
@@ -130,6 +147,16 @@ const NewsSubmitRoute = NewsSubmitRouteImport.update({
 const NewsSlugRoute = NewsSlugRouteImport.update({
   id: '/news/$slug',
   path: '/news/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeadershipMemberIdRoute = LeadershipMemberIdRouteImport.update({
+  id: '/leadership/$memberId',
+  path: '/leadership/$memberId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HierarchySlugRoute = HierarchySlugRouteImport.update({
+  id: '/hierarchy/$slug',
+  path: '/hierarchy/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardLoginRoute = DashboardLoginRouteImport.update({
@@ -219,6 +246,24 @@ const AppDashboardMembersIndexRoute =
   AppDashboardMembersIndexRouteImport.update({
     id: '/dashboard/members/',
     path: '/dashboard/members/',
+    getParentRoute: () => AppRouteRoute,
+  } as any)
+const AppDashboardLeadershipIndexRoute =
+  AppDashboardLeadershipIndexRouteImport.update({
+    id: '/dashboard/leadership/',
+    path: '/dashboard/leadership/',
+    getParentRoute: () => AppRouteRoute,
+  } as any)
+const AppDashboardHierarchyIndexRoute =
+  AppDashboardHierarchyIndexRouteImport.update({
+    id: '/dashboard/hierarchy/',
+    path: '/dashboard/hierarchy/',
+    getParentRoute: () => AppRouteRoute,
+  } as any)
+const AppDashboardFeaturedEventsIndexRoute =
+  AppDashboardFeaturedEventsIndexRouteImport.update({
+    id: '/dashboard/featured-events/',
+    path: '/dashboard/featured-events/',
     getParentRoute: () => AppRouteRoute,
   } as any)
 const AppDashboardExecutiveIndexRoute =
@@ -324,12 +369,16 @@ export interface FileRoutesByFullPath {
   '/api/upload': typeof ApiUploadRoute
   '/chaplain-chat/$token': typeof ChaplainChatTokenRoute
   '/dashboard/login': typeof DashboardLoginRoute
+  '/hierarchy/$slug': typeof HierarchySlugRoute
+  '/leadership/$memberId': typeof LeadershipMemberIdRoute
   '/news/$slug': typeof NewsSlugRoute
   '/news/submit': typeof NewsSubmitRoute
   '/parishes/$id': typeof ParishesIdRoute
   '/programmes/submit': typeof ProgrammesSubmitRoute
   '/documents/': typeof DocumentsIndexRoute
   '/events/': typeof EventsIndexRoute
+  '/hierarchy/': typeof HierarchyIndexRoute
+  '/leadership/': typeof LeadershipIndexRoute
   '/news/': typeof NewsIndexRoute
   '/programmes/': typeof ProgrammesIndexRoute
   '/dashboard/news': typeof AppDashboardNewsRouteWithChildren
@@ -356,6 +405,9 @@ export interface FileRoutesByFullPath {
   '/dashboard/documents/': typeof AppDashboardDocumentsIndexRoute
   '/dashboard/events/': typeof AppDashboardEventsIndexRoute
   '/dashboard/executive/': typeof AppDashboardExecutiveIndexRoute
+  '/dashboard/featured-events/': typeof AppDashboardFeaturedEventsIndexRoute
+  '/dashboard/hierarchy/': typeof AppDashboardHierarchyIndexRoute
+  '/dashboard/leadership/': typeof AppDashboardLeadershipIndexRoute
   '/dashboard/members/': typeof AppDashboardMembersIndexRoute
   '/dashboard/news/': typeof AppDashboardNewsIndexRoute
   '/dashboard/programmes/': typeof AppDashboardProgrammesIndexRoute
@@ -373,12 +425,16 @@ export interface FileRoutesByTo {
   '/api/upload': typeof ApiUploadRoute
   '/chaplain-chat/$token': typeof ChaplainChatTokenRoute
   '/dashboard/login': typeof DashboardLoginRoute
+  '/hierarchy/$slug': typeof HierarchySlugRoute
+  '/leadership/$memberId': typeof LeadershipMemberIdRoute
   '/news/$slug': typeof NewsSlugRoute
   '/news/submit': typeof NewsSubmitRoute
   '/parishes/$id': typeof ParishesIdRoute
   '/programmes/submit': typeof ProgrammesSubmitRoute
   '/documents': typeof DocumentsIndexRoute
   '/events': typeof EventsIndexRoute
+  '/hierarchy': typeof HierarchyIndexRoute
+  '/leadership': typeof LeadershipIndexRoute
   '/news': typeof NewsIndexRoute
   '/programmes': typeof ProgrammesIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -404,6 +460,9 @@ export interface FileRoutesByTo {
   '/dashboard/documents': typeof AppDashboardDocumentsIndexRoute
   '/dashboard/events': typeof AppDashboardEventsIndexRoute
   '/dashboard/executive': typeof AppDashboardExecutiveIndexRoute
+  '/dashboard/featured-events': typeof AppDashboardFeaturedEventsIndexRoute
+  '/dashboard/hierarchy': typeof AppDashboardHierarchyIndexRoute
+  '/dashboard/leadership': typeof AppDashboardLeadershipIndexRoute
   '/dashboard/members': typeof AppDashboardMembersIndexRoute
   '/dashboard/news': typeof AppDashboardNewsIndexRoute
   '/dashboard/programmes': typeof AppDashboardProgrammesIndexRoute
@@ -423,12 +482,16 @@ export interface FileRoutesById {
   '/api/upload': typeof ApiUploadRoute
   '/chaplain-chat/$token': typeof ChaplainChatTokenRoute
   '/dashboard/login': typeof DashboardLoginRoute
+  '/hierarchy/$slug': typeof HierarchySlugRoute
+  '/leadership/$memberId': typeof LeadershipMemberIdRoute
   '/news/$slug': typeof NewsSlugRoute
   '/news/submit': typeof NewsSubmitRoute
   '/parishes/$id': typeof ParishesIdRoute
   '/programmes/submit': typeof ProgrammesSubmitRoute
   '/documents/': typeof DocumentsIndexRoute
   '/events/': typeof EventsIndexRoute
+  '/hierarchy/': typeof HierarchyIndexRoute
+  '/leadership/': typeof LeadershipIndexRoute
   '/news/': typeof NewsIndexRoute
   '/programmes/': typeof ProgrammesIndexRoute
   '/_app/dashboard/news': typeof AppDashboardNewsRouteWithChildren
@@ -455,6 +518,9 @@ export interface FileRoutesById {
   '/_app/dashboard/documents/': typeof AppDashboardDocumentsIndexRoute
   '/_app/dashboard/events/': typeof AppDashboardEventsIndexRoute
   '/_app/dashboard/executive/': typeof AppDashboardExecutiveIndexRoute
+  '/_app/dashboard/featured-events/': typeof AppDashboardFeaturedEventsIndexRoute
+  '/_app/dashboard/hierarchy/': typeof AppDashboardHierarchyIndexRoute
+  '/_app/dashboard/leadership/': typeof AppDashboardLeadershipIndexRoute
   '/_app/dashboard/members/': typeof AppDashboardMembersIndexRoute
   '/_app/dashboard/news/': typeof AppDashboardNewsIndexRoute
   '/_app/dashboard/programmes/': typeof AppDashboardProgrammesIndexRoute
@@ -474,12 +540,16 @@ export interface FileRouteTypes {
     | '/api/upload'
     | '/chaplain-chat/$token'
     | '/dashboard/login'
+    | '/hierarchy/$slug'
+    | '/leadership/$memberId'
     | '/news/$slug'
     | '/news/submit'
     | '/parishes/$id'
     | '/programmes/submit'
     | '/documents/'
     | '/events/'
+    | '/hierarchy/'
+    | '/leadership/'
     | '/news/'
     | '/programmes/'
     | '/dashboard/news'
@@ -506,6 +576,9 @@ export interface FileRouteTypes {
     | '/dashboard/documents/'
     | '/dashboard/events/'
     | '/dashboard/executive/'
+    | '/dashboard/featured-events/'
+    | '/dashboard/hierarchy/'
+    | '/dashboard/leadership/'
     | '/dashboard/members/'
     | '/dashboard/news/'
     | '/dashboard/programmes/'
@@ -523,12 +596,16 @@ export interface FileRouteTypes {
     | '/api/upload'
     | '/chaplain-chat/$token'
     | '/dashboard/login'
+    | '/hierarchy/$slug'
+    | '/leadership/$memberId'
     | '/news/$slug'
     | '/news/submit'
     | '/parishes/$id'
     | '/programmes/submit'
     | '/documents'
     | '/events'
+    | '/hierarchy'
+    | '/leadership'
     | '/news'
     | '/programmes'
     | '/api/auth/$'
@@ -554,6 +631,9 @@ export interface FileRouteTypes {
     | '/dashboard/documents'
     | '/dashboard/events'
     | '/dashboard/executive'
+    | '/dashboard/featured-events'
+    | '/dashboard/hierarchy'
+    | '/dashboard/leadership'
     | '/dashboard/members'
     | '/dashboard/news'
     | '/dashboard/programmes'
@@ -572,12 +652,16 @@ export interface FileRouteTypes {
     | '/api/upload'
     | '/chaplain-chat/$token'
     | '/dashboard/login'
+    | '/hierarchy/$slug'
+    | '/leadership/$memberId'
     | '/news/$slug'
     | '/news/submit'
     | '/parishes/$id'
     | '/programmes/submit'
     | '/documents/'
     | '/events/'
+    | '/hierarchy/'
+    | '/leadership/'
     | '/news/'
     | '/programmes/'
     | '/_app/dashboard/news'
@@ -604,6 +688,9 @@ export interface FileRouteTypes {
     | '/_app/dashboard/documents/'
     | '/_app/dashboard/events/'
     | '/_app/dashboard/executive/'
+    | '/_app/dashboard/featured-events/'
+    | '/_app/dashboard/hierarchy/'
+    | '/_app/dashboard/leadership/'
     | '/_app/dashboard/members/'
     | '/_app/dashboard/news/'
     | '/_app/dashboard/programmes/'
@@ -623,12 +710,16 @@ export interface RootRouteChildren {
   ApiUploadRoute: typeof ApiUploadRoute
   ChaplainChatTokenRoute: typeof ChaplainChatTokenRoute
   DashboardLoginRoute: typeof DashboardLoginRoute
+  HierarchySlugRoute: typeof HierarchySlugRoute
+  LeadershipMemberIdRoute: typeof LeadershipMemberIdRoute
   NewsSlugRoute: typeof NewsSlugRoute
   NewsSubmitRoute: typeof NewsSubmitRoute
   ParishesIdRoute: typeof ParishesIdRoute
   ProgrammesSubmitRoute: typeof ProgrammesSubmitRoute
   DocumentsIndexRoute: typeof DocumentsIndexRoute
   EventsIndexRoute: typeof EventsIndexRoute
+  HierarchyIndexRoute: typeof HierarchyIndexRoute
+  LeadershipIndexRoute: typeof LeadershipIndexRoute
   NewsIndexRoute: typeof NewsIndexRoute
   ProgrammesIndexRoute: typeof ProgrammesIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -704,6 +795,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NewsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/leadership/': {
+      id: '/leadership/'
+      path: '/leadership'
+      fullPath: '/leadership/'
+      preLoaderRoute: typeof LeadershipIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/hierarchy/': {
+      id: '/hierarchy/'
+      path: '/hierarchy'
+      fullPath: '/hierarchy/'
+      preLoaderRoute: typeof HierarchyIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/events/': {
       id: '/events/'
       path: '/events'
@@ -744,6 +849,20 @@ declare module '@tanstack/react-router' {
       path: '/news/$slug'
       fullPath: '/news/$slug'
       preLoaderRoute: typeof NewsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/leadership/$memberId': {
+      id: '/leadership/$memberId'
+      path: '/leadership/$memberId'
+      fullPath: '/leadership/$memberId'
+      preLoaderRoute: typeof LeadershipMemberIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/hierarchy/$slug': {
+      id: '/hierarchy/$slug'
+      path: '/hierarchy/$slug'
+      fullPath: '/hierarchy/$slug'
+      preLoaderRoute: typeof HierarchySlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard/login': {
@@ -863,6 +982,27 @@ declare module '@tanstack/react-router' {
       path: '/dashboard/members'
       fullPath: '/dashboard/members/'
       preLoaderRoute: typeof AppDashboardMembersIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/dashboard/leadership/': {
+      id: '/_app/dashboard/leadership/'
+      path: '/dashboard/leadership'
+      fullPath: '/dashboard/leadership/'
+      preLoaderRoute: typeof AppDashboardLeadershipIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/dashboard/hierarchy/': {
+      id: '/_app/dashboard/hierarchy/'
+      path: '/dashboard/hierarchy'
+      fullPath: '/dashboard/hierarchy/'
+      preLoaderRoute: typeof AppDashboardHierarchyIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/dashboard/featured-events/': {
+      id: '/_app/dashboard/featured-events/'
+      path: '/dashboard/featured-events'
+      fullPath: '/dashboard/featured-events/'
+      preLoaderRoute: typeof AppDashboardFeaturedEventsIndexRouteImport
       parentRoute: typeof AppRouteRoute
     }
     '/_app/dashboard/executive/': {
@@ -1013,6 +1153,9 @@ interface AppRouteRouteChildren {
   AppDashboardDocumentsIndexRoute: typeof AppDashboardDocumentsIndexRoute
   AppDashboardEventsIndexRoute: typeof AppDashboardEventsIndexRoute
   AppDashboardExecutiveIndexRoute: typeof AppDashboardExecutiveIndexRoute
+  AppDashboardFeaturedEventsIndexRoute: typeof AppDashboardFeaturedEventsIndexRoute
+  AppDashboardHierarchyIndexRoute: typeof AppDashboardHierarchyIndexRoute
+  AppDashboardLeadershipIndexRoute: typeof AppDashboardLeadershipIndexRoute
   AppDashboardMembersIndexRoute: typeof AppDashboardMembersIndexRoute
   AppDashboardProgrammesIndexRoute: typeof AppDashboardProgrammesIndexRoute
   AppDashboardSettingsIndexRoute: typeof AppDashboardSettingsIndexRoute
@@ -1036,6 +1179,9 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppDashboardDocumentsIndexRoute: AppDashboardDocumentsIndexRoute,
   AppDashboardEventsIndexRoute: AppDashboardEventsIndexRoute,
   AppDashboardExecutiveIndexRoute: AppDashboardExecutiveIndexRoute,
+  AppDashboardFeaturedEventsIndexRoute: AppDashboardFeaturedEventsIndexRoute,
+  AppDashboardHierarchyIndexRoute: AppDashboardHierarchyIndexRoute,
+  AppDashboardLeadershipIndexRoute: AppDashboardLeadershipIndexRoute,
   AppDashboardMembersIndexRoute: AppDashboardMembersIndexRoute,
   AppDashboardProgrammesIndexRoute: AppDashboardProgrammesIndexRoute,
   AppDashboardSettingsIndexRoute: AppDashboardSettingsIndexRoute,
@@ -1059,12 +1205,16 @@ const rootRouteChildren: RootRouteChildren = {
   ApiUploadRoute: ApiUploadRoute,
   ChaplainChatTokenRoute: ChaplainChatTokenRoute,
   DashboardLoginRoute: DashboardLoginRoute,
+  HierarchySlugRoute: HierarchySlugRoute,
+  LeadershipMemberIdRoute: LeadershipMemberIdRoute,
   NewsSlugRoute: NewsSlugRoute,
   NewsSubmitRoute: NewsSubmitRoute,
   ParishesIdRoute: ParishesIdRoute,
   ProgrammesSubmitRoute: ProgrammesSubmitRoute,
   DocumentsIndexRoute: DocumentsIndexRoute,
   EventsIndexRoute: EventsIndexRoute,
+  HierarchyIndexRoute: HierarchyIndexRoute,
+  LeadershipIndexRoute: LeadershipIndexRoute,
   NewsIndexRoute: NewsIndexRoute,
   ProgrammesIndexRoute: ProgrammesIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
@@ -1079,10 +1229,11 @@ export const routeTree = rootRouteImport
   ._addFileTypes<FileRouteTypes>()
 
 import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
+import type { startInstance } from './start.ts'
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true
     router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
   }
 }

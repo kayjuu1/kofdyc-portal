@@ -27,9 +27,31 @@
 			"bucket_name": "kofdyc-portal"
 		}
 	],
+	// BETTER_AUTH_URL, APP_URL, RESEND_FROM_EMAIL and SYSTEM_NAME are Worker
+	// secrets (pushed via `bun run push-prod-secrets`) — declaring them here as
+	// plaintext vars makes `wrangler deploy` fail on the name collision.
+	// keep_vars preserves any dashboard-configured vars across deploys.
+	"keep_vars": true,
+	"vars": {
+		// Hostname routing: uncomment once the custom domains below are attached.
+		// Leave unset on workers.dev so all requests pass through unredirected.
+		// When enabling, also point BETTER_AUTH_URL at https://admin.kofdyc.org.
+		// COOKIE_DOMAIN must NEVER be set on *.workers.dev (public-suffix domain).
+		// "PUBLIC_HOSTNAME": "kofdyc.org",
+		// "ADMIN_HOSTNAME": "admin.kofdyc.org",
+		// "COOKIE_DOMAIN": "kofdyc.org"
+	},
 //	"routes": [
 //		{
 //			"pattern": "kofdyc.org",
+//			"custom_domain": true
+//		},
+//		{
+//			"pattern": "www.kofdyc.org",
+//			"custom_domain": true
+//		},
+//		{
+//			"pattern": "admin.kofdyc.org",
 //			"custom_domain": true
 //		}
 //	],

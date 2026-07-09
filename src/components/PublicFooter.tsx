@@ -9,6 +9,12 @@ const quickLinks = [
   { label: "Contact Chaplain", href: "/chaplain-contact" },
 ]
 
+// Cross-host link must be a plain anchor: SPA navigation bypasses the
+// hostname-routing middleware
+const staffPortalUrl = import.meta.env.VITE_ADMIN_HOSTNAME
+  ? `https://${import.meta.env.VITE_ADMIN_HOSTNAME}/dashboard/login`
+  : "/dashboard/login"
+
 export function PublicFooter() {
   return (
     <footer className="border-t border-border bg-slate-900 text-slate-300">
@@ -79,9 +85,9 @@ export function PublicFooter() {
 
         <div className="flex flex-col items-center justify-between gap-3 text-xs text-slate-500 md:flex-row">
           <p>&copy; {new Date().getFullYear()} Diocesan Youth Council, Koforidua. All rights reserved.</p>
-          <Link to="/dashboard/login" className="transition-colors hover:text-primary">
-            Admin Login
-          </Link>
+          <a href={staffPortalUrl} className="transition-colors hover:text-primary">
+            Staff portal
+          </a>
         </div>
       </div>
     </footer>

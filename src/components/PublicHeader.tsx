@@ -1,18 +1,21 @@
 import { Link, useRouterState } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
-import { Church, Menu, X, LogIn } from "lucide-react"
+import { Church, Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
 import { LiturgicalBanner } from "@/components/LiturgicalBanner"
 import { ThemeToggle } from "@/components/ThemeToggle"
 import { cn } from "@/lib/utils"
 
 const navLinks = [
+  { label: "Home", href: "/" },
   { label: "News", href: "/news" },
   { label: "Events", href: "/events" },
+  { label: "Leadership", href: "/leadership" },
+  { label: "Hierarchy", href: "/hierarchy" },
   { label: "Programmes", href: "/programmes" },
   { label: "Documents", href: "/documents" },
-  { label: "About", href: "/" },
+  { label: "Calendar", href: "/calendar" },
+  { label: "Talk to the Chaplain", href: "/chaplain-contact" },
 ]
 
 export function PublicHeader() {
@@ -63,7 +66,7 @@ export function PublicHeader() {
             </div>
           </Link>
 
-          <nav className="absolute inset-0 hidden flex-1 flex-row items-center justify-center space-x-1 text-sm font-medium lg:flex">
+          <nav className="absolute inset-0 hidden flex-1 flex-row items-center justify-center text-sm font-medium lg:flex">
             {navLinks.map((link) => {
               const active = isLinkActive(link.href)
               return (
@@ -71,7 +74,7 @@ export function PublicHeader() {
                   key={link.label}
                   to={link.href}
                   className={cn(
-                    "relative px-4 py-2 transition-colors",
+                    "relative whitespace-nowrap px-2.5 py-2 transition-colors",
                     active
                       ? "font-semibold text-primary"
                       : "text-muted-foreground hover:text-primary"
@@ -89,13 +92,6 @@ export function PublicHeader() {
           <div className="relative z-20 flex items-center gap-2">
             <LiturgicalBanner />
             <ThemeToggle />
-            <Link
-              to="/dashboard/login"
-              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md"
-            >
-              <LogIn className="size-3.5" />
-              Admin
-            </Link>
           </div>
         </div>
 
@@ -150,15 +146,6 @@ export function PublicHeader() {
                   )
                 })}
               </nav>
-              <Separator className="my-3" />
-              <Link
-                to="/dashboard/login"
-                onClick={() => setMobileOpen(false)}
-                className="flex w-full items-center justify-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-bold text-primary-foreground transition-all hover:-translate-y-0.5 hover:bg-primary/90"
-              >
-                <LogIn className="size-3.5" />
-                Admin Login
-              </Link>
             </div>
           ) : null}
         </div>

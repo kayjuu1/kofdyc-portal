@@ -4,7 +4,7 @@ import { tanstackStartCookies } from "better-auth/tanstack-start"
 import { admin } from "better-auth/plugins"
 import { db } from "@/db"
 import * as schema from "@/db/schema"
-import { canonicalizeRole, isAdminRole, type UserRole } from "@/lib/permissions"
+import { canonicalizeRole, type UserRole } from "@/lib/permissions"
 
 function uint8ArrayToBase64(bytes: Uint8Array): string {
   let binary = ""
@@ -77,17 +77,30 @@ export const auth = betterAuth({
   },
   trustedOrigins: [
     "http://localhost:3000",
+    // Known production origins stay hardcoded as a safety net: if the env
+    // vars are missing in some environment, logins must not break there
     "https://dyckoforidua.org",
     "https://kofdyc-portal.owusu.workers.dev",
+    ...(process.env.PUBLIC_HOSTNAME ? [`https://${process.env.PUBLIC_HOSTNAME}`] : []),
+    ...(process.env.ADMIN_HOSTNAME ? [`https://${process.env.ADMIN_HOSTNAME}`] : []),
+    ...(process.env.BETTER_AUTH_URL ? [process.env.BETTER_AUTH_URL] : []),
   ],
+  // COOKIE_DOMAIN must only be set once real custom domains are attached;
+  // never on *.workers.dev (public-suffix domain, cookies would be rejected)
+  ...(process.env.COOKIE_DOMAIN
+    ? {
+        advanced: {
+          crossSubDomainCookies: {
+            enabled: true,
+            domain: process.env.COOKIE_DOMAIN,
+          },
+        },
+      }
+    : {}),
 })
 
 export type Session = typeof auth.$Infer.Session
 export type User = typeof auth.$Infer.Session.user
-
-export function canAccessDashboard(role: UserRole | null): boolean {
-  return isAdminRole(role)
-}
 
 export async function getUserRole(userId: string): Promise<UserRole | null> {
   const user = await db.query.user.findFirst({

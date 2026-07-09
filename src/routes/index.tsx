@@ -21,10 +21,12 @@ import LiturgicalBanner from "@/components/liturgical-banner/LiturgicalBanner"
 import { NewsCard } from "@/components/NewsCard"
 import { EventCard } from "@/components/EventCard"
 import { ScopeFilter } from "@/components/ScopeFilter"
+import { FeaturedEventHero } from "@/components/featured-event/FeaturedEventHero"
 import { getPublishedNews } from "@/functions/news"
 import { getUpcomingEvents } from "@/functions/events"
 import { getDocuments, getDocumentDownloadUrl } from "@/functions/documents"
 import { getActiveSubmissionPrompt } from "@/functions/submission-prompts"
+import { getActiveFeaturedEvents } from "@/functions/featured-events"
 
 type SearchParams = {
   scope?: "diocese" | "deanery" | "parish"
@@ -81,19 +83,24 @@ export const Route = createFileRoute("/")({
   }),
   loaderDeps: ({ search }) => ({ scope: search.scope }),
   loader: async ({ deps }) => {
-    const [newsData, eventsData, docsData, activePrompt] = await Promise.all([
+    const [newsData, eventsData, docsData, activePrompt, featuredEvents] = await Promise.all([
       getPublishedNews({ data: { limit: 6, scope: deps.scope } }),
       getUpcomingEvents({ data: { limit: 4, scope: deps.scope } }),
       getDocuments({ data: { limit: 6 } }),
       getActiveSubmissionPrompt(),
+      // The hero is decorative — never take the homepage down with it
+      getActiveFeaturedEvents().catch(() => ({
+        items: [],
+        serverNow: new Date().toISOString(),
+      })),
     ])
-    return { news: newsData, events: eventsData, documents: docsData, activePrompt }
+    return { news: newsData, events: eventsData, documents: docsData, activePrompt, featuredEvents }
   },
   component: HomePage,
 })
 
 function HomePage() {
-  const { news, events, documents, activePrompt } = Route.useLoaderData()
+  const { news, events, documents, activePrompt, featuredEvents } = Route.useLoaderData()
   const articles = news.articles as NewsArticle[]
   const eventList = events as EventItem[]
   const docList = documents.documents as DocumentItem[]
@@ -105,6 +112,10 @@ function HomePage() {
       <PublicHeader />
       <main>
         <LiturgicalBanner />
+        <FeaturedEventHero
+          items={featuredEvents.items}
+          serverNow={featuredEvents.serverNow}
+        />
         <DarkHero
           newsCount={news.total ?? articles.length}
           eventsCount={eventList.length}

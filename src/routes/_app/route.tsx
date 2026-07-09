@@ -1,4 +1,4 @@
-import { createFileRoute, Link, Outlet, redirect, useRouter, useRouterState } from "@tanstack/react-router"
+import { createFileRoute, Link, Outlet, redirect, useRouterState } from "@tanstack/react-router"
 import {
   Calendar,
   ChevronRight,
@@ -8,12 +8,16 @@ import {
   LayoutDashboard,
   LogOut,
   MessageSquare,
+  Network,
   Newspaper,
   Settings,
+  Sparkles,
+  UserRound,
   Users,
 } from "lucide-react"
 
 import { getSession } from "@/functions/get-user"
+import { getPublicSiteUrl } from "@/functions/host-config"
 import { authClient } from "@/lib/auth-client"
 import { hasPermission, type UserRole } from "@/lib/permissions"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -46,11 +50,14 @@ import { ThemeToggle } from "@/components/ThemeToggle"
 
 export const Route = createFileRoute("/_app")({
   beforeLoad: async () => {
-    const session = await getSession()
+    const [session, publicSiteUrl] = await Promise.all([
+      getSession(),
+      getPublicSiteUrl(),
+    ])
     if (!session?.user) {
       throw redirect({ to: "/dashboard/login" })
     }
-    return { session }
+    return { session, publicSiteUrl }
   },
   component: AppLayout,
 })
@@ -84,6 +91,9 @@ const navSections = [
 const adminItems = [
   { label: "Admin Users", href: "/dashboard/admin-users", icon: Users, permission: "manageAdminUsers" as const },
   { label: "Chaplain Inbox", href: "/dashboard/chaplain", icon: MessageSquare, permission: "manageChaplainInbox" as const },
+  { label: "Featured Events", href: "/dashboard/featured-events", icon: Sparkles, permission: "manageFeaturedEvents" as const },
+  { label: "Leadership", href: "/dashboard/leadership", icon: UserRound, permission: "manageLeadership" as const },
+  { label: "Hierarchy", href: "/dashboard/hierarchy", icon: Network, permission: "manageHierarchy" as const },
 ]
 
 function getPageTitle(pathname: string): string {
@@ -95,19 +105,23 @@ function getPageTitle(pathname: string): string {
   if (pathname.startsWith("/dashboard/admin-users")) return "Admin Users"
   if (pathname.startsWith("/dashboard/chaplain")) return "Chaplain Inbox"
   if (pathname.startsWith("/dashboard/settings")) return "Settings"
+  if (pathname.startsWith("/dashboard/featured-events")) return "Featured Events"
+  if (pathname.startsWith("/dashboard/leadership")) return "Leadership"
+  if (pathname.startsWith("/dashboard/hierarchy")) return "Hierarchy"
   return "Dashboard"
 }
 
 function AppLayout() {
-  const { session } = Route.useRouteContext()
-  const router = useRouter()
+  // Cross-host links must be plain anchors: SPA navigation bypasses the
+  // hostname-routing middleware, which would render the public site on the admin host
+  const { session, publicSiteUrl } = Route.useRouteContext()
   const pathname = useRouterState({ select: (state) => state.location.pathname })
   const role = ((session.user as { role?: string }).role ?? "coordinator") as UserRole
   const pageTitle = getPageTitle(pathname)
 
   async function handleSignOut() {
     await authClient.signOut()
-    router.navigate({ to: "/" })
+    window.location.href = publicSiteUrl
   }
 
   const initials = session.user.name
@@ -269,7 +283,7 @@ function AppLayout() {
           <div className="ml-auto flex items-center gap-2">
             <ThemeToggle />
             <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
-              <Link to="/">View site</Link>
+              <a href={publicSiteUrl}>View site</a>
             </Button>
           </div>
         </header>

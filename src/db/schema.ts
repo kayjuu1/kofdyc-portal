@@ -1,5 +1,5 @@
-﻿import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core'
-import { relations } from 'drizzle-orm'
+﻿import { sqliteTable, text, integer, real, index, type AnySQLiteColumn } from 'drizzle-orm/sqlite-core'
+import { relations, sql } from 'drizzle-orm'
 
 export const user = sqliteTable('user', {
   id: text('id').primaryKey(),
@@ -550,5 +550,142 @@ export const paymentsRelations = relations(payments, ({ one }) => ({
   registration: one(registrations, {
     fields: [payments.registrationId],
     references: [registrations.id],
+  }),
+}))
+
+export const featuredEvents = sqliteTable('featured_events', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  // set null (not restrict): a featured hero must not block deleting its event;
+  // the row survives and admins deactivate or re-link it
+  eventId: integer('event_id').references(() => events.id, { onDelete: 'set null' }),
+  displayTitle: text('display_title').notNull(),
+  artworkUrl: text('artwork_url').notNull(),
+  targetDate: text('target_date').notNull(),
+  ctaLabel: text('cta_label').notNull().default('Event details'),
+  ctaUrl: text('cta_url'),
+  supportLine: text('support_line'),
+  isActive: integer('is_active', { mode: 'boolean' }).notNull().default(false),
+  sortOrder: integer('sort_order').notNull().default(0),
+  createdBy: text('created_by').references(() => user.id),
+  createdAt: text('created_at').notNull().default(sql`(CURRENT_TIMESTAMP)`),
+  updatedAt: text('updated_at').notNull().default(sql`(CURRENT_TIMESTAMP)`),
+}, (t) => [
+  index('featured_events_event_id_idx').on(t.eventId),
+  index('featured_events_created_by_idx').on(t.createdBy),
+  index('featured_events_is_active_idx').on(t.isActive),
+])
+
+export const leadershipGroups = sqliteTable('leadership_groups', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  // "First phrase|Gold phrase" — the segment after | renders in gold
+  title: text('title').notNull(),
+  eyebrow: text('eyebrow'),
+  intro: text('intro'),
+  sortOrder: integer('sort_order').notNull().default(0),
+  isPublished: integer('is_published', { mode: 'boolean' }).notNull().default(false),
+  createdAt: text('created_at').notNull().default(sql`(CURRENT_TIMESTAMP)`),
+  updatedAt: text('updated_at').notNull().default(sql`(CURRENT_TIMESTAMP)`),
+})
+
+export const leadershipMembers = sqliteTable('leadership_members', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  // cascade: members are owned by their group and have no standalone page
+  groupId: integer('group_id').references(() => leadershipGroups.id, { onDelete: 'cascade' }).notNull(),
+  name: text('name').notNull(),
+  roleTitle: text('role_title').notNull(),
+  photoUrl: text('photo_url'),
+  bio: text('bio'),
+  email: text('email'),
+  phone: text('phone'),
+  sortOrder: integer('sort_order').notNull().default(0),
+  isPublished: integer('is_published', { mode: 'boolean' }).notNull().default(true),
+  createdAt: text('created_at').notNull().default(sql`(CURRENT_TIMESTAMP)`),
+  updatedAt: text('updated_at').notNull().default(sql`(CURRENT_TIMESTAMP)`),
+}, (t) => [
+  index('leadership_members_group_id_idx').on(t.groupId),
+])
+
+export const hierarchyNodes = sqliteTable('hierarchy_nodes', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  // restrict: deleting a subtree must be deliberate — the DB enforces the same
+  // "delete or move children first" rule deleteHierarchyNode shows in the UI
+  parentId: integer('parent_id').references((): AnySQLiteColumn => hierarchyNodes.id, { onDelete: 'restrict' }),
+  type: text('type', {
+    enum: ['movement', 'sub_movement', 'deanery_council', 'parish_council']
+  }).notNull(),
+  name: text('name').notNull(),
+  slug: text('slug').notNull().unique(),
+  crestUrl: text('crest_url'),
+  briefHistory: text('brief_history'), // markdown source, sanitised at render
+  deaneryId: integer('deanery_id').references(() => deaneries.id),
+  parishId: integer('parish_id').references(() => parishes.id),
+  sortOrder: integer('sort_order').notNull().default(0),
+  isPublished: integer('is_published', { mode: 'boolean' }).notNull().default(false),
+  createdAt: text('created_at').notNull().default(sql`(CURRENT_TIMESTAMP)`),
+  updatedAt: text('updated_at').notNull().default(sql`(CURRENT_TIMESTAMP)`),
+}, (t) => [
+  index('hierarchy_nodes_parent_id_idx').on(t.parentId),
+  index('hierarchy_nodes_deanery_id_idx').on(t.deaneryId),
+  index('hierarchy_nodes_parish_id_idx').on(t.parishId),
+])
+
+export const hierarchyLeaders = sqliteTable('hierarchy_leaders', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  // cascade: leaders are owned by their node and have no standalone page
+  nodeId: integer('node_id').references(() => hierarchyNodes.id, { onDelete: 'cascade' }).notNull(),
+  name: text('name').notNull(),
+  roleTitle: text('role_title').notNull(),
+  photoUrl: text('photo_url'),
+  phone: text('phone'),
+  sortOrder: integer('sort_order').notNull().default(0),
+  createdAt: text('created_at').notNull().default(sql`(CURRENT_TIMESTAMP)`),
+}, (t) => [
+  index('hierarchy_leaders_node_id_idx').on(t.nodeId),
+])
+
+export const featuredEventsRelations = relations(featuredEvents, ({ one }) => ({
+  event: one(events, {
+    fields: [featuredEvents.eventId],
+    references: [events.id],
+  }),
+  creator: one(user, {
+    fields: [featuredEvents.createdBy],
+    references: [user.id],
+  }),
+}))
+
+export const leadershipGroupsRelations = relations(leadershipGroups, ({ many }) => ({
+  members: many(leadershipMembers),
+}))
+
+export const leadershipMembersRelations = relations(leadershipMembers, ({ one }) => ({
+  group: one(leadershipGroups, {
+    fields: [leadershipMembers.groupId],
+    references: [leadershipGroups.id],
+  }),
+}))
+
+export const hierarchyNodesRelations = relations(hierarchyNodes, ({ one, many }) => ({
+  parent: one(hierarchyNodes, {
+    fields: [hierarchyNodes.parentId],
+    references: [hierarchyNodes.id],
+    relationName: 'nodeChildren',
+  }),
+  children: many(hierarchyNodes, { relationName: 'nodeChildren' }),
+  deanery: one(deaneries, {
+    fields: [hierarchyNodes.deaneryId],
+    references: [deaneries.id],
+  }),
+  parish: one(parishes, {
+    fields: [hierarchyNodes.parishId],
+    references: [parishes.id],
+  }),
+  leaders: many(hierarchyLeaders),
+}))
+
+export const hierarchyLeadersRelations = relations(hierarchyLeaders, ({ one }) => ({
+  node: one(hierarchyNodes, {
+    fields: [hierarchyLeaders.nodeId],
+    references: [hierarchyNodes.id],
   }),
 }))
