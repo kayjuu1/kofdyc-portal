@@ -3,7 +3,16 @@
     "allow": [
       "Bash(npx tsc:*)",
       "Bash(npx shadcn@latest:*)",
-      "WebFetch(domain:student.myhostelonline.com)"
+      "WebFetch(domain:student.myhostelonline.com)",
+      "Skill(code-review)",
+      "Bash(git diff *)",
+      "Bash(node node_modules/typescript/bin/tsc --noEmit)",
+      "Bash(git show *)",
+      "Bash(bun run *)",
+      "Bash(grep -v \"//\")",
+      "Bash(grep -rhoE \"process\\\\.env\\\\.[A-Z_]+|env\\\\.[A-Z_]{3,}\" src/ --include=\"*.ts\" --include=\"*.tsx\")",
+      "PowerShell(git *)",
+      "Bash(grep *)"
     ]
   }
 }

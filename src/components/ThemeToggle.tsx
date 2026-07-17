@@ -1,30 +1,20 @@
-import { useEffect, useState } from "react"
 import { Moon, Sun } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
-function getInitialTheme(): "dark" | "light" {
-  if (typeof window === "undefined") return "dark"
-  return document.documentElement.classList.contains("dark") ? "dark" : "light"
-}
-
 export function ThemeToggle({ variant = "ghost", size = "icon" }: { variant?: "ghost" | "outline"; size?: "icon" | "sm" }) {
-  const [theme, setTheme] = useState<"light" | "dark">(getInitialTheme)
-
-  useEffect(() => {
-    // Sync with what the inline script may have set
-    setTheme(document.documentElement.classList.contains("dark") ? "dark" : "light")
-  }, [])
-
   function toggle() {
-    const next = theme === "light" ? "dark" : "light"
+    const next = document.documentElement.classList.contains("dark") ? "light" : "dark"
     document.documentElement.classList.toggle("dark", next === "dark")
     localStorage.setItem("theme", next)
-    setTheme(next)
   }
 
+  // Both icons are always rendered and CSS picks the visible one, so the
+  // markup is identical on server and client regardless of the theme the
+  // inline script applied — no hydration mismatch.
   return (
     <Button variant={variant} size={size} onClick={toggle} aria-label="Toggle theme">
-      {theme === "light" ? <Moon className="size-4" /> : <Sun className="size-4" />}
+      <Moon className="size-4 dark:hidden" />
+      <Sun className="size-4 hidden dark:block" />
     </Button>
   )
 }

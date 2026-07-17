@@ -9,7 +9,6 @@ import {
   MapPin,
   Newspaper,
   PenLine,
-  Sparkles,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -146,6 +145,19 @@ function DarkHero({
 }) {
   return (
     <section className="relative flex w-full items-center justify-center overflow-hidden bg-slate-900">
+      {/* Background photo (drop the real image at public/hero.jpg) */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: "url(/hero.jpg)" }}
+      />
+
+      {/* Legibility overlay */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/60 to-slate-950/50"
+      />
+
       {/* Light rays backdrop */}
       <div
         className="pointer-events-none absolute inset-0 isolate overflow-hidden"
@@ -155,7 +167,7 @@ function DarkHero({
       >
         <div
           aria-hidden="true"
-          className="absolute inset-0 opacity-70"
+          className="absolute inset-0 opacity-40"
           style={{
             background:
               "radial-gradient(circle at 20% 15%, color-mix(in srgb, var(--primary) 45%, transparent), transparent 65%)",
@@ -163,7 +175,7 @@ function DarkHero({
         />
         <div
           aria-hidden="true"
-          className="absolute inset-0 opacity-60"
+          className="absolute inset-0 opacity-30"
           style={{
             background:
               "radial-gradient(circle at 85% 10%, color-mix(in srgb, var(--primary) 35%, transparent), transparent 70%)",
@@ -171,7 +183,7 @@ function DarkHero({
         />
         <div
           aria-hidden="true"
-          className="absolute inset-0 opacity-40"
+          className="absolute inset-0 opacity-25"
           style={{
             background:
               "radial-gradient(circle at 50% 110%, color-mix(in srgb, var(--primary) 40%, transparent), transparent 55%)",
@@ -179,98 +191,54 @@ function DarkHero({
         />
       </div>
 
-      <div className="relative z-10 w-full max-w-7xl px-4 pb-20 pt-32 sm:px-6 sm:pb-28 sm:pt-40 lg:px-8">
-        <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-2">
-          {/* Left column */}
-          <div className="flex flex-col justify-center space-y-8">
-            <span className="w-fit text-xs font-semibold uppercase tracking-[0.35em] text-slate-300/70">
-              Catholic Diocese of Koforidua
-            </span>
-            <div>
-              <h1 className="mb-6 text-5xl font-black leading-tight text-white sm:text-6xl lg:text-7xl">
-                Youth in Faith,{" "}
-                <span className="text-primary">Made Alive.</span>
-              </h1>
-              <p className="max-w-xl text-lg leading-relaxed text-slate-400">
-                The official portal of the Koforidua Diocesan Youth Council. News, events,
-                programmes, and formation resources for young Catholics across the diocese.
-              </p>
-            </div>
-            <div className="flex flex-col gap-4 pt-4 sm:flex-row">
-              <Link
-                to="/news"
-                className="group inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-8 py-4 text-base font-bold text-primary-foreground shadow-lg shadow-primary/30 transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/50 sm:text-lg"
-              >
-                Explore News
-                <ArrowRight className="size-5 transition-transform group-hover:translate-x-1" />
-              </Link>
-              <Link
-                to="/events"
-                className="group inline-flex items-center justify-center gap-2 rounded-lg border border-slate-700 bg-slate-800/50 px-8 py-4 text-base font-bold text-white backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-600 hover:bg-slate-800/70 sm:text-lg"
-              >
-                Upcoming Events
-                <Calendar className="size-5" />
-              </Link>
-            </div>
-            <div className="grid grid-cols-3 gap-4 border-t border-slate-800 pt-8 sm:gap-6 sm:pt-12">
-              <div>
-                <p className="text-3xl font-bold text-primary">{newsCount}+</p>
-                <p className="mt-2 text-sm text-slate-400">Published Stories</p>
-              </div>
-              <div>
-                <p className="text-3xl font-bold text-primary">{eventsCount}+</p>
-                <p className="mt-2 text-sm text-slate-400">Upcoming Events</p>
-              </div>
-              <div>
-                <p className="text-3xl font-bold text-primary">{docsCount}+</p>
-                <p className="mt-2 text-sm text-slate-400">Resources & Docs</p>
-              </div>
-            </div>
+      <div className="relative z-10 w-full max-w-7xl px-4 pb-16 pt-24 sm:px-6 sm:pb-24 sm:pt-32 lg:px-8">
+        <div className="flex max-w-3xl flex-col justify-center space-y-8">
+          <span className="w-fit text-xs font-semibold uppercase tracking-[0.35em] text-slate-300/70">
+            Catholic Diocese of Koforidua
+          </span>
+          <div>
+            <h1 className="mb-6 text-5xl font-black leading-tight text-white sm:text-6xl lg:text-7xl">
+              Youth in Faith,{" "}
+              <span className="text-primary">Made Alive.</span>
+            </h1>
+            <p className="max-w-xl text-lg leading-relaxed text-slate-300">
+              The official portal of the Koforidua Diocesan Youth Council. News, events,
+              programmes, and formation resources for young Catholics across the diocese.
+            </p>
           </div>
-
-          {/* Right column - feature cards */}
-          <div className="relative hidden flex-col items-center justify-center space-y-6 lg:flex">
-            <FeatureCard
-              icon={<Newspaper className="size-6 text-primary" />}
-              title="Diocesan News"
-              description="Stay updated on happenings across the diocese, deaneries, and parishes."
-            />
-            <FeatureCard
-              icon={<Calendar className="size-6 text-primary" />}
-              title="Events & Programmes"
-              description="Find retreats, rallies, formation programmes, and register online."
-            />
-            <FeatureCard
-              icon={<Sparkles className="size-6 text-primary" />}
-              title="Faith Formation"
-              description="Access pastoral documents, guidelines, and resources for youth ministry."
-            />
+          <div className="flex flex-col gap-4 pt-4 sm:flex-row">
+            <Link
+              to="/news"
+              className="group inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-8 py-4 text-base font-bold text-primary-foreground shadow-lg shadow-primary/30 transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/50 sm:text-lg"
+            >
+              Explore News
+              <ArrowRight className="size-5 transition-transform group-hover:translate-x-1" />
+            </Link>
+            <Link
+              to="/events"
+              className="group inline-flex items-center justify-center gap-2 rounded-lg border border-slate-500/60 bg-slate-900/50 px-8 py-4 text-base font-bold text-white backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-400 hover:bg-slate-900/70 sm:text-lg"
+            >
+              Upcoming Events
+              <Calendar className="size-5" />
+            </Link>
+          </div>
+          <div className="grid grid-cols-3 gap-4 border-t border-slate-400/30 pt-8 sm:gap-6 sm:pt-10">
+            <div>
+              <p className="text-3xl font-bold text-primary">{newsCount}+</p>
+              <p className="mt-2 text-sm text-slate-300">Published Stories</p>
+            </div>
+            <div>
+              <p className="text-3xl font-bold text-primary">{eventsCount}+</p>
+              <p className="mt-2 text-sm text-slate-300">Upcoming Events</p>
+            </div>
+            <div>
+              <p className="text-3xl font-bold text-primary">{docsCount}+</p>
+              <p className="mt-2 text-sm text-slate-300">Resources & Docs</p>
+            </div>
           </div>
         </div>
       </div>
     </section>
-  )
-}
-
-function FeatureCard({
-  icon,
-  title,
-  description,
-}: {
-  icon: React.ReactNode
-  title: string
-  description: string
-}) {
-  return (
-    <div className="w-full max-w-sm rounded-lg border border-slate-700 bg-slate-800/50 p-6 backdrop-blur-sm transition-colors duration-300 hover:bg-slate-800/70">
-      <div className="flex items-start gap-4">
-        <div className="mt-1 flex-shrink-0">{icon}</div>
-        <div>
-          <h3 className="text-lg font-bold text-white">{title}</h3>
-          <p className="mt-2 text-sm text-slate-400">{description}</p>
-        </div>
-      </div>
-    </div>
   )
 }
 

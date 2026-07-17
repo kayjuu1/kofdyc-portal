@@ -59,7 +59,7 @@ export default function LiturgicalBanner() {
       style={{ background: bgGradient }}
     >
       {/* Desktop layout */}
-      <div className="mx-auto hidden min-h-[180px] max-w-7xl items-center gap-8 px-6 py-6 sm:flex">
+      <div className="mx-auto hidden min-h-[104px] max-w-7xl items-center gap-6 px-6 py-4 sm:flex">
         {/* SVG symbol */}
         <div className="shrink-0" style={{ opacity: 0.9 }}>
           <SeasonSymbol
@@ -67,7 +67,7 @@ export default function LiturgicalBanner() {
             isSpecialDay={info.isSpecialDay}
             specialDayName={info.specialDayName}
             color={info.color}
-            size={140}
+            size={80}
             date={now}
           />
         </div>
@@ -76,7 +76,7 @@ export default function LiturgicalBanner() {
         <div className="flex flex-col justify-center">
           {info.isSpecialDay && info.specialDayName && (
             <span
-              className="mb-2 inline-block w-fit rounded-full px-3 py-1 text-sm font-medium text-white"
+              className="mb-1.5 inline-block w-fit rounded-full px-2.5 py-0.5 text-xs font-medium text-white"
               style={{ backgroundColor: palette.accentColor }}
             >
               {info.specialDayName}
@@ -84,21 +84,21 @@ export default function LiturgicalBanner() {
           )}
 
           <h2
-            className="font-serif text-4xl font-bold"
+            className="font-serif text-2xl font-bold"
             style={{ color: palette.text }}
           >
             {SEASON_NAME[info.season]}
           </h2>
 
           <p
-            className="mt-1 text-lg font-light"
+            className="mt-0.5 text-sm font-light"
             style={{ color: weekLabelColor }}
           >
             {info.weekLabel}
           </p>
 
           <div
-            className="mt-3"
+            className="mt-2"
             style={{
               height: 2,
               width: 80,
@@ -109,49 +109,42 @@ export default function LiturgicalBanner() {
       </div>
 
       {/* Mobile layout */}
-      <div className="flex min-h-[220px] flex-col items-center justify-center px-4 py-6 text-center sm:hidden">
-        <div className="mb-4" style={{ opacity: 0.9 }}>
+      <div className="flex items-center gap-4 px-4 py-3 sm:hidden">
+        <div className="shrink-0" style={{ opacity: 0.9 }}>
           <SeasonSymbol
             season={info.season}
             isSpecialDay={info.isSpecialDay}
             specialDayName={info.specialDayName}
             color={info.color}
-            size={100}
+            size={56}
             date={now}
           />
         </div>
 
-        {info.isSpecialDay && info.specialDayName && (
-          <span
-            className="mb-2 inline-block rounded-full px-3 py-1 text-sm font-medium text-white"
-            style={{ backgroundColor: palette.accentColor }}
+        <div className="flex flex-col">
+          {info.isSpecialDay && info.specialDayName && (
+            <span
+              className="mb-1 inline-block w-fit rounded-full px-2.5 py-0.5 text-xs font-medium text-white"
+              style={{ backgroundColor: palette.accentColor }}
+            >
+              {info.specialDayName}
+            </span>
+          )}
+
+          <h2
+            className="font-serif text-lg font-bold"
+            style={{ color: palette.text }}
           >
-            {info.specialDayName}
-          </span>
-        )}
+            {SEASON_NAME[info.season]}
+          </h2>
 
-        <h2
-          className="font-serif text-2xl font-bold"
-          style={{ color: palette.text }}
-        >
-          {SEASON_NAME[info.season]}
-        </h2>
-
-        <p
-          className="mt-1 text-base font-light"
-          style={{ color: weekLabelColor }}
-        >
-          {info.weekLabel}
-        </p>
-
-        <div
-          className="mt-3"
-          style={{
-            height: 2,
-            width: 80,
-            backgroundColor: palette.accentColor,
-          }}
-        />
+          <p
+            className="text-xs font-light"
+            style={{ color: weekLabelColor }}
+          >
+            {info.weekLabel}
+          </p>
+        </div>
       </div>
     </section>
   )

@@ -1,22 +1,44 @@
 import { Link, useRouterState } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
-import { Church, Menu, X } from "lucide-react"
+import { Church, Menu, MessageCircleHeart, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "@/components/ui/navigation-menu"
 import { LiturgicalBanner } from "@/components/LiturgicalBanner"
 import { ThemeToggle } from "@/components/ThemeToggle"
 import { cn } from "@/lib/utils"
 
-const navLinks = [
+const topLinks = [
   { label: "Home", href: "/" },
   { label: "News", href: "/news" },
   { label: "Events", href: "/events" },
-  { label: "Leadership", href: "/leadership" },
-  { label: "Hierarchy", href: "/hierarchy" },
-  { label: "Programmes", href: "/programmes" },
-  { label: "Documents", href: "/documents" },
-  { label: "Calendar", href: "/calendar" },
-  { label: "Talk to the Chaplain", href: "/chaplain-contact" },
 ]
+
+const navGroups = [
+  {
+    label: "About",
+    items: [
+      { label: "Leadership", href: "/leadership", description: "Diocesan executives and patrons" },
+      { label: "Hierarchy", href: "/hierarchy", description: "Deaneries, parishes, and societies" },
+    ],
+  },
+  {
+    label: "Resources",
+    items: [
+      { label: "Programmes", href: "/programmes", description: "Formation and youth programmes" },
+      { label: "Documents", href: "/documents", description: "Pastoral documents and guidelines" },
+      { label: "Calendar", href: "/calendar", description: "Liturgical and events calendar" },
+    ],
+  },
+]
+
+const chaplainLink = { label: "Talk to the Chaplain", href: "/chaplain-contact" }
 
 export function PublicHeader() {
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -40,6 +62,9 @@ export function PublicHeader() {
   const isLinkActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href)
 
+  const isGroupActive = (items: { href: string }[]) =>
+    items.some((item) => isLinkActive(item.href))
+
   return (
     <>
       {/* Spacer to offset the fixed navbar */}
@@ -49,12 +74,11 @@ export function PublicHeader() {
         {/* Desktop floating pill navbar */}
         <div
           className={cn(
-            "relative z-[60] mx-auto mt-3 hidden w-full max-w-7xl items-center justify-between self-start rounded-full border px-4 py-2 transition-all duration-300 lg:flex",
+            "relative z-[60] mx-auto mt-3 hidden w-full max-w-6xl items-center justify-between self-start rounded-full border px-4 py-2 transition-all duration-300 lg:flex",
             scrolled
               ? "border-border/40 bg-background/80 shadow-sm backdrop-blur-md"
               : "border-transparent bg-transparent"
           )}
-          style={{ minWidth: 900 }}
         >
           <Link to="/" className="relative z-20 flex items-center gap-2.5 px-2 py-1">
             <div className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
@@ -66,31 +90,84 @@ export function PublicHeader() {
             </div>
           </Link>
 
-          <nav className="absolute inset-0 hidden flex-1 flex-row items-center justify-center text-sm font-medium lg:flex">
-            {navLinks.map((link) => {
-              const active = isLinkActive(link.href)
-              return (
-                <Link
-                  key={link.label}
-                  to={link.href}
-                  className={cn(
-                    "relative whitespace-nowrap px-2.5 py-2 transition-colors",
-                    active
-                      ? "font-semibold text-primary"
-                      : "text-muted-foreground hover:text-primary"
-                  )}
-                >
-                  {active ? (
-                    <span className="absolute inset-0 rounded-full bg-primary/10" />
-                  ) : null}
-                  <span className="relative z-20">{link.label}</span>
-                </Link>
-              )
-            })}
-          </nav>
+          <NavigationMenu className="text-sm font-medium">
+            <NavigationMenuList>
+              {topLinks.map((link) => {
+                const active = isLinkActive(link.href)
+                return (
+                  <NavigationMenuItem key={link.label}>
+                    <NavigationMenuLink
+                      asChild
+                      className={cn(
+                        "whitespace-nowrap rounded-full bg-transparent px-3 py-2 font-medium hover:bg-primary/10 hover:text-primary focus:bg-primary/10 focus:text-primary",
+                        active
+                          ? "bg-primary/10 font-semibold text-primary"
+                          : "text-muted-foreground"
+                      )}
+                    >
+                      <Link to={link.href}>{link.label}</Link>
+                    </NavigationMenuLink>
+                  </NavigationMenuItem>
+                )
+              })}
+
+              {navGroups.map((group) => {
+                const active = isGroupActive(group.items)
+                return (
+                  <NavigationMenuItem key={group.label}>
+                    <NavigationMenuTrigger
+                      className={cn(
+                        "h-auto whitespace-nowrap rounded-full bg-transparent px-3 py-2 font-medium hover:bg-primary/10 hover:text-primary focus:bg-primary/10 focus:text-primary data-open:bg-primary/10 data-open:text-primary data-open:hover:bg-primary/10 data-open:focus:bg-primary/10 data-popup-open:bg-primary/10 data-popup-open:hover:bg-primary/10",
+                        active
+                          ? "bg-primary/10 font-semibold text-primary"
+                          : "text-muted-foreground"
+                      )}
+                    >
+                      {group.label}
+                    </NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <ul className="grid w-56 gap-1 p-1">
+                        {group.items.map((item) => (
+                          <li key={item.label}>
+                            <NavigationMenuLink
+                              asChild
+                              className={cn(
+                                "flex-col items-start gap-0.5 px-3 py-2",
+                                isLinkActive(item.href) && "bg-primary/10"
+                              )}
+                            >
+                              <Link to={item.href}>
+                                <span
+                                  className={cn(
+                                    "text-sm font-medium",
+                                    isLinkActive(item.href) && "text-primary"
+                                  )}
+                                >
+                                  {item.label}
+                                </span>
+                                <span className="text-xs text-muted-foreground">
+                                  {item.description}
+                                </span>
+                              </Link>
+                            </NavigationMenuLink>
+                          </li>
+                        ))}
+                      </ul>
+                    </NavigationMenuContent>
+                  </NavigationMenuItem>
+                )
+              })}
+            </NavigationMenuList>
+          </NavigationMenu>
 
           <div className="relative z-20 flex items-center gap-2">
             <LiturgicalBanner />
+            <Button asChild size="sm" className="rounded-full">
+              <Link to={chaplainLink.href}>
+                <MessageCircleHeart className="size-4" />
+                {chaplainLink.label}
+              </Link>
+            </Button>
             <ThemeToggle />
           </div>
         </div>
@@ -127,29 +204,71 @@ export function PublicHeader() {
                 <LiturgicalBanner />
               </div>
               <nav className="space-y-1">
-                {navLinks.map((link) => {
-                  const active = isLinkActive(link.href)
-                  return (
-                    <Link
-                      key={link.label}
-                      to={link.href}
-                      onClick={() => setMobileOpen(false)}
-                      className={cn(
-                        "block rounded-full px-4 py-2 text-sm font-medium transition-colors",
-                        active
-                          ? "bg-primary/10 font-semibold text-primary"
-                          : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
-                      )}
-                    >
-                      {link.label}
+                {topLinks.map((link) => (
+                  <MobileNavLink
+                    key={link.label}
+                    href={link.href}
+                    label={link.label}
+                    active={isLinkActive(link.href)}
+                    onNavigate={() => setMobileOpen(false)}
+                  />
+                ))}
+                {navGroups.map((group) => (
+                  <div key={group.label} className="pt-2">
+                    <p className="px-4 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                      {group.label}
+                    </p>
+                    {group.items.map((item) => (
+                      <MobileNavLink
+                        key={item.label}
+                        href={item.href}
+                        label={item.label}
+                        active={isLinkActive(item.href)}
+                        onNavigate={() => setMobileOpen(false)}
+                      />
+                    ))}
+                  </div>
+                ))}
+                <div className="pt-3">
+                  <Button asChild className="w-full rounded-full">
+                    <Link to={chaplainLink.href} onClick={() => setMobileOpen(false)}>
+                      <MessageCircleHeart className="size-4" />
+                      {chaplainLink.label}
                     </Link>
-                  )
-                })}
+                  </Button>
+                </div>
               </nav>
             </div>
           ) : null}
         </div>
       </header>
     </>
+  )
+}
+
+function MobileNavLink({
+  href,
+  label,
+  active,
+  onNavigate,
+}: {
+  href: string
+  label: string
+  active: boolean
+  onNavigate: () => void
+}) {
+  return (
+    <Link
+      to={href}
+      onClick={onNavigate}
+      className={cn(
+        "block rounded-full px-4 py-2 text-sm font-medium transition-colors",
+        active
+          ? "bg-primary/10 font-semibold text-primary"
+          : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
+      )}
+    >
+      {label}
+    </Link>
   )
 }
