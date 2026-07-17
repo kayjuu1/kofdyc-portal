@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PublicHeader } from "@/components/PublicHeader"
 import { PublicFooter } from "@/components/PublicFooter"
 import { DocumentPreview } from "@/components/DocumentPreview"
-import { getDocuments } from "@/functions/documents"
+import { getDocuments, getDocumentDownloadUrl } from "@/functions/documents"
 import { Search, FileText, Download, ChevronLeft, ChevronRight } from "lucide-react"
 
 type SearchParams = {
@@ -128,8 +128,11 @@ function DocumentsPage() {
               name="search"
               placeholder="Search documents..."
               defaultValue={search}
-              className="pl-9"
+              className="pl-9 pr-20"
             />
+            <Button type="submit" size="sm" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 text-xs">
+              Search
+            </Button>
           </form>
 
           <form
@@ -213,11 +216,16 @@ function DocumentsPage() {
                           Preview
                         </Button>
                       )}
-                      <Button asChild variant="outline" size="sm">
-                        <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer">
-                          <Download className="w-4 h-4 sm:mr-1" />
-                          <span className="hidden sm:inline">Download</span>
-                        </a>
+                      <Button variant="outline" size="sm" onClick={async () => {
+                        try {
+                          const { url } = await getDocumentDownloadUrl({ data: { id: doc.id } })
+                          window.open(url, "_blank")
+                        } catch {
+                          window.open(doc.fileUrl, "_blank")
+                        }
+                      }}>
+                        <Download className="w-4 h-4 sm:mr-1" />
+                        <span className="hidden sm:inline">Download</span>
                       </Button>
                     </div>
                   </CardContent>

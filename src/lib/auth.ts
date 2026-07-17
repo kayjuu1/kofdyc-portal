@@ -62,9 +62,29 @@ export const auth = betterAuth({
   ],
   emailAndPassword: {
     enabled: true,
+    requireEmailVerification: true,
+    sendResetPassword: async ({ user, url }) => {
+      const { sendEmail } = await import("@/lib/resend")
+      await sendEmail({
+        to: user.email,
+        subject: "Reset your password",
+        html: `<p>Click <a href="${url}">here</a> to reset your password.</p>`,
+      })
+    },
     password: {
       hash: hashPassword,
       verify: verifyPassword,
+    },
+  },
+  emailVerification: {
+    sendOnSignUp: true,
+    sendVerification: async ({ user, url }) => {
+      const { sendEmail } = await import("@/lib/resend")
+      await sendEmail({
+        to: user.email,
+        subject: "Verify your email address",
+        html: `<p>Click <a href="${url}">here</a> to verify your email address.</p>`,
+      })
     },
   },
   session: {
@@ -77,9 +97,7 @@ export const auth = betterAuth({
   },
   trustedOrigins: [
     "http://localhost:3000",
-    // Known production origins stay hardcoded as a safety net: if the env
-    // vars are missing in some environment, logins must not break there
-    "https://dyckoforidua.org",
+    // workers.dev stays as a failsafe until we disable it entirely
     "https://kofdyc-portal.owusu.workers.dev",
     ...(process.env.PUBLIC_HOSTNAME ? [`https://${process.env.PUBLIC_HOSTNAME}`] : []),
     ...(process.env.ADMIN_HOSTNAME ? [`https://${process.env.ADMIN_HOSTNAME}`] : []),

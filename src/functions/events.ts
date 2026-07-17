@@ -4,6 +4,7 @@ import { events, registrations } from "@/db/schema"
 import { eq, and, gt, asc, desc, sql } from "drizzle-orm"
 import { requireRole } from "@/middleware/role.middleware"
 import { sendEmail } from "@/lib/resend"
+import { encryptMedicalConditions, decryptMedicalConditions } from "@/lib/encryption"
 import { env } from "cloudflare:workers"
 
 export const getUpcomingEvents = createServerFn({ method: "GET" })
@@ -40,9 +41,7 @@ export const getUpcomingEvents = createServerFn({ method: "GET" })
         endAt: events.endAt,
         venue: events.venue,
         coverImageUrl: events.coverImageUrl,
-        registrationType: events.registrationType,
-        feeAmount: events.feeAmount,
-        feeCurrency: events.feeCurrency,
+        // Registration is always free (paid feature removed)
       })
       .from(events)
       .where(and(...conditions))
@@ -134,9 +133,6 @@ export const createEvent = createServerFn({ method: "POST" })
       coverImageUrl?: string
       registrationDeadline?: string
       capacity?: number
-      registrationType: "free" | "paid"
-      feeAmount?: number
-      feeCurrency?: string
       contactName?: string
       contactPhone?: string
       status: "draft" | "published"
@@ -158,9 +154,6 @@ export const createEvent = createServerFn({ method: "POST" })
       coverImageUrl: data.coverImageUrl,
       registrationDeadline: data.registrationDeadline,
       capacity: data.capacity,
-      registrationType: data.registrationType,
-      feeAmount: data.feeAmount,
-      feeCurrency: data.feeCurrency ?? "GHS",
       contactName: data.contactName,
       contactPhone: data.contactPhone,
       status: data.status,
@@ -243,10 +236,6 @@ export const registerGuest = createServerFn({ method: "POST" })
       throw new Error("Event not found")
     }
 
-    if (event[0].registrationType === "paid") {
-      throw new Error("This event requires payment. Please log in to register.")
-    }
-
     if (event[0].registrationDeadline) {
       const deadline = new Date(event[0].registrationDeadline)
       if (new Date() > deadline) {
@@ -270,6 +259,9 @@ export const registerGuest = createServerFn({ method: "POST" })
 
     const cancellationToken = crypto.randomUUID()
     const now = new Date().toISOString()
+    const encryptedMedical = data.medicalConditions
+      ? await encryptMedicalConditions(data.medicalConditions)
+      : null
 
     const result = await db.insert(registrations).values({
       eventId: data.eventId,
@@ -280,9 +272,8 @@ export const registerGuest = createServerFn({ method: "POST" })
       emergencyContactName: data.emergencyContactName ?? null,
       emergencyContactPhone: data.emergencyContactPhone ?? null,
       dietaryRequirements: data.dietaryRequirements ?? null,
-      medicalConditions: data.medicalConditions ?? null,
+      medicalConditions: encryptedMedical,
       tshirtSize: data.tshirtSize ?? null,
-      paymentStatus: "not_required",
       registrationStatus: isWaitlisted ? "waitlisted" : "confirmed",
       cancellationToken,
       createdAt: now,
@@ -404,11 +395,22 @@ export const getRegistrants = createServerFn({ method: "GET" })
       conditions.push(eq(registrations.registrationStatus, data.status as "confirmed" | "cancelled" | "waitlisted"))
     }
 
-    const result = await db
+    let result = await db
       .select()
       .from(registrations)
       .where(and(...conditions))
       .orderBy(desc(registrations.createdAt))
+
+    result = await Promise.all(result.map(async (r) => {
+      if (r.medicalConditions) {
+        try {
+          r.medicalConditions = await decryptMedicalConditions(r.medicalConditions)
+        } catch {
+          // If decryption fails, return as-is
+        }
+      }
+      return r
+    }))
 
     return result
   })

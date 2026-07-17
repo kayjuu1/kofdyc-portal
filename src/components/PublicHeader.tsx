@@ -1,6 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
-import { Menu, MessageCircleHeart, X } from "lucide-react"
+import { Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   NavigationMenu,
@@ -39,8 +39,6 @@ const navGroups = [
   },
 ]
 
-const chaplainLink = { label: "Talk to the Chaplain", href: "/chaplain-contact" }
-
 export function PublicHeader() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
@@ -52,6 +50,15 @@ export function PublicHeader() {
     window.addEventListener("scroll", onScroll, { passive: true })
     return () => window.removeEventListener("scroll", onScroll)
   }, [])
+
+  useEffect(() => {
+    if (!mobileOpen) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMobileOpen(false)
+    }
+    window.addEventListener("keydown", onKeyDown)
+    return () => window.removeEventListener("keydown", onKeyDown)
+  }, [mobileOpen])
 
   const today = new Date().toLocaleDateString("en-US", {
     weekday: "long",
@@ -68,11 +75,15 @@ export function PublicHeader() {
 
   return (
     <>
-      {/* Spacer to offset the fixed navbar */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-primary-foreground"
+      >
+        Skip to content
+      </a>
       <div className="h-20" />
 
       <header className="fixed inset-x-0 top-0 z-50 w-full">
-        {/* Desktop floating pill navbar */}
         <div
           className={cn(
             "relative z-[60] mx-auto mt-3 hidden w-full max-w-6xl items-center justify-between self-start rounded-full border px-4 py-2 transition-all duration-300 lg:flex",
@@ -161,17 +172,10 @@ export function PublicHeader() {
 
           <div className="relative z-20 flex items-center gap-2">
             <LiturgicalBanner />
-            <Button asChild size="sm" className="rounded-full">
-              <Link to={chaplainLink.href}>
-                <MessageCircleHeart className="size-4" />
-                {chaplainLink.label}
-              </Link>
-            </Button>
             <ThemeToggle />
           </div>
         </div>
 
-        {/* Mobile bar */}
         <div className="relative z-50 w-full border-b border-border/40 bg-background/95 px-4 py-3 shadow-sm backdrop-blur lg:hidden">
           <div className="flex w-full flex-row items-center justify-between">
             <Link to="/" className="relative z-20 flex items-center gap-2.5">
@@ -194,7 +198,7 @@ export function PublicHeader() {
             </div>
           </div>
 
-          {mobileOpen ? (
+          {mobileOpen && (
             <div className="mt-3 w-full border-t border-border/40 pt-3">
               <div className="mb-3 flex items-center justify-between text-xs text-muted-foreground">
                 <span>{today}</span>
@@ -226,17 +230,9 @@ export function PublicHeader() {
                     ))}
                   </div>
                 ))}
-                <div className="pt-3">
-                  <Button asChild className="w-full rounded-full">
-                    <Link to={chaplainLink.href} onClick={() => setMobileOpen(false)}>
-                      <MessageCircleHeart className="size-4" />
-                      {chaplainLink.label}
-                    </Link>
-                  </Button>
-                </div>
               </nav>
             </div>
-          ) : null}
+          )}
         </div>
       </header>
     </>

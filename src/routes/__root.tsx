@@ -1,4 +1,4 @@
-import { HeadContent, Outlet, Scripts, createRootRoute } from '@tanstack/react-router'
+import { HeadContent, Outlet, Scripts, createRootRoute, useRouterState } from '@tanstack/react-router'
 import { Toaster } from 'sonner'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
@@ -69,6 +69,8 @@ export const Route = createRootRoute({
 })
 
 function RootDocument() {
+  const isLoading = false // loading indicator deferred — relies on Suspense
+
   return (
     <QueryClientProvider client={queryClient}>
       <html lang="en">
@@ -76,6 +78,11 @@ function RootDocument() {
           <HeadContent />
         </head>
         <body suppressHydrationWarning>
+          {isLoading ? (
+            <div className="fixed top-0 left-0 right-0 z-[100] h-0.5 bg-primary/20">
+              <div className="h-full w-2/5 animate-pulse rounded-r-full bg-primary" />
+            </div>
+          ) : null}
           <TooltipProvider>
             <Outlet />
           </TooltipProvider>

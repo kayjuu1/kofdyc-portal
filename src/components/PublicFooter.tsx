@@ -7,7 +7,7 @@ const quickLinks = [
   { label: "News", href: "/news" },
   { label: "Documents", href: "/documents" },
   { label: "Submit News", href: "/news/submit" },
-  { label: "Contact Chaplain", href: "/chaplain-contact" },
+  { label: "Calendar", href: "/calendar" },
 ]
 
 // Cross-host link must be a plain anchor: SPA navigation bypasses the

@@ -24,9 +24,6 @@ interface EventItem {
   endAt: string | null
   venue: string | null
   coverImageUrl: string | null
-  registrationType: string
-  feeAmount: number | null
-  feeCurrency: string
 }
 
 const EVENT_TYPES = ["mass", "rally", "retreat", "congress", "meeting", "other"] as const
@@ -139,11 +136,6 @@ function EventsPage() {
                       <Badge variant="outline" className="text-xs">
                         {event.eventType}
                       </Badge>
-                      {event.registrationType === "paid" && (
-                        <Badge variant="secondary" className="text-xs">
-                          {event.feeCurrency} {event.feeAmount}
-                        </Badge>
-                      )}
                     </div>
                     <h3 className="font-semibold text-foreground mb-2 line-clamp-2">
                       {event.title}

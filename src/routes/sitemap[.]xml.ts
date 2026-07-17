@@ -14,7 +14,6 @@ const STATIC_PATHS = [
   "/documents",
   "/calendar",
   "/pastoral-letters",
-  "/chaplain-contact",
   "/news/submit",
 ]
 

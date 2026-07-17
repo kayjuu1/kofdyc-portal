@@ -56,9 +56,6 @@ interface EventItem {
     endAt: string | null
     venue: string | null
     coverImageUrl: string | null
-    registrationType: string
-    feeAmount: number | null
-    feeCurrency: string
 }
 
 interface DocumentItem {
@@ -169,7 +166,7 @@ function DarkHero({
     docsCount: number
 }) {
     return (
-        <section className="relative flex w-full items-center justify-center overflow-hidden bg-slate-900">
+        <section className="relative flex min-h-[60vh] w-full items-center justify-center overflow-hidden bg-slate-900">
             {/* Background photo (drop the real image at public/hero.jpg) */}
             <div
                 aria-hidden="true"

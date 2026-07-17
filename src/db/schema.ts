@@ -115,11 +115,7 @@ export const events = sqliteTable('events', {
   coverImageUrl: text('cover_image_url'),
   registrationDeadline: text('registration_deadline'),
   capacity: integer('capacity'),
-  registrationType: text('registration_type', { 
-    enum: ['free', 'paid'] 
-  }).notNull().default('free'),
-  feeAmount: real('fee_amount'),
-  feeCurrency: text('fee_currency').notNull().default('GHS'),
+  // Registration is always free (paid feature removed)
   contactName: text('contact_name'),
   contactPhone: text('contact_phone'),
   isDiocesanPriority: integer('is_diocesan_priority', { mode: 'boolean' }).notNull().default(false),
@@ -145,14 +141,9 @@ export const registrations = sqliteTable('registrations', {
   dietaryRequirements: text('dietary_requirements'),
   medicalConditions: text('medical_conditions'),
   tshirtSize: text('tshirt_size'),
-  paymentStatus: text('payment_status', {
-    enum: ['not_required', 'pending', 'paid', 'refunded']
-  }).notNull().default('not_required'),
   registrationStatus: text('registration_status', { 
     enum: ['pending', 'confirmed', 'cancelled', 'waitlisted'] 
   }).notNull().default('pending'),
-  paidAt: text('paid_at'),
-  paystackReference: text('paystack_reference'),
   attended: integer('attended', { mode: 'boolean' }).notNull().default(false),
   cancellationToken: text('cancellation_token'),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
@@ -310,57 +301,9 @@ export const dycExecutive = sqliteTable('dyc_executive', {
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 })
 
-export const chaplainConversations = sqliteTable('chaplain_conversations', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  userId: text('user_id').references(() => user.id),
-  alias: text('alias', { length: 20 }).notNull(),
-  isAnonymous: integer('is_anonymous', { mode: 'boolean' }).notNull().default(true),
-  status: text('status', {
-    enum: ['active', 'resolved']
-  }).notNull().default('active'),
-  memberTypingAt: text('member_typing_at'),
-  chaplainTypingAt: text('chaplain_typing_at'),
-  createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
-  updatedAt: text('updated_at').notNull().default('CURRENT_TIMESTAMP'),
-})
+// Chaplain chat removed entirely
 
-export const chaplainConversationAccessTokens = sqliteTable('chaplain_conversation_access_tokens', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  conversationId: integer('conversation_id').references(() => chaplainConversations.id).notNull(),
-  email: text('email').notNull(),
-  selector: text('selector').notNull().unique(),
-  tokenHash: text('token_hash').notNull(),
-  expiresAt: text('expires_at').notNull(),
-  lastUsedAt: text('last_used_at'),
-  revokedAt: text('revoked_at'),
-  createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
-})
-
-export const chaplainMessages = sqliteTable('chaplain_messages', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  conversationId: integer('conversation_id').references(() => chaplainConversations.id).notNull(),
-  senderRole: text('sender_role', {
-    enum: ['member', 'chaplain']
-  }).notNull(),
-  body: text('body').notNull(),
-  attachments: text('attachments'),
-  sentAt: text('sent_at').notNull().default('CURRENT_TIMESTAMP'),
-  readAt: text('read_at'),
-  editedAt: text('edited_at'),
-  deletedAt: text('deleted_at'),
-})
-
-export const payments = sqliteTable('payments', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  registrationId: integer('registration_id').references(() => registrations.id).notNull(),
-  paystackReference: text('paystack_reference').unique(),
-  amountGhs: real('amount_ghs').notNull(),
-  status: text('status', {
-    enum: ['initiated', 'successful', 'failed']
-  }).notNull().default('initiated'),
-  webhookPayload: text('webhook_payload'),
-  createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
-})
+// Payments removed entirely
 
 export const auditLog = sqliteTable('audit_log', {
   id: integer('id').primaryKey({ autoIncrement: true }),
@@ -405,7 +348,6 @@ export const usersRelations = relations(user, ({ one, many }) => ({
   events: many(events),
   news: many(news),
   programmeReviews: many(programmeReviews),
-  chaplainConversations: many(chaplainConversations),
 }))
 
 export const eventsRelations = relations(events, ({ one, many }) => ({
@@ -425,7 +367,6 @@ export const registrationsRelations = relations(registrations, ({ one, many }) =
     fields: [registrations.userId],
     references: [user.id],
   }),
-  payments: many(payments),
 }))
 
 export const documentsRelations = relations(documents, ({ one }) => ({
@@ -523,35 +464,7 @@ export const newsSubmissionsRelations = relations(newsSubmissions, ({ one }) => 
   }),
 }))
 
-export const chaplainConversationsRelations = relations(chaplainConversations, ({ one, many }) => ({
-  user: one(user, {
-    fields: [chaplainConversations.userId],
-    references: [user.id],
-  }),
-  accessTokens: many(chaplainConversationAccessTokens),
-  messages: many(chaplainMessages),
-}))
-
-export const chaplainConversationAccessTokensRelations = relations(chaplainConversationAccessTokens, ({ one }) => ({
-  conversation: one(chaplainConversations, {
-    fields: [chaplainConversationAccessTokens.conversationId],
-    references: [chaplainConversations.id],
-  }),
-}))
-
-export const chaplainMessagesRelations = relations(chaplainMessages, ({ one }) => ({
-  conversation: one(chaplainConversations, {
-    fields: [chaplainMessages.conversationId],
-    references: [chaplainConversations.id],
-  }),
-}))
-
-export const paymentsRelations = relations(payments, ({ one }) => ({
-  registration: one(registrations, {
-    fields: [payments.registrationId],
-    references: [registrations.id],
-  }),
-}))
+// Chaplain chat and payments relations removed
 
 export const featuredEvents = sqliteTable('featured_events', {
   id: integer('id').primaryKey({ autoIncrement: true }),

@@ -6,7 +6,6 @@ import {
   FileText,
   LayoutDashboard,
   LogOut,
-  MessageSquare,
   Network,
   Newspaper,
   Settings,
@@ -90,7 +89,7 @@ const navSections = [
 
 const adminItems = [
   { label: "Admin Users", href: "/dashboard/admin-users", icon: Users, permission: "manageAdminUsers" as const },
-  { label: "Chaplain Inbox", href: "/dashboard/chaplain", icon: MessageSquare, permission: "manageChaplainInbox" as const },
+  { label: "Settings", href: "/dashboard/settings", icon: Settings, permission: "manageSettings" as const },
   { label: "Featured Events", href: "/dashboard/featured-events", icon: Sparkles, permission: "manageFeaturedEvents" as const },
   { label: "Leadership", href: "/dashboard/leadership", icon: UserRound, permission: "manageLeadership" as const },
   { label: "Hierarchy", href: "/dashboard/hierarchy", icon: Network, permission: "manageHierarchy" as const },
@@ -103,7 +102,7 @@ function getPageTitle(pathname: string): string {
   if (pathname.startsWith("/dashboard/documents")) return "Documents"
   if (pathname.startsWith("/dashboard/programmes")) return "Programmes"
   if (pathname.startsWith("/dashboard/admin-users")) return "Admin Users"
-  if (pathname.startsWith("/dashboard/chaplain")) return "Chaplain Inbox"
+  if (pathname.startsWith("/dashboard/settings")) return "Settings"
   if (pathname.startsWith("/dashboard/settings")) return "Settings"
   if (pathname.startsWith("/dashboard/featured-events")) return "Featured Events"
   if (pathname.startsWith("/dashboard/leadership")) return "Leadership"
@@ -286,7 +285,7 @@ function AppLayout() {
           </div>
         </header>
 
-        <main className="flex-1 p-4 lg:p-6">
+        <main id="main-content" className="flex-1 p-4 lg:p-6">
           <div className="mx-auto max-w-7xl">
             <Outlet />
           </div>

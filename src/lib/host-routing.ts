@@ -41,7 +41,7 @@ export function resolveHostAction(
   }
 
   // API routes and server-fn RPC must stay reachable on both hosts:
-  // auth on admin, Paystack webhook + chat SSE on public, media/upload on both
+  // auth on admin, media/upload on both
   if (pathname.startsWith("/api/") || pathname.startsWith("/_serverFn")) {
     return { kind: "pass" }
   }

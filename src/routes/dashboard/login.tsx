@@ -2,7 +2,7 @@ import { createFileRoute, Link, redirect, useRouter } from "@tanstack/react-rout
 import { getSession } from "@/functions/get-user"
 import { seedAdminUser } from "@/functions/seed-admin-user"
 import { authClient } from "@/lib/auth-client"
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Eye, EyeOff, ArrowLeft, Loader2 } from "lucide-react"
 import { Logo } from "@/components/Logo"
 import { Button } from "@/components/ui/button"
@@ -28,8 +28,38 @@ function DashboardLoginPage() {
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState("")
+  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({})
   const [loading, setLoading] = useState(false)
   const [seedStatus, setSeedStatus] = useState("")
+  const errorTimerRef = useRef<ReturnType<typeof setTimeout>>()
+
+  const errorMessages: Record<string, string> = {
+    InvalidEmailOrPassword: "Invalid email or password",
+    UserNotVerified: "Please verify your email before signing in. Check your inbox for a verification link.",
+    AccountBanned: "This account has been deactivated. Contact your system administrator.",
+    AccountNotLinked: "No account found with these credentials.",
+    RateLimitExceeded: "Too many attempts. Please try again later.",
+    NetworkError: "Unable to connect. Please check your internet connection and try again.",
+  }
+
+  useEffect(() => {
+    if (error) {
+      if (errorTimerRef.current) clearTimeout(errorTimerRef.current)
+      errorTimerRef.current = setTimeout(() => setError(""), 10000)
+    }
+    return () => {
+      if (errorTimerRef.current) clearTimeout(errorTimerRef.current)
+    }
+  }, [error])
+
+  function validateFields(): boolean {
+    const errors: { email?: string; password?: string } = {}
+    if (!email.trim()) errors.email = "Email is required"
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) errors.email = "Enter a valid email address"
+    if (!password) errors.password = "Password is required"
+    setFieldErrors(errors)
+    return Object.keys(errors).length === 0
+  }
 
   async function handleSeed() {
     setSeedStatus("Seeding...")
@@ -46,22 +76,27 @@ function DashboardLoginPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError("")
+    setFieldErrors({})
+    if (!validateFields()) return
+
     setLoading(true)
 
     try {
       const result = await authClient.signIn.email({
-        email,
+        email: email.trim(),
         password,
       })
 
       if (result.error) {
-        setError(result.error.message ?? "Sign in failed")
+        const code = result.error.code ?? result.error.message ?? ""
+        setError(errorMessages[code] || result.error.message || "Sign in failed. Please check your credentials and try again.")
         return
       }
 
       router.navigate({ to: "/dashboard" })
-    } catch {
-      setError("An unexpected error occurred")
+    } catch (err) {
+      const isNetwork = err instanceof TypeError && err.message === "Failed to fetch"
+      setError(isNetwork ? errorMessages.NetworkError : "An unexpected error occurred. Please try again.")
     } finally {
       setLoading(false)
     }
@@ -101,7 +136,7 @@ function DashboardLoginPage() {
           </div>
 
           <p className="text-sm text-muted-foreground italic font-serif">
-            "Go therefore and make disciples of all nations" - Matthew 28:19
+            "Go therefore and make disciples of all nations" — Matthew 28:19
           </p>
         </div>
       </div>
@@ -124,8 +159,17 @@ function DashboardLoginPage() {
             <CardContent className="px-0 sm:px-6">
               <form onSubmit={handleSubmit} className="space-y-4">
                 {error && (
-                  <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg text-sm animate-fade-in">
-                    {error}
+                  <div className={`px-4 py-3 rounded-lg text-sm animate-fade-in ${
+                    error.includes("verify")
+                      ? "bg-amber-50 border border-amber-200 text-amber-800"
+                      : "bg-destructive/10 border border-destructive/20 text-destructive"
+                  }`}>
+                    <p>{error}</p>
+                    {error.includes("verify") && (
+                      <p className="mt-1 text-xs opacity-80">
+                        Didn't receive the email? Check your spam folder or contact your administrator.
+                      </p>
+                    )}
                   </div>
                 )}
 
@@ -133,30 +177,47 @@ function DashboardLoginPage() {
                   <label htmlFor="email" className="text-sm font-medium text-foreground">
                     Email address
                   </label>
-                  <input
-                    id="email"
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-muted/50 border border-input rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
-                    placeholder="admin@dyckoforidua.org"
-                    disabled={loading}
-                  />
+                    <input
+                      id="email"
+                      type="email"
+                      autoComplete="email"
+                      required
+                      value={email}
+                      onChange={(e) => { setEmail(e.target.value); if (fieldErrors.email) setFieldErrors(p => ({ ...p, email: undefined })) }}
+                      className={`w-full px-4 py-2.5 bg-muted/50 border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all ${
+                        fieldErrors.email ? "border-destructive" : "border-input"
+                      }`}
+                      placeholder="admin@dyckoforidua.org"
+                      disabled={loading}
+                    />
+                    {fieldErrors.email && (
+                      <p className="text-xs text-destructive mt-1">{fieldErrors.email}</p>
+                    )}
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="password" className="text-sm font-medium text-foreground">
-                    Password
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label htmlFor="password" className="text-sm font-medium text-foreground">
+                      Password
+                    </label>
+                    <Link
+                      to="/dashboard/forgot-password"
+                      className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      Forgot password?
+                    </Link>
+                  </div>
                   <div className="relative">
                     <input
                       id="password"
                       type={showPassword ? "text" : "password"}
+                      autoComplete="current-password"
                       required
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="w-full px-4 py-2.5 pr-11 bg-muted/50 border border-input rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
+                      onChange={(e) => { setPassword(e.target.value); if (fieldErrors.password) setFieldErrors(p => ({ ...p, password: undefined })) }}
+                      className={`w-full px-4 py-2.5 pr-11 bg-muted/50 border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all ${
+                        fieldErrors.password ? "border-destructive" : "border-input"
+                      }`}
                       placeholder="Enter your password"
                       disabled={loading}
                     />
@@ -168,6 +229,9 @@ function DashboardLoginPage() {
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
+                  {fieldErrors.password && (
+                    <p className="text-xs text-destructive mt-1">{fieldErrors.password}</p>
+                  )}
                 </div>
 
                 <Button

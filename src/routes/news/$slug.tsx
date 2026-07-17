@@ -63,11 +63,17 @@ function NewsDetailPage() {
   const [shareCopied, setShareCopied] = useState(false)
   const [comments, setComments] = useState<Comment[]>([])
   const [commentName, setCommentName] = useState("")
+  const [visitorId, setVisitorId] = useState("")
   const [commentBody, setCommentBody] = useState("")
   const [commenting, setCommenting] = useState(false)
-  const visitorId = typeof window !== "undefined" ? localStorage.getItem("visitor_id") || "" : ""
 
   useEffect(() => {
+    const id = localStorage.getItem("visitor_id") || ""
+    setVisitorId(id)
+  }, [])
+
+  useEffect(() => {
+    if (!visitorId) return
     getNewsLikes({ data: { newsId: article.id, identifier: visitorId } })
       .then((result) => {
         setLikeCount(result.likeCount)
@@ -137,7 +143,7 @@ function NewsDetailPage() {
     if (diffMins < 1) return "Just now"
     if (diffMins < 60) return `${diffMins} min ago`
     if (diffHours < 24) return `${diffHours} hr ago`
-    if (diffDays < 7) return `${diffDays} day ago`
+    if (diffDays < 7) return `${diffDays} day${diffDays === 1 ? "" : "s"} ago`
     return date.toLocaleDateString("en-US", { month: "short", day: "numeric" })
   }
 

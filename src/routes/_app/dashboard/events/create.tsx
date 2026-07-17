@@ -104,7 +104,6 @@ function CreateEventPage() {
       capacity: formData.capacity ? parseInt(formData.capacity) : undefined,
       contactName: formData.contactName || undefined,
       contactPhone: formData.contactPhone || undefined,
-      registrationType: "free",
       status,
     })
   }

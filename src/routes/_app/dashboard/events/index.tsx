@@ -7,7 +7,6 @@ import {
   Pencil,
   Plus,
   Search,
-  Ticket,
   Trash2,
   Users,
 } from "lucide-react"
@@ -56,7 +55,7 @@ interface EventItem {
   endAt: string | null
   venue: string | null
   status: string
-  registrationType: string
+  // registration is always free (paid feature removed)
   createdAt: string
 }
 
@@ -105,7 +104,6 @@ function EventsAdminPage() {
     : eventList
 
   const publishedCount = eventList.filter((event) => event.status === "published").length
-  const paidCount = eventList.filter((event) => event.registrationType === "paid").length
   const upcomingCount = eventList.filter((event) => new Date(event.startAt) >= new Date()).length
 
   return (
@@ -120,7 +118,7 @@ function EventsAdminPage() {
         }}
       />
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2">
         <DashboardStatCard
           label="Published"
           value={publishedCount}
@@ -134,13 +132,6 @@ function EventsAdminPage() {
           icon={Users}
           tone="sky"
           detail="Future dates"
-        />
-        <DashboardStatCard
-          label="Paid Events"
-          value={paidCount}
-          icon={Ticket}
-          tone="gold"
-          detail="With fee collection"
         />
       </div>
 
@@ -259,7 +250,11 @@ function EventsAdminPage() {
                           </DropdownMenuItem>
                           {event.status === "draft" ? (
                             <DropdownMenuItem
-                              onClick={() => deleteMutation.mutate(event.id)}
+                              onClick={() => {
+                                if (window.confirm(`Delete "${event.title}"? This cannot be undone.`)) {
+                                  deleteMutation.mutate(event.id)
+                                }
+                              }}
                               className="text-destructive focus:text-destructive"
                             >
                               <Trash2 className="mr-2 size-4" />

@@ -8,9 +8,6 @@ interface EventCardProps {
   startAt: string
   endAt: string | null
   venue: string | null
-  registrationType: string
-  feeAmount: number | null
-  feeCurrency: string
 }
 
 export function EventCard({
@@ -18,9 +15,6 @@ export function EventCard({
   eventType,
   startAt,
   venue,
-  registrationType,
-  feeAmount,
-  feeCurrency,
 }: EventCardProps) {
   const startDate = new Date(startAt)
   const month = startDate.toLocaleDateString("en-US", { month: "short" })
@@ -42,11 +36,6 @@ export function EventCard({
         <div className="min-w-0 flex-1">
           <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
             <Badge variant="secondary" className="text-[10px] capitalize">{eventType}</Badge>
-            {registrationType === "paid" && feeAmount ? (
-              <Badge variant="outline" className="text-[10px]">
-                {feeCurrency} {feeAmount.toFixed(2)}
-              </Badge>
-            ) : null}
           </div>
           <h3 className="mb-2 text-sm font-semibold leading-snug text-foreground group-hover:text-primary">
             {title}

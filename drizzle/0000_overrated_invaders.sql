@@ -25,46 +25,6 @@ CREATE TABLE `audit_log` (
 	`created_at` text DEFAULT 'CURRENT_TIMESTAMP' NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE `chaplain_conversation_access_tokens` (
-	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`conversation_id` integer NOT NULL,
-	`email` text NOT NULL,
-	`selector` text NOT NULL,
-	`token_hash` text NOT NULL,
-	`expires_at` text NOT NULL,
-	`last_used_at` text,
-	`revoked_at` text,
-	`created_at` text DEFAULT 'CURRENT_TIMESTAMP' NOT NULL,
-	FOREIGN KEY (`conversation_id`) REFERENCES `chaplain_conversations`(`id`) ON UPDATE no action ON DELETE no action
-);
---> statement-breakpoint
-CREATE UNIQUE INDEX `chaplain_conversation_access_tokens_selector_unique` ON `chaplain_conversation_access_tokens` (`selector`);--> statement-breakpoint
-CREATE TABLE `chaplain_conversations` (
-	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`user_id` text,
-	`alias` text(20) NOT NULL,
-	`is_anonymous` integer DEFAULT true NOT NULL,
-	`status` text DEFAULT 'active' NOT NULL,
-	`member_typing_at` text,
-	`chaplain_typing_at` text,
-	`created_at` text DEFAULT 'CURRENT_TIMESTAMP' NOT NULL,
-	`updated_at` text DEFAULT 'CURRENT_TIMESTAMP' NOT NULL,
-	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action
-);
---> statement-breakpoint
-CREATE TABLE `chaplain_messages` (
-	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`conversation_id` integer NOT NULL,
-	`sender_role` text NOT NULL,
-	`body` text NOT NULL,
-	`attachments` text,
-	`sent_at` text DEFAULT 'CURRENT_TIMESTAMP' NOT NULL,
-	`read_at` text,
-	`edited_at` text,
-	`deleted_at` text,
-	FOREIGN KEY (`conversation_id`) REFERENCES `chaplain_conversations`(`id`) ON UPDATE no action ON DELETE no action
-);
---> statement-breakpoint
 CREATE TABLE `deaneries` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`name` text NOT NULL,
@@ -124,9 +84,6 @@ CREATE TABLE `events` (
 	`cover_image_url` text,
 	`registration_deadline` text,
 	`capacity` integer,
-	`registration_type` text DEFAULT 'free' NOT NULL,
-	`fee_amount` real,
-	`fee_currency` text DEFAULT 'GHS' NOT NULL,
 	`contact_name` text,
 	`contact_phone` text,
 	`is_diocesan_priority` integer DEFAULT false NOT NULL,
@@ -138,6 +95,91 @@ CREATE TABLE `events` (
 	FOREIGN KEY (`author_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
+CREATE TABLE `featured_events` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`event_id` integer,
+	`display_title` text NOT NULL,
+	`artwork_url` text NOT NULL,
+	`target_date` text NOT NULL,
+	`cta_label` text DEFAULT 'Event details' NOT NULL,
+	`cta_url` text,
+	`support_line` text,
+	`is_active` integer DEFAULT false NOT NULL,
+	`sort_order` integer DEFAULT 0 NOT NULL,
+	`created_by` text,
+	`created_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
+	`updated_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
+	FOREIGN KEY (`event_id`) REFERENCES `events`(`id`) ON UPDATE no action ON DELETE set null,
+	FOREIGN KEY (`created_by`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
+CREATE INDEX `featured_events_event_id_idx` ON `featured_events` (`event_id`);--> statement-breakpoint
+CREATE INDEX `featured_events_created_by_idx` ON `featured_events` (`created_by`);--> statement-breakpoint
+CREATE INDEX `featured_events_is_active_idx` ON `featured_events` (`is_active`);--> statement-breakpoint
+CREATE TABLE `hierarchy_leaders` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`node_id` integer NOT NULL,
+	`name` text NOT NULL,
+	`role_title` text NOT NULL,
+	`photo_url` text,
+	`phone` text,
+	`sort_order` integer DEFAULT 0 NOT NULL,
+	`created_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
+	FOREIGN KEY (`node_id`) REFERENCES `hierarchy_nodes`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
+CREATE INDEX `hierarchy_leaders_node_id_idx` ON `hierarchy_leaders` (`node_id`);--> statement-breakpoint
+CREATE TABLE `hierarchy_nodes` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`parent_id` integer,
+	`type` text NOT NULL,
+	`name` text NOT NULL,
+	`slug` text NOT NULL,
+	`crest_url` text,
+	`brief_history` text,
+	`deanery_id` integer,
+	`parish_id` integer,
+	`sort_order` integer DEFAULT 0 NOT NULL,
+	`is_published` integer DEFAULT false NOT NULL,
+	`created_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
+	`updated_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
+	FOREIGN KEY (`parent_id`) REFERENCES `hierarchy_nodes`(`id`) ON UPDATE no action ON DELETE restrict,
+	FOREIGN KEY (`deanery_id`) REFERENCES `deaneries`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`parish_id`) REFERENCES `parishes`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `hierarchy_nodes_slug_unique` ON `hierarchy_nodes` (`slug`);--> statement-breakpoint
+CREATE INDEX `hierarchy_nodes_parent_id_idx` ON `hierarchy_nodes` (`parent_id`);--> statement-breakpoint
+CREATE INDEX `hierarchy_nodes_deanery_id_idx` ON `hierarchy_nodes` (`deanery_id`);--> statement-breakpoint
+CREATE INDEX `hierarchy_nodes_parish_id_idx` ON `hierarchy_nodes` (`parish_id`);--> statement-breakpoint
+CREATE TABLE `leadership_groups` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`title` text NOT NULL,
+	`eyebrow` text,
+	`intro` text,
+	`sort_order` integer DEFAULT 0 NOT NULL,
+	`is_published` integer DEFAULT false NOT NULL,
+	`created_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
+	`updated_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE `leadership_members` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`group_id` integer NOT NULL,
+	`name` text NOT NULL,
+	`role_title` text NOT NULL,
+	`photo_url` text,
+	`bio` text,
+	`email` text,
+	`phone` text,
+	`sort_order` integer DEFAULT 0 NOT NULL,
+	`is_published` integer DEFAULT true NOT NULL,
+	`created_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
+	`updated_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
+	FOREIGN KEY (`group_id`) REFERENCES `leadership_groups`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
+CREATE INDEX `leadership_members_group_id_idx` ON `leadership_members` (`group_id`);--> statement-breakpoint
 CREATE TABLE `news` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`title` text NOT NULL,
@@ -201,18 +243,6 @@ CREATE TABLE `parishes` (
 	FOREIGN KEY (`deanery_id`) REFERENCES `deaneries`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
-CREATE TABLE `payments` (
-	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`registration_id` integer NOT NULL,
-	`paystack_reference` text,
-	`amount_ghs` real NOT NULL,
-	`status` text DEFAULT 'initiated' NOT NULL,
-	`webhook_payload` text,
-	`created_at` text DEFAULT 'CURRENT_TIMESTAMP' NOT NULL,
-	FOREIGN KEY (`registration_id`) REFERENCES `registrations`(`id`) ON UPDATE no action ON DELETE no action
-);
---> statement-breakpoint
-CREATE UNIQUE INDEX `payments_paystack_reference_unique` ON `payments` (`paystack_reference`);--> statement-breakpoint
 CREATE TABLE `programme_activities` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`programme_id` integer NOT NULL,
@@ -273,10 +303,7 @@ CREATE TABLE `registrations` (
 	`dietary_requirements` text,
 	`medical_conditions` text,
 	`tshirt_size` text,
-	`payment_status` text DEFAULT 'not_required' NOT NULL,
 	`registration_status` text DEFAULT 'pending' NOT NULL,
-	`paid_at` text,
-	`paystack_reference` text,
 	`attended` integer DEFAULT false NOT NULL,
 	`cancellation_token` text,
 	`created_at` text DEFAULT 'CURRENT_TIMESTAMP' NOT NULL,

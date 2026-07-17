@@ -1,5 +1,6 @@
 import {useRouter} from "@tanstack/react-router";
 import {Button} from "@/components/ui/button.tsx";
+import {SearchX} from "lucide-react";
 
 const NotFound = () => {
     const router = useRouter();
@@ -7,13 +8,9 @@ const NotFound = () => {
     return (
         <div
             className="min-h-screen bg-linear-to-br from-background to-muted flex flex-col items-center justify-center p-6 text-center">
-            {/* Decorative SVG - slightly enlarged and with subtle bounce */}
-            <div className="mb-8 animate-bounce-slow">
-                <img
-                    src="/ssshape.svg"
-                    alt="Abstract brand shape"
-                    className="h-56 w-auto md:h-80 opacity-90"
-                />
+            {/* Decorative icon */}
+            <div className="mb-8">
+                <SearchX className="h-24 w-24 md:h-32 md:w-32 text-muted-foreground/30" />
             </div>
 
             {/* Main Content */}

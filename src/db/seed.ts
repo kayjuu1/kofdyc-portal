@@ -16,7 +16,6 @@ async function seedUsers(db: SeedDb, now: Date) {
   const password = await hashPassword('password123')
 
   const adminId = crypto.randomUUID()
-  const chaplainId = crypto.randomUUID()
   const executiveId = crypto.randomUUID()
   const coordinatorId = crypto.randomUUID()
 
@@ -30,18 +29,6 @@ async function seedUsers(db: SeedDb, now: Date) {
       updatedAt: now,
       role: 'system_admin',
       phone: '+233244123456',
-      isActive: true,
-      banned: false,
-    },
-    {
-      id: chaplainId,
-      name: 'Fr. Emmanuel Asamoah',
-      email: 'chaplain@dyckoforidua.org',
-      emailVerified: true,
-      createdAt: now,
-      updatedAt: now,
-      role: 'youth_chaplain',
-      phone: '+233244234567',
       isActive: true,
       banned: false,
     },
@@ -73,7 +60,6 @@ async function seedUsers(db: SeedDb, now: Date) {
 
   const credentials: Array<[string, string]> = [
     [adminId, adminPassword],
-    [chaplainId, password],
     [executiveId, password],
     [coordinatorId, password],
   ]
@@ -93,7 +79,6 @@ async function seedUsers(db: SeedDb, now: Date) {
   console.log('')
   console.log('Test accounts:')
   console.log('  Admin:     admin@dyckoforidua.org / admin123')
-  console.log('  Chaplain:  chaplain@dyckoforidua.org / password123')
   console.log('  Executive: chairman@dyckoforidua.org / password123')
   console.log('  Coord:     coordinator@dyckoforidua.org / password123')
 }

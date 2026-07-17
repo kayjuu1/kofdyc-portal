@@ -1,6 +1,5 @@
 export const ADMIN_ROLES = [
   "system_admin",
-  "youth_chaplain",
   "diocesan_executive",
   "coordinator",
 ] as const
@@ -13,19 +12,18 @@ export type Permission =
   | "manageDocuments"
   | "manageSettings"
   | "manageAdminUsers"
-  | "manageChaplainInbox"
   | "manageFeaturedEvents"
   | "manageLeadership"
   | "manageHierarchy"
 
 const LEGACY_ROLE_MAP = {
-  diocesan_youth_chaplain: "youth_chaplain",
+  diocesan_youth_chaplain: "diocesan_executive",
   dyc_executive: "diocesan_executive",
+  youth_chaplain: "diocesan_executive",
 } as const
 
 export const ROLE_LABELS: Record<UserRole, string> = {
   system_admin: "System Admin",
-  youth_chaplain: "Youth Chaplain",
   diocesan_executive: "Diocesan Executive",
   coordinator: "Coordinator",
 }
@@ -34,9 +32,8 @@ export const PERMISSIONS: Record<Permission, readonly UserRole[]> = {
   viewDashboard: ADMIN_ROLES,
   manageNews: ADMIN_ROLES,
   manageDocuments: ADMIN_ROLES,
-  manageSettings: ["system_admin", "youth_chaplain", "diocesan_executive"],
-  manageAdminUsers: ["system_admin", "youth_chaplain", "diocesan_executive"],
-  manageChaplainInbox: ["youth_chaplain"],
+  manageSettings: ["system_admin", "diocesan_executive"],
+  manageAdminUsers: ["system_admin", "diocesan_executive"],
   manageFeaturedEvents: ["system_admin", "diocesan_executive"],
   manageLeadership: ["system_admin"],
   manageHierarchy: ["system_admin", "diocesan_executive"],

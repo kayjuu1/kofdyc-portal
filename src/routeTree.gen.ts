@@ -10,10 +10,8 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as PaymentCallbackRouteImport } from './routes/payment-callback'
 import { Route as PastoralLettersRouteImport } from './routes/pastoral-letters'
 import { Route as ExecutiveRouteImport } from './routes/executive'
-import { Route as ChaplainContactRouteImport } from './routes/chaplain-contact'
 import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as AppRouteRouteImport } from './routes/_app/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -29,16 +27,15 @@ import { Route as NewsSubmitRouteImport } from './routes/news/submit'
 import { Route as NewsSlugRouteImport } from './routes/news/$slug'
 import { Route as LeadershipMemberIdRouteImport } from './routes/leadership/$memberId'
 import { Route as HierarchySlugRouteImport } from './routes/hierarchy/$slug'
+import { Route as DashboardResetPasswordRouteImport } from './routes/dashboard/reset-password'
 import { Route as DashboardLoginRouteImport } from './routes/dashboard/login'
-import { Route as ChaplainChatTokenRouteImport } from './routes/chaplain-chat/$token'
+import { Route as DashboardForgotPasswordRouteImport } from './routes/dashboard/forgot-password'
 import { Route as ApiUploadRouteImport } from './routes/api/upload'
 import { Route as AuthInitAdminRouteImport } from './routes/_auth/init-admin'
 import { Route as EventsIdIndexRouteImport } from './routes/events/$id/index'
 import { Route as AppDashboardIndexRouteImport } from './routes/_app/dashboard/index'
 import { Route as EventsIdCancelRouteImport } from './routes/events/$id/cancel'
 import { Route as ApiMediaSplatRouteImport } from './routes/api/media/$'
-import { Route as ApiChatUploadRouteImport } from './routes/api/chat/upload'
-import { Route as ApiChatSseRouteImport } from './routes/api/chat/sse'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AppDashboardNewsRouteImport } from './routes/_app/dashboard/news'
 import { Route as AppDashboardSubmissionPromptsIndexRouteImport } from './routes/_app/dashboard/submission-prompts/index'
@@ -52,7 +49,6 @@ import { Route as AppDashboardFeaturedEventsIndexRouteImport } from './routes/_a
 import { Route as AppDashboardExecutiveIndexRouteImport } from './routes/_app/dashboard/executive/index'
 import { Route as AppDashboardEventsIndexRouteImport } from './routes/_app/dashboard/events/index'
 import { Route as AppDashboardDocumentsIndexRouteImport } from './routes/_app/dashboard/documents/index'
-import { Route as AppDashboardChaplainIndexRouteImport } from './routes/_app/dashboard/chaplain/index'
 import { Route as AppDashboardAdminUsersIndexRouteImport } from './routes/_app/dashboard/admin-users/index'
 import { Route as AppDashboardSubmissionPromptsCreateRouteImport } from './routes/_app/dashboard/submission-prompts/create'
 import { Route as AppDashboardProgrammesCreateRouteImport } from './routes/_app/dashboard/programmes/create'
@@ -64,16 +60,10 @@ import { Route as AppDashboardEventsRegistrantsRouteImport } from './routes/_app
 import { Route as AppDashboardEventsCreateRouteImport } from './routes/_app/dashboard/events/create'
 import { Route as AppDashboardEventsIdRouteImport } from './routes/_app/dashboard/events/$id'
 import { Route as AppDashboardDocumentsUploadRouteImport } from './routes/_app/dashboard/documents/upload'
-import { Route as AppDashboardChaplainIdRouteImport } from './routes/_app/dashboard/chaplain/$id'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PaymentCallbackRoute = PaymentCallbackRouteImport.update({
-  id: '/payment-callback',
-  path: '/payment-callback',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PastoralLettersRoute = PastoralLettersRouteImport.update({
@@ -84,11 +74,6 @@ const PastoralLettersRoute = PastoralLettersRouteImport.update({
 const ExecutiveRoute = ExecutiveRouteImport.update({
   id: '/executive',
   path: '/executive',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ChaplainContactRoute = ChaplainContactRouteImport.update({
-  id: '/chaplain-contact',
-  path: '/chaplain-contact',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CalendarRoute = CalendarRouteImport.update({
@@ -165,14 +150,19 @@ const HierarchySlugRoute = HierarchySlugRouteImport.update({
   path: '/hierarchy/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardResetPasswordRoute = DashboardResetPasswordRouteImport.update({
+  id: '/dashboard/reset-password',
+  path: '/dashboard/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardLoginRoute = DashboardLoginRouteImport.update({
   id: '/dashboard/login',
   path: '/dashboard/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ChaplainChatTokenRoute = ChaplainChatTokenRouteImport.update({
-  id: '/chaplain-chat/$token',
-  path: '/chaplain-chat/$token',
+const DashboardForgotPasswordRoute = DashboardForgotPasswordRouteImport.update({
+  id: '/dashboard/forgot-password',
+  path: '/dashboard/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiUploadRoute = ApiUploadRouteImport.update({
@@ -203,16 +193,6 @@ const EventsIdCancelRoute = EventsIdCancelRouteImport.update({
 const ApiMediaSplatRoute = ApiMediaSplatRouteImport.update({
   id: '/api/media/$',
   path: '/api/media/$',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiChatUploadRoute = ApiChatUploadRouteImport.update({
-  id: '/api/chat/upload',
-  path: '/api/chat/upload',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiChatSseRoute = ApiChatSseRouteImport.update({
-  id: '/api/chat/sse',
-  path: '/api/chat/sse',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
@@ -289,12 +269,6 @@ const AppDashboardDocumentsIndexRoute =
     path: '/dashboard/documents/',
     getParentRoute: () => AppRouteRoute,
   } as any)
-const AppDashboardChaplainIndexRoute =
-  AppDashboardChaplainIndexRouteImport.update({
-    id: '/dashboard/chaplain/',
-    path: '/dashboard/chaplain/',
-    getParentRoute: () => AppRouteRoute,
-  } as any)
 const AppDashboardAdminUsersIndexRoute =
   AppDashboardAdminUsersIndexRouteImport.update({
     id: '/dashboard/admin-users/',
@@ -358,24 +332,18 @@ const AppDashboardDocumentsUploadRoute =
     path: '/dashboard/documents/upload',
     getParentRoute: () => AppRouteRoute,
   } as any)
-const AppDashboardChaplainIdRoute = AppDashboardChaplainIdRouteImport.update({
-  id: '/dashboard/chaplain/$id',
-  path: '/dashboard/chaplain/$id',
-  getParentRoute: () => AppRouteRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/calendar': typeof CalendarRoute
-  '/chaplain-contact': typeof ChaplainContactRoute
   '/executive': typeof ExecutiveRoute
   '/pastoral-letters': typeof PastoralLettersRoute
-  '/payment-callback': typeof PaymentCallbackRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/init-admin': typeof AuthInitAdminRoute
   '/api/upload': typeof ApiUploadRoute
-  '/chaplain-chat/$token': typeof ChaplainChatTokenRoute
+  '/dashboard/forgot-password': typeof DashboardForgotPasswordRoute
   '/dashboard/login': typeof DashboardLoginRoute
+  '/dashboard/reset-password': typeof DashboardResetPasswordRoute
   '/hierarchy/$slug': typeof HierarchySlugRoute
   '/leadership/$memberId': typeof LeadershipMemberIdRoute
   '/news/$slug': typeof NewsSlugRoute
@@ -390,13 +358,10 @@ export interface FileRoutesByFullPath {
   '/programmes/': typeof ProgrammesIndexRoute
   '/dashboard/news': typeof AppDashboardNewsRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/chat/sse': typeof ApiChatSseRoute
-  '/api/chat/upload': typeof ApiChatUploadRoute
   '/api/media/$': typeof ApiMediaSplatRoute
   '/events/$id/cancel': typeof EventsIdCancelRoute
   '/dashboard/': typeof AppDashboardIndexRoute
   '/events/$id/': typeof EventsIdIndexRoute
-  '/dashboard/chaplain/$id': typeof AppDashboardChaplainIdRoute
   '/dashboard/documents/upload': typeof AppDashboardDocumentsUploadRoute
   '/dashboard/events/$id': typeof AppDashboardEventsIdRoute
   '/dashboard/events/create': typeof AppDashboardEventsCreateRoute
@@ -408,7 +373,6 @@ export interface FileRoutesByFullPath {
   '/dashboard/programmes/create': typeof AppDashboardProgrammesCreateRoute
   '/dashboard/submission-prompts/create': typeof AppDashboardSubmissionPromptsCreateRoute
   '/dashboard/admin-users/': typeof AppDashboardAdminUsersIndexRoute
-  '/dashboard/chaplain/': typeof AppDashboardChaplainIndexRoute
   '/dashboard/documents/': typeof AppDashboardDocumentsIndexRoute
   '/dashboard/events/': typeof AppDashboardEventsIndexRoute
   '/dashboard/executive/': typeof AppDashboardExecutiveIndexRoute
@@ -424,15 +388,14 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/calendar': typeof CalendarRoute
-  '/chaplain-contact': typeof ChaplainContactRoute
   '/executive': typeof ExecutiveRoute
   '/pastoral-letters': typeof PastoralLettersRoute
-  '/payment-callback': typeof PaymentCallbackRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/init-admin': typeof AuthInitAdminRoute
   '/api/upload': typeof ApiUploadRoute
-  '/chaplain-chat/$token': typeof ChaplainChatTokenRoute
+  '/dashboard/forgot-password': typeof DashboardForgotPasswordRoute
   '/dashboard/login': typeof DashboardLoginRoute
+  '/dashboard/reset-password': typeof DashboardResetPasswordRoute
   '/hierarchy/$slug': typeof HierarchySlugRoute
   '/leadership/$memberId': typeof LeadershipMemberIdRoute
   '/news/$slug': typeof NewsSlugRoute
@@ -446,13 +409,10 @@ export interface FileRoutesByTo {
   '/news': typeof NewsIndexRoute
   '/programmes': typeof ProgrammesIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/chat/sse': typeof ApiChatSseRoute
-  '/api/chat/upload': typeof ApiChatUploadRoute
   '/api/media/$': typeof ApiMediaSplatRoute
   '/events/$id/cancel': typeof EventsIdCancelRoute
   '/dashboard': typeof AppDashboardIndexRoute
   '/events/$id': typeof EventsIdIndexRoute
-  '/dashboard/chaplain/$id': typeof AppDashboardChaplainIdRoute
   '/dashboard/documents/upload': typeof AppDashboardDocumentsUploadRoute
   '/dashboard/events/$id': typeof AppDashboardEventsIdRoute
   '/dashboard/events/create': typeof AppDashboardEventsCreateRoute
@@ -464,7 +424,6 @@ export interface FileRoutesByTo {
   '/dashboard/programmes/create': typeof AppDashboardProgrammesCreateRoute
   '/dashboard/submission-prompts/create': typeof AppDashboardSubmissionPromptsCreateRoute
   '/dashboard/admin-users': typeof AppDashboardAdminUsersIndexRoute
-  '/dashboard/chaplain': typeof AppDashboardChaplainIndexRoute
   '/dashboard/documents': typeof AppDashboardDocumentsIndexRoute
   '/dashboard/events': typeof AppDashboardEventsIndexRoute
   '/dashboard/executive': typeof AppDashboardExecutiveIndexRoute
@@ -482,15 +441,14 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_app': typeof AppRouteRouteWithChildren
   '/calendar': typeof CalendarRoute
-  '/chaplain-contact': typeof ChaplainContactRoute
   '/executive': typeof ExecutiveRoute
   '/pastoral-letters': typeof PastoralLettersRoute
-  '/payment-callback': typeof PaymentCallbackRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_auth/init-admin': typeof AuthInitAdminRoute
   '/api/upload': typeof ApiUploadRoute
-  '/chaplain-chat/$token': typeof ChaplainChatTokenRoute
+  '/dashboard/forgot-password': typeof DashboardForgotPasswordRoute
   '/dashboard/login': typeof DashboardLoginRoute
+  '/dashboard/reset-password': typeof DashboardResetPasswordRoute
   '/hierarchy/$slug': typeof HierarchySlugRoute
   '/leadership/$memberId': typeof LeadershipMemberIdRoute
   '/news/$slug': typeof NewsSlugRoute
@@ -505,13 +463,10 @@ export interface FileRoutesById {
   '/programmes/': typeof ProgrammesIndexRoute
   '/_app/dashboard/news': typeof AppDashboardNewsRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/chat/sse': typeof ApiChatSseRoute
-  '/api/chat/upload': typeof ApiChatUploadRoute
   '/api/media/$': typeof ApiMediaSplatRoute
   '/events/$id/cancel': typeof EventsIdCancelRoute
   '/_app/dashboard/': typeof AppDashboardIndexRoute
   '/events/$id/': typeof EventsIdIndexRoute
-  '/_app/dashboard/chaplain/$id': typeof AppDashboardChaplainIdRoute
   '/_app/dashboard/documents/upload': typeof AppDashboardDocumentsUploadRoute
   '/_app/dashboard/events/$id': typeof AppDashboardEventsIdRoute
   '/_app/dashboard/events/create': typeof AppDashboardEventsCreateRoute
@@ -523,7 +478,6 @@ export interface FileRoutesById {
   '/_app/dashboard/programmes/create': typeof AppDashboardProgrammesCreateRoute
   '/_app/dashboard/submission-prompts/create': typeof AppDashboardSubmissionPromptsCreateRoute
   '/_app/dashboard/admin-users/': typeof AppDashboardAdminUsersIndexRoute
-  '/_app/dashboard/chaplain/': typeof AppDashboardChaplainIndexRoute
   '/_app/dashboard/documents/': typeof AppDashboardDocumentsIndexRoute
   '/_app/dashboard/events/': typeof AppDashboardEventsIndexRoute
   '/_app/dashboard/executive/': typeof AppDashboardExecutiveIndexRoute
@@ -541,15 +495,14 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/calendar'
-    | '/chaplain-contact'
     | '/executive'
     | '/pastoral-letters'
-    | '/payment-callback'
     | '/sitemap.xml'
     | '/init-admin'
     | '/api/upload'
-    | '/chaplain-chat/$token'
+    | '/dashboard/forgot-password'
     | '/dashboard/login'
+    | '/dashboard/reset-password'
     | '/hierarchy/$slug'
     | '/leadership/$memberId'
     | '/news/$slug'
@@ -564,13 +517,10 @@ export interface FileRouteTypes {
     | '/programmes/'
     | '/dashboard/news'
     | '/api/auth/$'
-    | '/api/chat/sse'
-    | '/api/chat/upload'
     | '/api/media/$'
     | '/events/$id/cancel'
     | '/dashboard/'
     | '/events/$id/'
-    | '/dashboard/chaplain/$id'
     | '/dashboard/documents/upload'
     | '/dashboard/events/$id'
     | '/dashboard/events/create'
@@ -582,7 +532,6 @@ export interface FileRouteTypes {
     | '/dashboard/programmes/create'
     | '/dashboard/submission-prompts/create'
     | '/dashboard/admin-users/'
-    | '/dashboard/chaplain/'
     | '/dashboard/documents/'
     | '/dashboard/events/'
     | '/dashboard/executive/'
@@ -598,15 +547,14 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/calendar'
-    | '/chaplain-contact'
     | '/executive'
     | '/pastoral-letters'
-    | '/payment-callback'
     | '/sitemap.xml'
     | '/init-admin'
     | '/api/upload'
-    | '/chaplain-chat/$token'
+    | '/dashboard/forgot-password'
     | '/dashboard/login'
+    | '/dashboard/reset-password'
     | '/hierarchy/$slug'
     | '/leadership/$memberId'
     | '/news/$slug'
@@ -620,13 +568,10 @@ export interface FileRouteTypes {
     | '/news'
     | '/programmes'
     | '/api/auth/$'
-    | '/api/chat/sse'
-    | '/api/chat/upload'
     | '/api/media/$'
     | '/events/$id/cancel'
     | '/dashboard'
     | '/events/$id'
-    | '/dashboard/chaplain/$id'
     | '/dashboard/documents/upload'
     | '/dashboard/events/$id'
     | '/dashboard/events/create'
@@ -638,7 +583,6 @@ export interface FileRouteTypes {
     | '/dashboard/programmes/create'
     | '/dashboard/submission-prompts/create'
     | '/dashboard/admin-users'
-    | '/dashboard/chaplain'
     | '/dashboard/documents'
     | '/dashboard/events'
     | '/dashboard/executive'
@@ -655,15 +599,14 @@ export interface FileRouteTypes {
     | '/'
     | '/_app'
     | '/calendar'
-    | '/chaplain-contact'
     | '/executive'
     | '/pastoral-letters'
-    | '/payment-callback'
     | '/sitemap.xml'
     | '/_auth/init-admin'
     | '/api/upload'
-    | '/chaplain-chat/$token'
+    | '/dashboard/forgot-password'
     | '/dashboard/login'
+    | '/dashboard/reset-password'
     | '/hierarchy/$slug'
     | '/leadership/$memberId'
     | '/news/$slug'
@@ -678,13 +621,10 @@ export interface FileRouteTypes {
     | '/programmes/'
     | '/_app/dashboard/news'
     | '/api/auth/$'
-    | '/api/chat/sse'
-    | '/api/chat/upload'
     | '/api/media/$'
     | '/events/$id/cancel'
     | '/_app/dashboard/'
     | '/events/$id/'
-    | '/_app/dashboard/chaplain/$id'
     | '/_app/dashboard/documents/upload'
     | '/_app/dashboard/events/$id'
     | '/_app/dashboard/events/create'
@@ -696,7 +636,6 @@ export interface FileRouteTypes {
     | '/_app/dashboard/programmes/create'
     | '/_app/dashboard/submission-prompts/create'
     | '/_app/dashboard/admin-users/'
-    | '/_app/dashboard/chaplain/'
     | '/_app/dashboard/documents/'
     | '/_app/dashboard/events/'
     | '/_app/dashboard/executive/'
@@ -714,15 +653,14 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRouteRoute: typeof AppRouteRouteWithChildren
   CalendarRoute: typeof CalendarRoute
-  ChaplainContactRoute: typeof ChaplainContactRoute
   ExecutiveRoute: typeof ExecutiveRoute
   PastoralLettersRoute: typeof PastoralLettersRoute
-  PaymentCallbackRoute: typeof PaymentCallbackRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   AuthInitAdminRoute: typeof AuthInitAdminRoute
   ApiUploadRoute: typeof ApiUploadRoute
-  ChaplainChatTokenRoute: typeof ChaplainChatTokenRoute
+  DashboardForgotPasswordRoute: typeof DashboardForgotPasswordRoute
   DashboardLoginRoute: typeof DashboardLoginRoute
+  DashboardResetPasswordRoute: typeof DashboardResetPasswordRoute
   HierarchySlugRoute: typeof HierarchySlugRoute
   LeadershipMemberIdRoute: typeof LeadershipMemberIdRoute
   NewsSlugRoute: typeof NewsSlugRoute
@@ -736,8 +674,6 @@ export interface RootRouteChildren {
   NewsIndexRoute: typeof NewsIndexRoute
   ProgrammesIndexRoute: typeof ProgrammesIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
-  ApiChatSseRoute: typeof ApiChatSseRoute
-  ApiChatUploadRoute: typeof ApiChatUploadRoute
   ApiMediaSplatRoute: typeof ApiMediaSplatRoute
   EventsIdCancelRoute: typeof EventsIdCancelRoute
   EventsIdIndexRoute: typeof EventsIdIndexRoute
@@ -752,13 +688,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/payment-callback': {
-      id: '/payment-callback'
-      path: '/payment-callback'
-      fullPath: '/payment-callback'
-      preLoaderRoute: typeof PaymentCallbackRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/pastoral-letters': {
       id: '/pastoral-letters'
       path: '/pastoral-letters'
@@ -771,13 +700,6 @@ declare module '@tanstack/react-router' {
       path: '/executive'
       fullPath: '/executive'
       preLoaderRoute: typeof ExecutiveRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/chaplain-contact': {
-      id: '/chaplain-contact'
-      path: '/chaplain-contact'
-      fullPath: '/chaplain-contact'
-      preLoaderRoute: typeof ChaplainContactRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/calendar': {
@@ -885,6 +807,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HierarchySlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/reset-password': {
+      id: '/dashboard/reset-password'
+      path: '/dashboard/reset-password'
+      fullPath: '/dashboard/reset-password'
+      preLoaderRoute: typeof DashboardResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard/login': {
       id: '/dashboard/login'
       path: '/dashboard/login'
@@ -892,11 +821,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/chaplain-chat/$token': {
-      id: '/chaplain-chat/$token'
-      path: '/chaplain-chat/$token'
-      fullPath: '/chaplain-chat/$token'
-      preLoaderRoute: typeof ChaplainChatTokenRouteImport
+    '/dashboard/forgot-password': {
+      id: '/dashboard/forgot-password'
+      path: '/dashboard/forgot-password'
+      fullPath: '/dashboard/forgot-password'
+      preLoaderRoute: typeof DashboardForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/upload': {
@@ -939,20 +868,6 @@ declare module '@tanstack/react-router' {
       path: '/api/media/$'
       fullPath: '/api/media/$'
       preLoaderRoute: typeof ApiMediaSplatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/chat/upload': {
-      id: '/api/chat/upload'
-      path: '/api/chat/upload'
-      fullPath: '/api/chat/upload'
-      preLoaderRoute: typeof ApiChatUploadRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/chat/sse': {
-      id: '/api/chat/sse'
-      path: '/api/chat/sse'
-      fullPath: '/api/chat/sse'
-      preLoaderRoute: typeof ApiChatSseRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/auth/$': {
@@ -1046,13 +961,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDashboardDocumentsIndexRouteImport
       parentRoute: typeof AppRouteRoute
     }
-    '/_app/dashboard/chaplain/': {
-      id: '/_app/dashboard/chaplain/'
-      path: '/dashboard/chaplain'
-      fullPath: '/dashboard/chaplain/'
-      preLoaderRoute: typeof AppDashboardChaplainIndexRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
     '/_app/dashboard/admin-users/': {
       id: '/_app/dashboard/admin-users/'
       path: '/dashboard/admin-users'
@@ -1130,13 +1038,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDashboardDocumentsUploadRouteImport
       parentRoute: typeof AppRouteRoute
     }
-    '/_app/dashboard/chaplain/$id': {
-      id: '/_app/dashboard/chaplain/$id'
-      path: '/dashboard/chaplain/$id'
-      fullPath: '/dashboard/chaplain/$id'
-      preLoaderRoute: typeof AppDashboardChaplainIdRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
   }
 }
 
@@ -1160,7 +1061,6 @@ const AppDashboardNewsRouteWithChildren =
 interface AppRouteRouteChildren {
   AppDashboardNewsRoute: typeof AppDashboardNewsRouteWithChildren
   AppDashboardIndexRoute: typeof AppDashboardIndexRoute
-  AppDashboardChaplainIdRoute: typeof AppDashboardChaplainIdRoute
   AppDashboardDocumentsUploadRoute: typeof AppDashboardDocumentsUploadRoute
   AppDashboardEventsIdRoute: typeof AppDashboardEventsIdRoute
   AppDashboardEventsCreateRoute: typeof AppDashboardEventsCreateRoute
@@ -1169,7 +1069,6 @@ interface AppRouteRouteChildren {
   AppDashboardProgrammesCreateRoute: typeof AppDashboardProgrammesCreateRoute
   AppDashboardSubmissionPromptsCreateRoute: typeof AppDashboardSubmissionPromptsCreateRoute
   AppDashboardAdminUsersIndexRoute: typeof AppDashboardAdminUsersIndexRoute
-  AppDashboardChaplainIndexRoute: typeof AppDashboardChaplainIndexRoute
   AppDashboardDocumentsIndexRoute: typeof AppDashboardDocumentsIndexRoute
   AppDashboardEventsIndexRoute: typeof AppDashboardEventsIndexRoute
   AppDashboardExecutiveIndexRoute: typeof AppDashboardExecutiveIndexRoute
@@ -1185,7 +1084,6 @@ interface AppRouteRouteChildren {
 const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppDashboardNewsRoute: AppDashboardNewsRouteWithChildren,
   AppDashboardIndexRoute: AppDashboardIndexRoute,
-  AppDashboardChaplainIdRoute: AppDashboardChaplainIdRoute,
   AppDashboardDocumentsUploadRoute: AppDashboardDocumentsUploadRoute,
   AppDashboardEventsIdRoute: AppDashboardEventsIdRoute,
   AppDashboardEventsCreateRoute: AppDashboardEventsCreateRoute,
@@ -1195,7 +1093,6 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppDashboardSubmissionPromptsCreateRoute:
     AppDashboardSubmissionPromptsCreateRoute,
   AppDashboardAdminUsersIndexRoute: AppDashboardAdminUsersIndexRoute,
-  AppDashboardChaplainIndexRoute: AppDashboardChaplainIndexRoute,
   AppDashboardDocumentsIndexRoute: AppDashboardDocumentsIndexRoute,
   AppDashboardEventsIndexRoute: AppDashboardEventsIndexRoute,
   AppDashboardExecutiveIndexRoute: AppDashboardExecutiveIndexRoute,
@@ -1217,15 +1114,14 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRouteRoute: AppRouteRouteWithChildren,
   CalendarRoute: CalendarRoute,
-  ChaplainContactRoute: ChaplainContactRoute,
   ExecutiveRoute: ExecutiveRoute,
   PastoralLettersRoute: PastoralLettersRoute,
-  PaymentCallbackRoute: PaymentCallbackRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   AuthInitAdminRoute: AuthInitAdminRoute,
   ApiUploadRoute: ApiUploadRoute,
-  ChaplainChatTokenRoute: ChaplainChatTokenRoute,
+  DashboardForgotPasswordRoute: DashboardForgotPasswordRoute,
   DashboardLoginRoute: DashboardLoginRoute,
+  DashboardResetPasswordRoute: DashboardResetPasswordRoute,
   HierarchySlugRoute: HierarchySlugRoute,
   LeadershipMemberIdRoute: LeadershipMemberIdRoute,
   NewsSlugRoute: NewsSlugRoute,
@@ -1239,8 +1135,6 @@ const rootRouteChildren: RootRouteChildren = {
   NewsIndexRoute: NewsIndexRoute,
   ProgrammesIndexRoute: ProgrammesIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
-  ApiChatSseRoute: ApiChatSseRoute,
-  ApiChatUploadRoute: ApiChatUploadRoute,
   ApiMediaSplatRoute: ApiMediaSplatRoute,
   EventsIdCancelRoute: EventsIdCancelRoute,
   EventsIdIndexRoute: EventsIdIndexRoute,

@@ -53,7 +53,6 @@ function EventDetailPage() {
   const [submitted, setSubmitted] = useState(false)
 
   const isRetreat = event.eventType === "retreat"
-  const isPaid = event.registrationType === "paid"
   const isDeadlinePast = event.registrationDeadline
     ? new Date() > new Date(event.registrationDeadline)
     : false
@@ -210,16 +209,7 @@ function EventDetailPage() {
                 <CardTitle>Register</CardTitle>
               </CardHeader>
               <CardContent>
-                {isPaid ? (
-                  <div className="space-y-3 text-center">
-                    <p className="text-sm text-muted-foreground">
-                      This event requires payment of <strong>{event.feeCurrency} {event.feeAmount?.toFixed(2)}</strong>.
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Paid event registration is temporarily unavailable while the admin-only portal redesign is being completed.
-                    </p>
-                  </div>
-                ) : isDeadlinePast ? (
+                {isDeadlinePast ? (
                   <p className="text-sm text-muted-foreground">Registration for this event has closed.</p>
                 ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">
