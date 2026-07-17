@@ -213,13 +213,13 @@ function DarkHero({
                 />
             </div>
 
-            <div className="relative z-10 w-full max-w-7xl px-4 pb-16 pt-24 sm:px-6 sm:pb-24 sm:pt-32 lg:px-8">
+            <div className="relative z-10 w-full max-w-7xl px-4 pb-12 pt-20 sm:px-6 sm:pb-24 sm:pt-32 lg:px-8">
                 <div className="flex max-w-3xl flex-col justify-center space-y-8">
           <span className="w-fit text-xs font-semibold uppercase tracking-[0.35em] text-slate-300/70">
             Catholic Diocese of Koforidua
           </span>
                     <div>
-                        <h1 className="mb-6 text-5xl font-black leading-tight text-white sm:text-6xl lg:text-7xl">
+                        <h1 className="mb-6 text-4xl font-black leading-tight text-white sm:text-5xl lg:text-7xl">
                             Youth in Faith,{" "}
                             <span className="text-primary">Made Alive.</span>
                         </h1>
@@ -228,7 +228,7 @@ function DarkHero({
                             programmes, and formation resources for young Catholics across the diocese.
                         </p>
                     </div>
-                    <div className="flex flex-col gap-4 pt-4 sm:flex-row">
+                    <div className="flex flex-col gap-3 pt-4 sm:flex-row sm:gap-4">
                         <Link
                             to="/news"
                             className="group inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-8 py-4 text-base font-bold text-primary-foreground shadow-lg shadow-primary/30 transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/50 sm:text-lg"
@@ -244,18 +244,18 @@ function DarkHero({
                             <Calendar className="size-5"/>
                         </Link>
                     </div>
-                    <div className="grid grid-cols-3 gap-4 border-t border-slate-400/30 pt-8 sm:gap-6 sm:pt-10">
+                    <div className="grid grid-cols-3 gap-2 border-t border-slate-400/30 pt-8 sm:gap-6 sm:pt-10">
                         <div>
-                            <p className="text-3xl font-bold text-primary">{newsCount}+</p>
-                            <p className="mt-2 text-sm text-slate-300">Published Stories</p>
+                            <p className="text-2xl font-bold text-primary sm:text-3xl">{newsCount}+</p>
+                            <p className="mt-1 text-xs text-slate-300 sm:mt-2 sm:text-sm">Published Stories</p>
                         </div>
                         <div>
-                            <p className="text-3xl font-bold text-primary">{eventsCount}+</p>
-                            <p className="mt-2 text-sm text-slate-300">Upcoming Events</p>
+                            <p className="text-2xl font-bold text-primary sm:text-3xl">{eventsCount}+</p>
+                            <p className="mt-1 text-xs text-slate-300 sm:mt-2 sm:text-sm">Upcoming Events</p>
                         </div>
                         <div>
-                            <p className="text-3xl font-bold text-primary">{docsCount}+</p>
-                            <p className="mt-2 text-sm text-slate-300">Resources & Docs</p>
+                            <p className="text-2xl font-bold text-primary sm:text-3xl">{docsCount}+</p>
+                            <p className="mt-1 text-xs text-slate-300 sm:mt-2 sm:text-sm">Resources & Docs</p>
                         </div>
                     </div>
                 </div>

@@ -65,7 +65,7 @@ function NewsSubmissionsPage() {
         <p className="text-sm text-muted-foreground mt-1">Review and moderate public news submissions</p>
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         {(["pending", "approved", "rejected"] as const).map((status) => (
           <Button
             key={status}
@@ -126,7 +126,7 @@ function NewsSubmissionsPage() {
                             rows={2}
                           />
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
                           <Button
                             size="sm"
                             onClick={() => reviewMutation.mutate({ id: sub.id, decision: "approved" })}
@@ -163,11 +163,11 @@ function NewsSubmissionsPage() {
                     )}
                   </>
                 ) : (
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                     <p className="text-sm text-muted-foreground line-clamp-2 flex-1">
                       {sub.body.length > 150 ? sub.body.slice(0, 150) + "..." : sub.body}
                     </p>
-                    <Button size="sm" variant="outline" onClick={() => setReviewingId(sub.id)}>
+                    <Button size="sm" variant="outline" onClick={() => setReviewingId(sub.id)} className="w-full sm:w-auto">
                       <Eye className="w-4 h-4 mr-1" />
                       Review
                     </Button>

@@ -152,11 +152,11 @@ function DashboardLoginPage() {
           </Link>
 
           <Card className="border-0 shadow-none sm:border sm:shadow-sm sm:bg-card">
-            <CardHeader className="px-0 sm:px-6 space-y-1">
+            <CardHeader className="px-4 sm:px-6 space-y-1">
               <CardTitle className="text-2xl font-bold tracking-tight">Admin Login</CardTitle>
               <CardDescription>Enter your admin credentials to access the dashboard</CardDescription>
             </CardHeader>
-            <CardContent className="px-0 sm:px-6">
+            <CardContent className="px-4 sm:px-6">
               <form onSubmit={handleSubmit} className="space-y-4">
                 {error && (
                   <div className={`px-4 py-3 rounded-lg text-sm animate-fade-in ${

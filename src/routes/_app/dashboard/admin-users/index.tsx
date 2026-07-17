@@ -160,7 +160,7 @@ function AdminUsersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Admin Users</h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -170,7 +170,7 @@ function AdminUsersPage() {
         {canManageAdminUsers && (
           <Dialog open={addUserOpen} onOpenChange={setAddUserOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button className="w-full sm:w-auto">
                 <Plus className="w-4 h-4 mr-2" />
                 Add User
               </Button>

@@ -204,7 +204,7 @@ function UploadDocumentPage() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label>Category *</Label>
                 <Select
@@ -268,17 +268,19 @@ function UploadDocumentPage() {
           </CardContent>
         </Card>
 
-        <div className="flex justify-end gap-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-end sm:gap-4">
           <Button
             variant="outline"
             type="button"
             onClick={() => navigate({ to: "/dashboard/documents" })}
+            className="w-full sm:w-auto"
           >
             Cancel
           </Button>
           <Button
             type="submit"
             disabled={uploading || saveMutation.isPending || !file}
+            className="w-full sm:w-auto"
           >
             <Upload className="w-4 h-4 mr-2" />
             {uploading || saveMutation.isPending ? "Uploading..." : "Upload Document"}

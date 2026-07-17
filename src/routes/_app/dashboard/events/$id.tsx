@@ -104,7 +104,7 @@ function EditEventPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild>
             <Link to="/dashboard/events">
@@ -121,7 +121,7 @@ function EditEventPage() {
             <p className="text-sm text-muted-foreground">Update event details</p>
           </div>
         </div>
-        <Button variant="outline" asChild>
+        <Button variant="outline" asChild className="w-full sm:w-auto">
           <Link to="/dashboard/events/registrants" search={{ eventId: event.id }}>
             <Users className="w-4 h-4 mr-2" />
             View Registrants
@@ -157,7 +157,7 @@ function EditEventPage() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label>Event Type *</Label>
                 <Select
@@ -244,7 +244,7 @@ function EditEventPage() {
             <CardTitle>Date, Time & Location</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="startAt">Start Date & Time *</Label>
                 <Input
@@ -304,7 +304,7 @@ function EditEventPage() {
             <CardTitle>Registration Settings</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="registrationDeadline">Registration Deadline</Label>
                 <Input
@@ -350,8 +350,8 @@ function EditEventPage() {
           </CardContent>
         </Card>
 
-        <div className="flex justify-end gap-4">
-          <Button variant="outline" type="button" onClick={() => navigate({ to: "/dashboard/events" })}>
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-end sm:gap-4">
+          <Button variant="outline" type="button" onClick={() => navigate({ to: "/dashboard/events" })} className="w-full sm:w-auto">
             Cancel
           </Button>
 
@@ -365,6 +365,7 @@ function EditEventPage() {
                   submitUpdate("cancelled")
                 }
               }}
+              className="w-full sm:w-auto"
             >
               <XCircle className="w-4 h-4 mr-2" />
               Cancel Event
@@ -372,13 +373,13 @@ function EditEventPage() {
           )}
 
           {event.status === "published" ? (
-            <Button type="submit" disabled={updateMutation.isPending}>
+            <Button type="submit" disabled={updateMutation.isPending} className="w-full sm:w-auto">
               <Save className="w-4 h-4 mr-2" />
               {updateMutation.isPending ? "Saving..." : "Save Changes"}
             </Button>
           ) : (
             <>
-              <Button type="submit" variant="outline" disabled={updateMutation.isPending}>
+              <Button type="submit" variant="outline" disabled={updateMutation.isPending} className="w-full sm:w-auto">
                 <Save className="w-4 h-4 mr-2" />
                 {updateMutation.isPending ? "Saving..." : "Save Draft"}
               </Button>
@@ -389,6 +390,7 @@ function EditEventPage() {
                   const form = document.querySelector("form") as HTMLFormElement
                   if (form?.reportValidity()) submitUpdate("published")
                 }}
+                className="w-full sm:w-auto"
               >
                 <Send className="w-4 h-4 mr-2" />
                 {updateMutation.isPending ? "Publishing..." : "Publish"}

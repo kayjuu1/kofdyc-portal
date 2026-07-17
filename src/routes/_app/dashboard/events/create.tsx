@@ -158,7 +158,7 @@ function CreateEventPage() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label>Event Type *</Label>
                 <Select
@@ -245,7 +245,7 @@ function CreateEventPage() {
             <CardTitle>Date, Time & Location</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="startAt">Start Date & Time *</Label>
                 <Input
@@ -325,7 +325,7 @@ function CreateEventPage() {
             <CardTitle>Registration Settings</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="registrationDeadline">Registration Deadline</Label>
                 <Input
@@ -400,11 +400,11 @@ function CreateEventPage() {
           </CardContent>
         </Card>
 
-        <div className="flex justify-end gap-4">
-          <Button variant="outline" type="button" onClick={() => navigate({ to: "/dashboard/events" })}>
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-end sm:gap-4">
+          <Button variant="outline" type="button" onClick={() => navigate({ to: "/dashboard/events" })} className="w-full sm:w-auto">
             Cancel
           </Button>
-          <Button type="submit" variant="outline" disabled={createMutation.isPending}>
+          <Button type="submit" variant="outline" disabled={createMutation.isPending} className="w-full sm:w-auto">
             <Save className="w-4 h-4 mr-2" />
             {createMutation.isPending ? "Saving..." : "Save as Draft"}
           </Button>
@@ -415,6 +415,7 @@ function CreateEventPage() {
               const form = document.querySelector("form") as HTMLFormElement
               if (form?.reportValidity()) submitWithStatus("published")
             }}
+            className="w-full sm:w-auto"
           >
             <Send className="w-4 h-4 mr-2" />
             {createMutation.isPending ? "Publishing..." : "Save & Publish"}

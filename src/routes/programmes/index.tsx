@@ -83,7 +83,7 @@ function ProgrammesPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-4 mb-6">
+        <div className="flex flex-col gap-3 mb-6 sm:flex-row sm:items-center sm:gap-4">
           <Select
             value={String(year ?? currentYear)}
             onValueChange={(value) =>
@@ -95,7 +95,7 @@ function ProgrammesPage() {
               })
             }
           >
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-full sm:w-[140px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

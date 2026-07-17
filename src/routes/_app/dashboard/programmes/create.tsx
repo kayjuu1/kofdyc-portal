@@ -317,7 +317,7 @@ function CreateProgrammePage() {
           <CardTitle>Programme Details</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="grid gap-2">
               <Label>Parish *</Label>
               <Select value={parishId} onValueChange={setParishId}>
@@ -404,7 +404,7 @@ function CreateProgrammePage() {
                   </Button>
                 )}
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="grid gap-1.5">
                   <Label>Title *</Label>
                   <Input
@@ -444,11 +444,12 @@ function CreateProgrammePage() {
         </CardContent>
       </Card>
 
-      <div className="flex justify-end gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:justify-end sm:gap-4">
         <Button
           variant="outline"
           type="button"
           onClick={() => navigate({ to: "/dashboard/programmes" })}
+          className="w-full sm:w-auto"
         >
           Cancel
         </Button>
@@ -456,11 +457,12 @@ function CreateProgrammePage() {
           variant="outline"
           disabled={isPending}
           onClick={() => handleSave(false)}
+          className="w-full sm:w-auto"
         >
           <Save className="w-4 h-4 mr-2" />
           {isPending ? "Saving..." : "Save as Draft"}
         </Button>
-        <Button disabled={isPending} onClick={() => handleSave(true)}>
+        <Button disabled={isPending} onClick={() => handleSave(true)} className="w-full sm:w-auto">
           <Send className="w-4 h-4 mr-2" />
           {isPending ? "Submitting..." : "Save & Submit"}
         </Button>

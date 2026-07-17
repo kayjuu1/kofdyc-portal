@@ -44,13 +44,13 @@ function ParishProfilePage() {
           )}
         </div>
 
-        <div className="grid grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-3 gap-2 mb-8 sm:gap-4">
           {stats.map((stat, i) => (
             <Card key={i}>
-              <CardContent className="pt-6 text-center">
-                <stat.icon className="w-6 h-6 mx-auto mb-2 text-primary" />
-                <p className="text-2xl font-bold">{stat.value}</p>
-                <p className="text-sm text-muted-foreground">{stat.label}</p>
+              <CardContent className="p-4 text-center sm:pt-6">
+                <stat.icon className="mx-auto mb-2 size-5 text-primary sm:size-6" />
+                <p className="text-xl font-bold sm:text-2xl">{stat.value}</p>
+                <p className="text-xs text-muted-foreground sm:text-sm">{stat.label}</p>
               </CardContent>
             </Card>
           ))}
@@ -66,9 +66,9 @@ function ParishProfilePage() {
             </CardHeader>
             <CardContent className="space-y-2">
               {parish.recentProgrammes.map((prog, i) => (
-                <div key={i} className="flex items-center justify-between py-2 border-b last:border-0">
-                  <span className="font-medium">{prog.year}</span>
-                  <Badge variant={STATUS_COLORS[prog.status] ?? "outline"}>
+                <div key={i} className="flex items-center justify-between gap-2 py-2 border-b last:border-0">
+                  <span className="font-medium text-sm sm:text-base">{prog.year}</span>
+                  <Badge variant={STATUS_COLORS[prog.status] ?? "outline"} className="shrink-0">
                     {prog.status.replace("_", " ")}
                   </Badge>
                 </div>

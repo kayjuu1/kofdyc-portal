@@ -209,7 +209,7 @@ function NewsDetailPage() {
           </div>
 
           {/* Engagement Bar */}
-          <div className="mt-8 flex items-center gap-4 border-t border-b border-border py-4">
+          <div className="mt-8 flex flex-wrap items-center gap-2 border-t border-b border-border py-4">
             <Button
               variant={liked ? "default" : "outline"}
               size="sm"

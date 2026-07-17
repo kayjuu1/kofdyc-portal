@@ -151,7 +151,7 @@ function CalendarPage() {
                 navigate({ search: { year: y, month: m, scope: v === "all" ? undefined : v as "diocese" | "deanery" | "parish" } })
               }
             >
-              <SelectTrigger className="w-full sm:w-[140px]">
+              <SelectTrigger className="w-[120px] sm:w-[140px]">
                 <SelectValue placeholder="All scopes" />
               </SelectTrigger>
               <SelectContent>
@@ -165,6 +165,7 @@ function CalendarPage() {
               variant={viewMode === "grid" ? "default" : "outline"}
               size="icon"
               onClick={() => setViewMode("grid")}
+              className="hidden sm:inline-flex"
             >
               <Grid3X3 className="w-4 h-4" />
             </Button>
