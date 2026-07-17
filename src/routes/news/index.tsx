@@ -26,7 +26,18 @@ interface NewsArticle {
   isPinned: boolean | null
 }
 
+import { seo, seoLinks } from "@/lib/seo"
+
 export const Route = createFileRoute("/news/")({
+  head: () => ({
+    meta: seo({
+      title: "News | KOFDYC",
+      description:
+        "Latest news and stories from the Koforidua Diocesan Youth Council — diocesan, deanery, and parish updates.",
+      path: "/news",
+    }),
+    links: seoLinks("/news"),
+  }),
   validateSearch: (search: Record<string, unknown>): SearchParams => ({
     page: Number(search.page) || 1,
     scope: search.scope as SearchParams["scope"],

@@ -1,3 +1,6 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow:
+Disallow: /dashboard
+Disallow: /api/
+
+Sitemap: https://kofdyc-portal.owusu.workers.dev/sitemap.xml

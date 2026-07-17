@@ -3,7 +3,8 @@ import { getSession } from "@/functions/get-user"
 import { seedAdminUser } from "@/functions/seed-admin-user"
 import { authClient } from "@/lib/auth-client"
 import { useState } from "react"
-import { Church, Eye, EyeOff, ArrowLeft, Loader2 } from "lucide-react"
+import { Eye, EyeOff, ArrowLeft, Loader2 } from "lucide-react"
+import { Logo } from "@/components/Logo"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 
@@ -71,9 +72,7 @@ function DashboardLoginPage() {
       <div className="hidden lg:flex lg:w-1/2 bg-muted items-center justify-center p-12">
         <div className="max-w-md space-y-12">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-lg bg-primary flex items-center justify-center">
-              <Church className="w-6 h-6 text-primary-foreground" />
-            </div>
+            <Logo className="size-12" />
             <span className="text-3xl font-bold text-foreground tracking-tight">DYC Portal</span>
           </div>
 

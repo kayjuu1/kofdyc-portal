@@ -11,6 +11,7 @@ import { getNewsArticle } from "@/functions/news"
 import { getNewsLikes, getNewsComments, likeNews, addNewsComment } from "@/functions/news-engagement"
 import { ArrowLeft, Heart, Share2, MessageCircle, Send, Loader2, Check } from "lucide-react"
 import { toast } from "sonner"
+import { seo, seoLinks, excerpt } from "@/lib/seo"
 
 export const Route = createFileRoute("/news/$slug")({
   loader: async ({ params }) => {
@@ -20,6 +21,15 @@ export const Route = createFileRoute("/news/$slug")({
     }
     return article
   },
+  head: ({ loaderData, params }) => ({
+    meta: seo({
+      title: loaderData ? `${loaderData.title} | KOFDYC News` : "News | KOFDYC",
+      description: loaderData?.body ? excerpt(loaderData.body) : undefined,
+      path: `/news/${params.slug}`,
+      image: loaderData?.coverImageUrl ?? undefined,
+    }),
+    links: seoLinks(`/news/${params.slug}`),
+  }),
   component: NewsDetailPage,
   errorComponent: () => (
     <div className="min-h-screen bg-background">

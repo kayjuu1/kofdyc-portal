@@ -1,6 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
-import { Church, Menu, MessageCircleHeart, X } from "lucide-react"
+import { Menu, MessageCircleHeart, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   NavigationMenu,
@@ -11,6 +11,7 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu"
 import { LiturgicalBanner } from "@/components/LiturgicalBanner"
+import { Logo } from "@/components/Logo"
 import { ThemeToggle } from "@/components/ThemeToggle"
 import { cn } from "@/lib/utils"
 
@@ -81,9 +82,7 @@ export function PublicHeader() {
           )}
         >
           <Link to="/" className="relative z-20 flex items-center gap-2.5 px-2 py-1">
-            <div className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
-              <Church className="size-4" />
-            </div>
+            <Logo className="size-9 shadow-sm" />
             <div>
               <p className="text-sm font-bold leading-tight text-foreground">KOFDYC</p>
               <p className="text-[11px] leading-tight text-muted-foreground">Diocesan Youth Council</p>
@@ -176,9 +175,7 @@ export function PublicHeader() {
         <div className="relative z-50 w-full border-b border-border/40 bg-background/95 px-4 py-3 shadow-sm backdrop-blur lg:hidden">
           <div className="flex w-full flex-row items-center justify-between">
             <Link to="/" className="relative z-20 flex items-center gap-2.5">
-              <div className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <Church className="size-4" />
-              </div>
+              <Logo className="size-9" />
               <div>
                 <p className="text-sm font-bold leading-tight text-foreground">KOFDYC</p>
                 <p className="text-[11px] leading-tight text-muted-foreground">Diocesan Youth Council</p>

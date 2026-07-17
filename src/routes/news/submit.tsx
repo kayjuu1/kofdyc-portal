@@ -11,7 +11,18 @@ import { ImageUploader, type UploadedImage } from "@/components/ImageUploader"
 import { submitPublicNews } from "@/functions/news-submissions"
 import { ArrowLeft, CheckCircle } from "lucide-react"
 
+import { seo, seoLinks } from "@/lib/seo"
+
 export const Route = createFileRoute("/news/submit")({
+  head: () => ({
+    meta: seo({
+      title: "Submit a Story | KOFDYC",
+      description:
+        "Share your parish or deanery youth story with the Koforidua Diocesan Youth Council.",
+      path: "/news/submit",
+    }),
+    links: seoLinks("/news/submit"),
+  }),
   component: NewsSubmitPage,
 })
 

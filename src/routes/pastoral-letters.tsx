@@ -26,7 +26,18 @@ interface PastoralLetter {
   createdAt: string
 }
 
+import { seo, seoLinks } from "@/lib/seo"
+
 export const Route = createFileRoute("/pastoral-letters")({
+  head: () => ({
+    meta: seo({
+      title: "Pastoral Letters | KOFDYC",
+      description:
+        "Pastoral letters and communiqués from the chaplaincy of the Koforidua Diocesan Youth Council.",
+      path: "/pastoral-letters",
+    }),
+    links: seoLinks("/pastoral-letters"),
+  }),
   validateSearch: (search: Record<string, unknown>): SearchParams => ({
     page: Number(search.page) || 1,
     search: (search.search as string) || undefined,

@@ -4,6 +4,8 @@ import { PublicHeader } from "@/components/PublicHeader"
 import { PublicFooter } from "@/components/PublicFooter"
 import { getLeadershipMember } from "@/functions/leadership"
 
+import { seo, seoLinks } from "@/lib/seo"
+
 export const Route = createFileRoute("/leadership/$memberId")({
   loader: async ({ params }) => {
     const memberId = Number(params.memberId)
@@ -12,6 +14,17 @@ export const Route = createFileRoute("/leadership/$memberId")({
     if (!result) throw notFound()
     return result
   },
+  head: ({ loaderData, params }) => ({
+    meta: seo({
+      title: loaderData ? `${loaderData.member.name} | KOFDYC Leadership` : "Leadership | KOFDYC",
+      description: loaderData
+        ? `${loaderData.member.name}, ${loaderData.member.roleTitle} — ${loaderData.groupTitle}, Koforidua Diocesan Youth Council.`
+        : undefined,
+      path: `/leadership/${params.memberId}`,
+      image: loaderData?.member.photoUrl ?? undefined,
+    }),
+    links: seoLinks(`/leadership/${params.memberId}`),
+  }),
   staleTime: 300_000,
   component: LeadershipMemberPage,
 })

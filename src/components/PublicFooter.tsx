@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router"
-import { Church, Mail, MapPin, Phone } from "lucide-react"
+import { Mail, MapPin, Phone } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
+import { Logo } from "@/components/Logo"
 
 const quickLinks = [
   { label: "News", href: "/news" },
@@ -23,9 +24,7 @@ export function PublicFooter() {
           {/* Branding */}
           <div className="md:col-span-2">
             <div className="mb-4 flex items-center gap-2.5">
-              <div className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <Church className="size-4" />
-              </div>
+              <Logo className="size-9" />
               <div>
                 <p className="text-sm font-bold text-white">KOFDYC</p>
                 <p className="text-xs text-slate-400">Diocesan Youth Council</p>

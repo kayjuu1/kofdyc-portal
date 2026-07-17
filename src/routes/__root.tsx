@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { TooltipProvider } from '@/components/ui/tooltip'
 
 import appCss from '../styles.css?url'
+import { seo, BRAND_COLOR, SITE_NAME } from '@/lib/seo'
 
 const queryClient = new QueryClient()
 
@@ -20,10 +21,27 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'KOFDYC Portal',
+        name: 'theme-color',
+        content: BRAND_COLOR,
       },
+      ...seo({ title: SITE_NAME }),
     ],
     links: [
+      {
+        rel: 'icon',
+        href: '/favicon.ico',
+        sizes: '48x48',
+      },
+      {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '192x192',
+        href: '/icon-192.png',
+      },
+      {
+        rel: 'apple-touch-icon',
+        href: '/apple-touch-icon.png',
+      },
       {
         rel: 'preconnect',
         href: 'https://fonts.googleapis.com',

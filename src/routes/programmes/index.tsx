@@ -23,7 +23,18 @@ interface ProgrammeItem {
   submissionDate: string | null
 }
 
+import { seo, seoLinks } from "@/lib/seo"
+
 export const Route = createFileRoute("/programmes/")({
+  head: () => ({
+    meta: seo({
+      title: "Programmes | KOFDYC",
+      description:
+        "Annual programme of activities and formation events for Catholic youth in the Diocese of Koforidua.",
+      path: "/programmes",
+    }),
+    links: seoLinks("/programmes"),
+  }),
   validateSearch: (search: Record<string, unknown>): SearchParams => ({
     year: Number(search.year) || currentYear,
   }),

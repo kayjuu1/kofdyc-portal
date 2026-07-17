@@ -42,7 +42,18 @@ interface DocItem {
   createdAt: string
 }
 
+import { seo, seoLinks } from "@/lib/seo"
+
 export const Route = createFileRoute("/documents/")({
+  head: () => ({
+    meta: seo({
+      title: "Documents | KOFDYC",
+      description:
+        "Pastoral documents, guidelines, and resources from the Koforidua Diocesan Youth Council.",
+      path: "/documents",
+    }),
+    links: seoLinks("/documents"),
+  }),
   validateSearch: (search: Record<string, unknown>): SearchParams => ({
     page: Number(search.page) || 1,
     search: (search.search as string) || undefined,

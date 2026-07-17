@@ -17,12 +17,24 @@ import { MarkdownContent } from "@/components/MarkdownContent"
 import { getHierarchyNodeBySlug } from "@/functions/hierarchy"
 import { HIERARCHY_TYPE_LABELS } from "@/lib/hierarchy-rules"
 
+import { seo, seoLinks } from "@/lib/seo"
+
 export const Route = createFileRoute("/hierarchy/$slug")({
   loader: async ({ params }) => {
     const result = await getHierarchyNodeBySlug({ data: { slug: params.slug } })
     if (!result) throw notFound()
     return result
   },
+  head: ({ loaderData, params }) => ({
+    meta: seo({
+      title: loaderData ? `${loaderData.node.name} | KOFDYC` : "Hierarchy | KOFDYC",
+      description: loaderData
+        ? `${HIERARCHY_TYPE_LABELS[loaderData.node.type as keyof typeof HIERARCHY_TYPE_LABELS] ?? "Structure"}: ${loaderData.node.name} — leaders and structure within the Koforidua Diocesan Youth Council.`
+        : undefined,
+      path: `/hierarchy/${params.slug}`,
+    }),
+    links: seoLinks(`/hierarchy/${params.slug}`),
+  }),
   staleTime: 300_000,
   component: HierarchyNodePage,
 })

@@ -11,7 +11,18 @@ import { PublicHeader } from "@/components/PublicHeader"
 import { PublicFooter } from "@/components/PublicFooter"
 import { getHierarchyIndex } from "@/functions/hierarchy"
 
+import { seo, seoLinks } from "@/lib/seo"
+
 export const Route = createFileRoute("/hierarchy/")({
+  head: () => ({
+    meta: seo({
+      title: "Hierarchy | KOFDYC",
+      description:
+        "Explore the structure of the Koforidua Diocesan Youth Council — deaneries, parish councils, movements, and societies.",
+      path: "/hierarchy",
+    }),
+    links: seoLinks("/hierarchy"),
+  }),
   loader: async () => getHierarchyIndex(),
   staleTime: 300_000,
   component: HierarchyPage,

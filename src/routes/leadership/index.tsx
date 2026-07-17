@@ -5,7 +5,18 @@ import { PublicFooter } from "@/components/PublicFooter"
 import { Eyebrow, GoldTitle, LeaderCard } from "@/components/leadership/LeaderCard"
 import { getPublishedLeadership } from "@/functions/leadership"
 
+import { seo, seoLinks } from "@/lib/seo"
+
 export const Route = createFileRoute("/leadership/")({
+  head: () => ({
+    meta: seo({
+      title: "Leadership | KOFDYC",
+      description:
+        "Meet the leadership of the Koforidua Diocesan Youth Council — executives, patrons, and chaplains.",
+      path: "/leadership",
+    }),
+    links: seoLinks("/leadership"),
+  }),
   loader: async () => getPublishedLeadership(),
   staleTime: 300_000,
   component: LeadershipPage,

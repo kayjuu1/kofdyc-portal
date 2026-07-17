@@ -37,7 +37,18 @@ type SearchParams = {
   scope?: "diocese" | "deanery" | "parish"
 }
 
+import { seo, seoLinks } from "@/lib/seo"
+
 export const Route = createFileRoute("/calendar")({
+  head: () => ({
+    meta: seo({
+      title: "Calendar | KOFDYC",
+      description:
+        "Liturgical calendar and upcoming events of the Koforidua Diocesan Youth Council.",
+      path: "/calendar",
+    }),
+    links: seoLinks("/calendar"),
+  }),
   validateSearch: (search: Record<string, unknown>): SearchParams => {
     const now = new Date()
     return {

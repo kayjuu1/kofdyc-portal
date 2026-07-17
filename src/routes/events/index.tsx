@@ -31,7 +31,18 @@ interface EventItem {
 
 const EVENT_TYPES = ["mass", "rally", "retreat", "congress", "meeting", "other"] as const
 
+import { seo, seoLinks } from "@/lib/seo"
+
 export const Route = createFileRoute("/events/")({
+  head: () => ({
+    meta: seo({
+      title: "Events | KOFDYC",
+      description:
+        "Upcoming retreats, rallies, congresses, and youth programmes across the Diocese of Koforidua. Register online.",
+      path: "/events",
+    }),
+    links: seoLinks("/events"),
+  }),
   validateSearch: (search: Record<string, unknown>): SearchParams => ({
     page: Number(search.page) || 1,
     scope: search.scope as SearchParams["scope"],

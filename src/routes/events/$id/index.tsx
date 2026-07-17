@@ -15,6 +15,8 @@ import { useMutation } from "@tanstack/react-query"
 
 const TSHIRT_SIZES = ["XS", "S", "M", "L", "XL", "2XL", "3XL"] as const
 
+import { seo, seoLinks, excerpt } from "@/lib/seo"
+
 export const Route = createFileRoute("/events/$id/")({
   loader: async ({ params }) => {
     const event = await getEvent({ data: { id: parseInt(params.id) } })
@@ -23,6 +25,15 @@ export const Route = createFileRoute("/events/$id/")({
     }
     return { event }
   },
+  head: ({ loaderData, params }) => ({
+    meta: seo({
+      title: loaderData ? `${loaderData.event.title} | KOFDYC Events` : "Events | KOFDYC",
+      description: loaderData?.event.description ? excerpt(loaderData.event.description) : undefined,
+      path: `/events/${params.id}`,
+      image: loaderData?.event.coverImageUrl ?? undefined,
+    }),
+    links: seoLinks(`/events/${params.id}`),
+  }),
   component: EventDetailPage,
 })
 

@@ -10,7 +10,18 @@ import { PublicHeader } from "@/components/PublicHeader"
 import { PublicFooter } from "@/components/PublicFooter"
 import { startAnonymousConversation } from "@/functions/chaplain"
 
+import { seo, seoLinks } from "@/lib/seo"
+
 export const Route = createFileRoute("/chaplain-contact")({
+  head: () => ({
+    meta: seo({
+      title: "Talk to the Chaplain | KOFDYC",
+      description:
+        "Reach out to the diocesan youth chaplain — confidential and anonymous support for young Catholics.",
+      path: "/chaplain-contact",
+    }),
+    links: seoLinks("/chaplain-contact"),
+  }),
   component: ChaplainContactPage,
 })
 

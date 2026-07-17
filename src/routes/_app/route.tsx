@@ -2,7 +2,6 @@ import { createFileRoute, Link, Outlet, redirect, useRouterState } from "@tansta
 import {
   Calendar,
   ChevronRight,
-  Church,
   ClipboardList,
   FileText,
   LayoutDashboard,
@@ -47,6 +46,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { ThemeToggle } from "@/components/ThemeToggle"
+import { Logo } from "@/components/Logo"
 
 export const Route = createFileRoute("/_app")({
   beforeLoad: async () => {
@@ -147,9 +147,7 @@ function AppLayout() {
                 className="data-[active=true]:bg-transparent"
               >
                 <Link to="/dashboard">
-                  <div className="flex size-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
-                    <Church className="size-4" />
-                  </div>
+                  <Logo className="size-8 rounded-md" />
                   <div className="grid flex-1 text-left leading-tight group-data-[collapsible=icon]:hidden">
                     <span className="text-sm font-semibold">KOFDYC</span>
                     <span className="text-xs text-muted-foreground">Youth Portal</span>

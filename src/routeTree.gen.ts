@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as PaymentCallbackRouteImport } from './routes/payment-callback'
 import { Route as PastoralLettersRouteImport } from './routes/pastoral-letters'
 import { Route as ExecutiveRouteImport } from './routes/executive'
@@ -65,6 +66,11 @@ import { Route as AppDashboardEventsIdRouteImport } from './routes/_app/dashboar
 import { Route as AppDashboardDocumentsUploadRouteImport } from './routes/_app/dashboard/documents/upload'
 import { Route as AppDashboardChaplainIdRouteImport } from './routes/_app/dashboard/chaplain/$id'
 
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PaymentCallbackRoute = PaymentCallbackRouteImport.update({
   id: '/payment-callback',
   path: '/payment-callback',
@@ -365,6 +371,7 @@ export interface FileRoutesByFullPath {
   '/executive': typeof ExecutiveRoute
   '/pastoral-letters': typeof PastoralLettersRoute
   '/payment-callback': typeof PaymentCallbackRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/init-admin': typeof AuthInitAdminRoute
   '/api/upload': typeof ApiUploadRoute
   '/chaplain-chat/$token': typeof ChaplainChatTokenRoute
@@ -421,6 +428,7 @@ export interface FileRoutesByTo {
   '/executive': typeof ExecutiveRoute
   '/pastoral-letters': typeof PastoralLettersRoute
   '/payment-callback': typeof PaymentCallbackRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/init-admin': typeof AuthInitAdminRoute
   '/api/upload': typeof ApiUploadRoute
   '/chaplain-chat/$token': typeof ChaplainChatTokenRoute
@@ -478,6 +486,7 @@ export interface FileRoutesById {
   '/executive': typeof ExecutiveRoute
   '/pastoral-letters': typeof PastoralLettersRoute
   '/payment-callback': typeof PaymentCallbackRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_auth/init-admin': typeof AuthInitAdminRoute
   '/api/upload': typeof ApiUploadRoute
   '/chaplain-chat/$token': typeof ChaplainChatTokenRoute
@@ -536,6 +545,7 @@ export interface FileRouteTypes {
     | '/executive'
     | '/pastoral-letters'
     | '/payment-callback'
+    | '/sitemap.xml'
     | '/init-admin'
     | '/api/upload'
     | '/chaplain-chat/$token'
@@ -592,6 +602,7 @@ export interface FileRouteTypes {
     | '/executive'
     | '/pastoral-letters'
     | '/payment-callback'
+    | '/sitemap.xml'
     | '/init-admin'
     | '/api/upload'
     | '/chaplain-chat/$token'
@@ -648,6 +659,7 @@ export interface FileRouteTypes {
     | '/executive'
     | '/pastoral-letters'
     | '/payment-callback'
+    | '/sitemap.xml'
     | '/_auth/init-admin'
     | '/api/upload'
     | '/chaplain-chat/$token'
@@ -706,6 +718,7 @@ export interface RootRouteChildren {
   ExecutiveRoute: typeof ExecutiveRoute
   PastoralLettersRoute: typeof PastoralLettersRoute
   PaymentCallbackRoute: typeof PaymentCallbackRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   AuthInitAdminRoute: typeof AuthInitAdminRoute
   ApiUploadRoute: typeof ApiUploadRoute
   ChaplainChatTokenRoute: typeof ChaplainChatTokenRoute
@@ -732,6 +745,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/payment-callback': {
       id: '/payment-callback'
       path: '/payment-callback'
@@ -1201,6 +1221,7 @@ const rootRouteChildren: RootRouteChildren = {
   ExecutiveRoute: ExecutiveRoute,
   PastoralLettersRoute: PastoralLettersRoute,
   PaymentCallbackRoute: PaymentCallbackRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   AuthInitAdminRoute: AuthInitAdminRoute,
   ApiUploadRoute: ApiUploadRoute,
   ChaplainChatTokenRoute: ChaplainChatTokenRoute,
