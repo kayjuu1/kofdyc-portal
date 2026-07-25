@@ -13,6 +13,8 @@ import { getNewsLikes, getNewsComments, likeNews, addNewsComment } from "@/funct
 import { ArrowLeft, Heart, Share2, MessageCircle, Send, Loader2, Check } from "lucide-react"
 import { toast } from "sonner"
 import { seo, seoLinks, excerpt } from "@/lib/seo"
+import { NewsGallery } from "@/components/NewsGallery"
+import { galleryUrls } from "@/lib/news-images"
 
 export const Route = createFileRoute("/news/$slug")({
   loader: async ({ params }) => {
@@ -199,6 +201,13 @@ function NewsDetailPage() {
           ) : null}
 
           <MarkdownContent source={article.body} />
+
+          <NewsGallery
+            urls={galleryUrls(article.coverImageUrl, article.images).filter(
+              (url) => url !== article.coverImageUrl,
+            )}
+            title={article.title}
+          />
 
           {/* Engagement Bar */}
           <div className="mt-8 flex flex-wrap items-center gap-2 border-t border-b border-border py-4">

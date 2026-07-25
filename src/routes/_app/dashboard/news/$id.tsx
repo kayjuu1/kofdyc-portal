@@ -12,6 +12,8 @@ import { getDeaneries, getParishes } from "@/functions/locations"
 import { useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { hasPermission, type UserRole } from "@/lib/permissions"
+import { ImageUploader, type UploadedImage } from "@/components/ImageUploader"
+import { galleryUrls } from "@/lib/news-images"
 
 export const Route = createFileRoute("/_app/dashboard/news/$id")({
   loader: async ({ params }) => {
@@ -39,9 +41,19 @@ function EditNewsPage() {
     body: article.body,
     scope: article.scope as "diocese" | "deanery" | "parish",
     scopeId: article.scopeId ?? undefined,
-    coverImageUrl: article.coverImageUrl ?? "",
     status: article.status as "draft" | "published" | "archived",
   })
+
+  // Seed the uploader from what is already stored: cover first, then the gallery.
+  const [images, setImages] = useState<UploadedImage[]>(() =>
+    galleryUrls(article.coverImageUrl, article.images).map((url) => ({
+      key: url,
+      url,
+      filename: url.split("/").pop() ?? "image",
+      size: 0,
+    })),
+  )
+  const [coverUrl, setCoverUrl] = useState<string | null>(article.coverImageUrl ?? null)
 
   const deaneries = deaneriesList || []
   const parishes = parishesList || []
@@ -77,7 +89,8 @@ function EditNewsPage() {
       body: formData.body,
       scope: formData.scope,
       scopeId: formData.scopeId,
-      coverImageUrl: formData.coverImageUrl || undefined,
+      coverImageUrl: coverUrl ?? "",
+      images: images.map((image) => image.url),
       status: formData.status,
     })
   }
@@ -139,12 +152,17 @@ function EditNewsPage() {
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="coverImageUrl">Cover Image URL</Label>
-              <Input
-                id="coverImageUrl"
-                value={formData.coverImageUrl}
-                onChange={(e) => setFormData({ ...formData, coverImageUrl: e.target.value })}
-                placeholder="https://..."
+              <Label>Images</Label>
+              <p className="text-xs text-muted-foreground">
+                Upload up to 10 images. Star one to make it the cover — the rest appear as a
+                gallery under the article.
+              </p>
+              <ImageUploader
+                images={images}
+                onImagesChange={setImages}
+                coverUrl={coverUrl}
+                onCoverChange={setCoverUrl}
+                maxFiles={10}
               />
             </div>
 

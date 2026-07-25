@@ -75,6 +75,7 @@ function CreateNewsPage() {
       scope: formData.scope,
       scopeId: formData.scopeId,
       coverImageUrl: coverUrl ?? undefined,
+      images: images.map((image) => image.url),
       status,
       isPinned: formData.isPinned,
     })
@@ -192,16 +193,17 @@ function CreateNewsPage() {
           </div>
 
           <div className="space-y-2">
-            <Label>Cover Image</Label>
+            <Label>Images</Label>
             <p className="text-xs text-muted-foreground mb-2">
-              Upload a cover image for your article. Click an image to set it as the cover.
+              Upload up to 10 images. Star one to make it the cover — the rest appear as a
+              gallery under the article.
             </p>
             <ImageUploader
               images={images}
               onImagesChange={setImages}
               coverUrl={coverUrl}
               onCoverChange={setCoverUrl}
-              maxFiles={5}
+              maxFiles={10}
             />
           </div>
 

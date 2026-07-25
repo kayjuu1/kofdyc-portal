@@ -4,6 +4,7 @@ import { news, user } from "@/db/schema"
 import { eq, desc, and, sql, like } from "drizzle-orm"
 import { requirePermission } from "@/middleware/role.middleware"
 import { generateSlug } from "@/lib/slug"
+import { serializeImageUrls } from "@/lib/news-images"
 
 export const getPublishedNews = createServerFn({ method: "GET" })
   .inputValidator(
@@ -81,6 +82,7 @@ export const getNewsArticle = createServerFn({ method: "GET" })
         scope: news.scope,
         scopeId: news.scopeId,
         coverImageUrl: news.coverImageUrl,
+        images: news.images,
         isPinned: news.isPinned,
         status: news.status,
         publishedAt: news.publishedAt,
@@ -109,6 +111,7 @@ export const getNewsArticleById = createServerFn({ method: "GET" })
         scope: news.scope,
         scopeId: news.scopeId,
         coverImageUrl: news.coverImageUrl,
+        images: news.images,
         isPinned: news.isPinned,
         status: news.status,
         publishedAt: news.publishedAt,
@@ -188,6 +191,7 @@ export const createNewsArticle = createServerFn({ method: "POST" })
       scope: "diocese" | "deanery" | "parish"
       scopeId?: number
       coverImageUrl?: string
+      images?: string[]
       status: "draft" | "published"
       isPinned?: boolean
     }) => input
@@ -203,6 +207,7 @@ export const createNewsArticle = createServerFn({ method: "POST" })
       scope: data.scope,
       scopeId: data.scopeId,
       coverImageUrl: data.coverImageUrl,
+      images: serializeImageUrls(data.images),
       status: data.status,
       isPinned: data.isPinned ?? false,
       authorId: context.session.user.id,
@@ -224,6 +229,7 @@ export const updateNewsArticle = createServerFn({ method: "POST" })
       scope?: "diocese" | "deanery" | "parish"
       scopeId?: number
       coverImageUrl?: string
+      images?: string[]
       status?: "draft" | "published" | "archived"
       isPinned?: boolean
     }) => input
@@ -239,7 +245,9 @@ export const updateNewsArticle = createServerFn({ method: "POST" })
     if (data.body !== undefined) updates.body = data.body
     if (data.scope !== undefined) updates.scope = data.scope
     if (data.scopeId !== undefined) updates.scopeId = data.scopeId
-    if (data.coverImageUrl !== undefined) updates.coverImageUrl = data.coverImageUrl
+    // "" means the editor removed the cover — store null rather than a blank string
+    if (data.coverImageUrl !== undefined) updates.coverImageUrl = data.coverImageUrl || null
+    if (data.images !== undefined) updates.images = serializeImageUrls(data.images)
     if (data.isPinned !== undefined) updates.isPinned = data.isPinned
     if (data.status !== undefined) {
       updates.status = data.status

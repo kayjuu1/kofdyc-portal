@@ -397,9 +397,17 @@ function HierarchyAdminPage() {
             >
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="nodeName">Name</Label>
+                  {/*
+                    id must not be "nodeName": HTMLFormElement's named getter is
+                    [LegacyOverrideBuiltIns], so a control with that id shadows
+                    form.nodeName with the input element. React's submit handling
+                    calls node.nodeName.toLowerCase() and throws before our
+                    preventDefault() runs, so the browser does a native GET submit
+                    and the entry is silently never saved.
+                  */}
+                  <Label htmlFor="hierarchyNodeName">Name</Label>
                   <Input
-                    id="nodeName"
+                    id="hierarchyNodeName"
                     required
                     value={nodeForm.name}
                     onChange={(event) =>
