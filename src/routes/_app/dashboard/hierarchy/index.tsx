@@ -1,6 +1,6 @@
 import { createFileRoute, redirect, useRouter } from "@tanstack/react-router"
 import { useState } from "react"
-import { CornerDownRight, Network, Pencil, Plus, Trash2, Users } from "lucide-react"
+import { Church, CornerDownRight, MapPin, Network, Pencil, Plus, Trash2, Users } from "lucide-react"
 import { useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
@@ -40,7 +40,16 @@ import {
   updateHierarchyLeader,
   updateHierarchyNode,
 } from "@/functions/hierarchy"
-import { getDeaneries, getParishes } from "@/functions/locations"
+import {
+  createDeanery,
+  createParish,
+  deleteDeanery,
+  deleteParish,
+  getDeaneries,
+  getParishes,
+  updateDeanery,
+  updateParish,
+} from "@/functions/locations"
 import {
   HIERARCHY_CHILD_TYPE,
   HIERARCHY_TYPE_LABELS,
@@ -89,6 +98,19 @@ type LeaderForm = {
   sortOrder: number
 }
 
+type DeaneryForm = {
+  id: number | null
+  name: string
+  deanName: string
+}
+
+type ParishForm = {
+  id: number | null
+  deaneryId: number
+  name: string
+  priestName: string
+}
+
 export const Route = createFileRoute("/_app/dashboard/hierarchy/")({
   beforeLoad: ({ context }) => {
     const role = ((context.session.user as { role?: string }).role ??
@@ -116,6 +138,10 @@ function HierarchyAdminPage() {
   const [nodeForm, setNodeForm] = useState<NodeForm | null>(null)
   const [leadersNodeId, setLeadersNodeId] = useState<number | null>(null)
   const [leaderForm, setLeaderForm] = useState<LeaderForm | null>(null)
+  const [deaneryDialogOpen, setDeaneryDialogOpen] = useState(false)
+  const [deaneryForm, setDeaneryForm] = useState<DeaneryForm | null>(null)
+  const [parishDialogOpen, setParishDialogOpen] = useState(false)
+  const [parishForm, setParishForm] = useState<ParishForm | null>(null)
 
   const invalidate = () => router.invalidate()
   const leadersNode = nodes.find((node) => node.id === leadersNodeId) ?? null
@@ -195,6 +221,80 @@ function HierarchyAdminPage() {
     },
     onError: (error: Error) => toast.error(error.message),
   })
+
+  const saveDeanery = useMutation({
+    mutationFn: (form: DeaneryForm) => {
+      const payload = { name: form.name, deanName: form.deanName || null }
+      return form.id !== null
+        ? updateDeanery({ data: { ...payload, id: form.id } })
+        : createDeanery({ data: payload })
+    },
+    onSuccess: () => {
+      toast.success("Deanery saved")
+      setDeaneryDialogOpen(false)
+      invalidate()
+    },
+    onError: (error: Error) => toast.error(error.message),
+  })
+
+  const removeDeanery = useMutation({
+    mutationFn: (id: number) => deleteDeanery({ data: { id } }),
+    onSuccess: () => {
+      toast.success("Deanery deleted")
+      invalidate()
+    },
+    onError: (error: Error) => toast.error(error.message),
+  })
+
+  const saveParish = useMutation({
+    mutationFn: (form: ParishForm) => {
+      const payload = {
+        name: form.name,
+        deaneryId: form.deaneryId,
+        priestName: form.priestName || null,
+      }
+      return form.id !== null
+        ? updateParish({ data: { ...payload, id: form.id } })
+        : createParish({ data: payload })
+    },
+    onSuccess: () => {
+      toast.success("Parish saved")
+      setParishDialogOpen(false)
+      invalidate()
+    },
+    onError: (error: Error) => toast.error(error.message),
+  })
+
+  const removeParish = useMutation({
+    mutationFn: (id: number) => deleteParish({ data: { id } }),
+    onSuccess: () => {
+      toast.success("Parish deleted")
+      invalidate()
+    },
+    onError: (error: Error) => toast.error(error.message),
+  })
+
+  function openDeanery(deanery?: { id: number; name: string; deanName: string | null }) {
+    setDeaneryForm({
+      id: deanery?.id ?? null,
+      name: deanery?.name ?? "",
+      deanName: deanery?.deanName ?? "",
+    })
+    setDeaneryDialogOpen(true)
+  }
+
+  function openParish(
+    deaneryId: number,
+    parish?: { id: number; name: string; priestName: string | null },
+  ) {
+    setParishForm({
+      id: parish?.id ?? null,
+      deaneryId,
+      name: parish?.name ?? "",
+      priestName: parish?.priestName ?? "",
+    })
+    setParishDialogOpen(true)
+  }
 
   function openCreate(type: HierarchyNodeType, parentId: number | null) {
     setNodeForm({
@@ -343,6 +443,135 @@ function HierarchyAdminPage() {
         </div>
       </div>
 
+      {/*
+        Deaneries and parishes come first: a deanery/parish youth council cannot
+        be created until its location exists, so this is the starting point.
+      */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <div>
+            <h2 className="text-lg font-semibold">Deaneries &amp; Parishes</h2>
+            <p className="text-sm text-muted-foreground">
+              Locations that councils are attached to.
+            </p>
+          </div>
+          <Button size="sm" onClick={() => openDeanery()}>
+            <Plus className="mr-1 size-3.5" />
+            Add deanery
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {deaneries.length === 0 ? (
+            <p className="py-4 text-sm text-muted-foreground">
+              No deaneries yet. Add one to start building councils.
+            </p>
+          ) : (
+            deaneries.map((deanery) => {
+              const deaneryParishes = parishes.filter(
+                (parish) => parish.deaneryId === deanery.id,
+              )
+              return (
+                <div key={deanery.id}>
+                  <div className="flex items-center gap-3 border-b py-2.5">
+                    <MapPin className="size-4 shrink-0 text-muted-foreground" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium">{deanery.name}</p>
+                      {deanery.deanName ? (
+                        <p className="text-xs text-muted-foreground">
+                          Dean: {deanery.deanName}
+                        </p>
+                      ) : null}
+                    </div>
+                    <Badge variant="outline" className="hidden sm:inline-flex">
+                      {deaneryParishes.length} parish
+                      {deaneryParishes.length === 1 ? "" : "es"}
+                    </Badge>
+                    <div className="flex items-center gap-1.5">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="hidden md:inline-flex"
+                        onClick={() => openParish(deanery.id)}
+                      >
+                        <Plus className="mr-1 size-3.5" />
+                        Parish
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        aria-label={`Edit ${deanery.name}`}
+                        onClick={() => openDeanery(deanery)}
+                      >
+                        <Pencil className="size-4" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="text-destructive"
+                        aria-label={`Delete ${deanery.name}`}
+                        onClick={() => {
+                          if (deaneryParishes.length > 0) {
+                            toast.error("Delete or move this deanery's parishes first")
+                            return
+                          }
+                          if (confirm(`Delete "${deanery.name}"?`)) {
+                            removeDeanery.mutate(deanery.id)
+                          }
+                        }}
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  {deaneryParishes.map((parish) => (
+                    <div
+                      key={parish.id}
+                      className="flex items-center gap-3 border-b py-2.5"
+                      style={{ paddingLeft: 28 }}
+                    >
+                      <CornerDownRight className="size-4 shrink-0 text-muted-foreground" />
+                      <Church className="size-4 shrink-0 text-muted-foreground" />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-medium">{parish.name}</p>
+                        {parish.priestName ? (
+                          <p className="text-xs text-muted-foreground">
+                            Priest: {parish.priestName}
+                          </p>
+                        ) : null}
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          aria-label={`Edit ${parish.name}`}
+                          onClick={() => openParish(deanery.id, parish)}
+                        >
+                          <Pencil className="size-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="text-destructive"
+                          aria-label={`Delete ${parish.name}`}
+                          onClick={() => {
+                            if (confirm(`Delete "${parish.name}"?`)) {
+                              removeParish.mutate(parish.id)
+                            }
+                          }}
+                        >
+                          <Trash2 className="size-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )
+            })
+          )}
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <h2 className="text-lg font-semibold">Movements &amp; Societies</h2>
@@ -363,14 +592,22 @@ function HierarchyAdminPage() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <h2 className="text-lg font-semibold">Councils</h2>
-          <Button size="sm" onClick={() => openCreate("deanery_council", null)}>
+          <Button
+            size="sm"
+            disabled={deaneries.length === 0}
+            onClick={() => openCreate("deanery_council", null)}
+          >
             <Plus className="mr-1 size-3.5" />
             Add deanery council
           </Button>
         </CardHeader>
         <CardContent>
           {councils.length === 0 ? (
-            <p className="py-4 text-sm text-muted-foreground">No councils yet.</p>
+            <p className="py-4 text-sm text-muted-foreground">
+              {deaneries.length === 0
+                ? "Add a deanery above before creating councils."
+                : "No councils yet."}
+            </p>
           ) : (
             renderTree(councils)
           )}
@@ -550,6 +787,132 @@ function HierarchyAdminPage() {
                   Cancel
                 </Button>
                 <Button type="submit" disabled={saveNode.isPending}>
+                  Save
+                </Button>
+              </div>
+            </form>
+          ) : null}
+        </DialogContent>
+      </Dialog>
+
+      {/* Deanery dialog */}
+      <Dialog open={deaneryDialogOpen} onOpenChange={setDeaneryDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {deaneryForm?.id != null ? "Edit deanery" : "Add deanery"}
+            </DialogTitle>
+          </DialogHeader>
+          {deaneryForm ? (
+            <form
+              className="space-y-4"
+              onSubmit={(event) => {
+                event.preventDefault()
+                saveDeanery.mutate(deaneryForm)
+              }}
+            >
+              <div className="space-y-2">
+                <Label htmlFor="deaneryName">Name</Label>
+                <Input
+                  id="deaneryName"
+                  required
+                  value={deaneryForm.name}
+                  onChange={(event) =>
+                    setDeaneryForm((state) => state && { ...state, name: event.target.value })
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="deaneryDean">Dean (optional)</Label>
+                <Input
+                  id="deaneryDean"
+                  value={deaneryForm.deanName}
+                  onChange={(event) =>
+                    setDeaneryForm((state) => state && { ...state, deanName: event.target.value })
+                  }
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setDeaneryDialogOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={saveDeanery.isPending}>
+                  Save
+                </Button>
+              </div>
+            </form>
+          ) : null}
+        </DialogContent>
+      </Dialog>
+
+      {/* Parish dialog */}
+      <Dialog open={parishDialogOpen} onOpenChange={setParishDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{parishForm?.id != null ? "Edit parish" : "Add parish"}</DialogTitle>
+          </DialogHeader>
+          {parishForm ? (
+            <form
+              className="space-y-4"
+              onSubmit={(event) => {
+                event.preventDefault()
+                saveParish.mutate(parishForm)
+              }}
+            >
+              <div className="space-y-2">
+                <Label htmlFor="parishName">Name</Label>
+                <Input
+                  id="parishName"
+                  required
+                  value={parishForm.name}
+                  onChange={(event) =>
+                    setParishForm((state) => state && { ...state, name: event.target.value })
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Deanery</Label>
+                <Select
+                  value={String(parishForm.deaneryId)}
+                  onValueChange={(value) =>
+                    setParishForm((state) => state && { ...state, deaneryId: Number(value) })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select the deanery" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {deaneries.map((deanery) => (
+                      <SelectItem key={deanery.id} value={String(deanery.id)}>
+                        {deanery.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="parishPriest">Parish priest (optional)</Label>
+                <Input
+                  id="parishPriest"
+                  value={parishForm.priestName}
+                  onChange={(event) =>
+                    setParishForm((state) => state && { ...state, priestName: event.target.value })
+                  }
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setParishDialogOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={saveParish.isPending}>
                   Save
                 </Button>
               </div>
