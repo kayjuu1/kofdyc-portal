@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router"
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router"
 import { useState } from "react"
 import { MapPin, Users, Calendar, ArrowLeft, CheckCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -27,7 +27,7 @@ export const Route = createFileRoute("/events/$id/")({
   },
   head: ({ loaderData, params }) => ({
     meta: seo({
-      title: loaderData ? `${loaderData.event.title} | KOFDYC Events` : "Events | KOFDYC",
+      title: loaderData ? `KOFDYC — ${loaderData.event.title}` : "KOFDYC — Events",
       description: loaderData?.event.description ? excerpt(loaderData.event.description) : undefined,
       path: `/events/${params.id}`,
       image: loaderData?.event.coverImageUrl ?? undefined,
@@ -39,6 +39,7 @@ export const Route = createFileRoute("/events/$id/")({
 
 function EventDetailPage() {
   const { event } = Route.useLoaderData()
+  const router = useRouter()
   const [formData, setFormData] = useState({
     guestName: "",
     guestEmail: "",
@@ -57,16 +58,38 @@ function EventDetailPage() {
     ? new Date() > new Date(event.registrationDeadline)
     : false
 
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
+
   const registerMutation = useMutation({
     mutationFn: (data: Parameters<typeof registerGuest>[0]["data"]) =>
       registerGuest({ data }),
     onSuccess: () => {
       setSubmitted(true)
+      window.scrollTo({ top: 0, behavior: "smooth" })
     },
   })
 
+  function validateForm(): boolean {
+    const errors: Record<string, string> = {}
+    if (!formData.guestName.trim()) errors.guestName = "Full name is required"
+    if (formData.guestEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.guestEmail)) {
+      errors.guestEmail = "Enter a valid email address"
+    }
+    if (!formData.guestPhone.trim()) errors.guestPhone = "Phone number is required"
+    else if (!/^\+?[\d\s\-()]{7,15}$/.test(formData.guestPhone.trim())) {
+      errors.guestPhone = "Enter a valid phone number"
+    }
+    if (isRetreat) {
+      if (!formData.emergencyContactName.trim()) errors.emergencyContactName = "Emergency contact name is required"
+      if (!formData.emergencyContactPhone.trim()) errors.emergencyContactPhone = "Emergency contact phone is required"
+    }
+    setFormErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    if (!validateForm()) return
     registerMutation.mutate({
       eventId: event.id,
       guestName: formData.guestName,
@@ -107,11 +130,9 @@ function EventDetailPage() {
     <div className="min-h-screen bg-background">
       <PublicHeader />
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
-        <Button variant="ghost" asChild className="mb-4">
-          <Link to="/events">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Events
-          </Link>
+        <Button variant="ghost" className="mb-4" onClick={() => router.history.back()}>
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back
         </Button>
 
         <div className="grid lg:grid-cols-3 gap-8">
@@ -218,9 +239,10 @@ function EventDetailPage() {
                     <Input
                       id="guestName"
                       value={formData.guestName}
-                      onChange={(e) => setFormData({ ...formData, guestName: e.target.value })}
-                      required
+                      onChange={(e) => { setFormData({ ...formData, guestName: e.target.value }); setFormErrors(p => ({ ...p, guestName: "" })) }}
+                      className={formErrors.guestName ? "border-destructive" : ""}
                     />
+                    {formErrors.guestName && <p className="text-xs text-destructive">{formErrors.guestName}</p>}
                   </div>
 
                   <div className="grid gap-2">
@@ -229,8 +251,10 @@ function EventDetailPage() {
                       id="guestEmail"
                       type="email"
                       value={formData.guestEmail}
-                      onChange={(e) => setFormData({ ...formData, guestEmail: e.target.value })}
+                      onChange={(e) => { setFormData({ ...formData, guestEmail: e.target.value }); setFormErrors(p => ({ ...p, guestEmail: "" })) }}
+                      className={formErrors.guestEmail ? "border-destructive" : ""}
                     />
+                    {formErrors.guestEmail && <p className="text-xs text-destructive">{formErrors.guestEmail}</p>}
                   </div>
 
                   <div className="grid gap-2">
@@ -239,10 +263,11 @@ function EventDetailPage() {
                       id="guestPhone"
                       type="tel"
                       value={formData.guestPhone}
-                      onChange={(e) => setFormData({ ...formData, guestPhone: e.target.value })}
+                      onChange={(e) => { setFormData({ ...formData, guestPhone: e.target.value }); setFormErrors(p => ({ ...p, guestPhone: "" })) }}
                       placeholder="+233..."
-                      required
+                      className={formErrors.guestPhone ? "border-destructive" : ""}
                     />
+                    {formErrors.guestPhone && <p className="text-xs text-destructive">{formErrors.guestPhone}</p>}
                   </div>
 
                   <div className="grid gap-2">
@@ -264,9 +289,10 @@ function EventDetailPage() {
                           <Input
                             id="emergencyContactName"
                             value={formData.emergencyContactName}
-                            onChange={(e) => setFormData({ ...formData, emergencyContactName: e.target.value })}
-                            required={isRetreat}
+                            onChange={(e) => { setFormData({ ...formData, emergencyContactName: e.target.value }); setFormErrors(p => ({ ...p, emergencyContactName: "" })) }}
+                            className={formErrors.emergencyContactName ? "border-destructive" : ""}
                           />
+                          {formErrors.emergencyContactName && <p className="text-xs text-destructive">{formErrors.emergencyContactName}</p>}
                         </div>
                         <div className="grid gap-2 mt-2">
                           <Label htmlFor="emergencyContactPhone">Emergency Contact Phone *</Label>
@@ -274,9 +300,10 @@ function EventDetailPage() {
                             id="emergencyContactPhone"
                             type="tel"
                             value={formData.emergencyContactPhone}
-                            onChange={(e) => setFormData({ ...formData, emergencyContactPhone: e.target.value })}
-                            required={isRetreat}
+                            onChange={(e) => { setFormData({ ...formData, emergencyContactPhone: e.target.value }); setFormErrors(p => ({ ...p, emergencyContactPhone: "" })) }}
+                            className={formErrors.emergencyContactPhone ? "border-destructive" : ""}
                           />
+                          {formErrors.emergencyContactPhone && <p className="text-xs text-destructive">{formErrors.emergencyContactPhone}</p>}
                         </div>
                       </div>
 

@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router"
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { PublicHeader } from "@/components/PublicHeader"
 import { PublicFooter } from "@/components/PublicFooter"
+import { MarkdownContent } from "@/components/MarkdownContent"
 import { getNewsArticle } from "@/functions/news"
 import { getNewsLikes, getNewsComments, likeNews, addNewsComment } from "@/functions/news-engagement"
 import { ArrowLeft, Heart, Share2, MessageCircle, Send, Loader2, Check } from "lucide-react"
@@ -23,7 +24,7 @@ export const Route = createFileRoute("/news/$slug")({
   },
   head: ({ loaderData, params }) => ({
     meta: seo({
-      title: loaderData ? `${loaderData.title} | KOFDYC News` : "News | KOFDYC",
+      title: loaderData ? `KOFDYC — ${loaderData.title}` : "KOFDYC — News",
       description: loaderData?.body ? excerpt(loaderData.body) : undefined,
       path: `/news/${params.slug}`,
       image: loaderData?.coverImageUrl ?? undefined,
@@ -57,6 +58,7 @@ interface Comment {
 
 function NewsDetailPage() {
   const article = Route.useLoaderData()
+  const router = useRouter()
   const [likeCount, setLikeCount] = useState(0)
   const [liked, setLiked] = useState(false)
   const [liking, setLiking] = useState(false)
@@ -156,17 +158,13 @@ function NewsDetailPage() {
       })
     : ""
 
-  const paragraphs = article.body.split("\n").filter((p: string) => p.trim())
-
   return (
     <div className="min-h-screen bg-background">
       <PublicHeader />
       <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
-        <Button asChild variant="ghost" size="sm" className="mb-6">
-          <Link to="/news">
-            <ArrowLeft className="mr-1.5 size-4" />
-            Back to News
-          </Link>
+        <Button variant="ghost" size="sm" className="mb-6" onClick={() => router.history.back()}>
+          <ArrowLeft className="mr-1.5 size-4" />
+          Back
         </Button>
 
         <article>
@@ -200,13 +198,7 @@ function NewsDetailPage() {
             />
           ) : null}
 
-          <div className="space-y-4">
-            {paragraphs.map((paragraph: string, i: number) => (
-              <p key={i} className="leading-relaxed text-foreground">
-                {paragraph}
-              </p>
-            ))}
-          </div>
+          <MarkdownContent source={article.body} />
 
           {/* Engagement Bar */}
           <div className="mt-8 flex flex-wrap items-center gap-2 border-t border-b border-border py-4">

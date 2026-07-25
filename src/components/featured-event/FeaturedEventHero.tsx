@@ -190,6 +190,7 @@ export function FeaturedEventHero({
                     : "pointer-events-none absolute inset-0 opacity-0",
                 )}
                 aria-hidden={index !== activeIndex}
+                {...(index !== activeIndex ? { inert: "" } : {})}
               >
                 <FeaturedEventSlide item={item} nowMs={nowMs} />
               </div>

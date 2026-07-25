@@ -103,7 +103,6 @@ function getPageTitle(pathname: string): string {
   if (pathname.startsWith("/dashboard/programmes")) return "Programmes"
   if (pathname.startsWith("/dashboard/admin-users")) return "Admin Users"
   if (pathname.startsWith("/dashboard/settings")) return "Settings"
-  if (pathname.startsWith("/dashboard/settings")) return "Settings"
   if (pathname.startsWith("/dashboard/featured-events")) return "Featured Events"
   if (pathname.startsWith("/dashboard/leadership")) return "Leadership"
   if (pathname.startsWith("/dashboard/hierarchy")) return "Hierarchy"

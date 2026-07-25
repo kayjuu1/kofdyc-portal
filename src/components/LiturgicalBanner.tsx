@@ -5,16 +5,25 @@ const colorMap: Record<string, string> = {
   purple: "bg-purple-600",
   white: "bg-amber-500",
   green: "bg-green-600",
-  red: "bg-red-600",
+  red: "bg-rose-600",
+}
+
+const shapeMap: Record<string, string> = {
+  purple: "",
+  white: "ring-1 ring-inset ring-amber-300",
+  green: "",
+  red: "",
 }
 
 export function LiturgicalBanner() {
   const info = getCurrentLiturgicalSeason()
   const dotClass = colorMap[info.color] ?? "bg-primary"
 
+  const shapeClass = shapeMap[info.color] ?? ""
+
   return (
     <span className="flex items-center gap-1.5 text-xs">
-      <span className={cn("inline-block size-2 rounded-full", dotClass)} />
+      <span className={cn("inline-block size-2 rounded-full", dotClass, shapeClass)} />
       {info.label}
     </span>
   )

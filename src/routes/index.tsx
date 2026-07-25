@@ -131,7 +131,7 @@ function HomePage() {
                 dangerouslySetInnerHTML={{__html: ORGANIZATION_JSONLD}}
             />
             <PublicHeader/>
-            <main>
+            <main id="main-content">
                 {/*<LiturgicalBanner />*/}
                 <FeaturedEventHero
                     items={featuredEvents.items}
@@ -539,9 +539,11 @@ function DocumentsSection({documents}: { documents: DocumentItem[] }) {
     async function handleDownload(id: number) {
         try {
             const {url} = await getDocumentDownloadUrl({data: {id}})
-            window.open(url, "_blank")
+            const win = window.open(url, "_blank")
+            if (!win) {
+                window.location.href = url
+            }
         } catch {
-            // fallback
         }
     }
 

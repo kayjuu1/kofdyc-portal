@@ -35,6 +35,7 @@ type SearchParams = {
   year?: number
   month?: number
   scope?: "diocese" | "deanery" | "parish"
+  view?: "grid" | "list"
 }
 
 import { seo, seoLinks } from "@/lib/seo"
@@ -42,7 +43,7 @@ import { seo, seoLinks } from "@/lib/seo"
 export const Route = createFileRoute("/calendar")({
   head: () => ({
     meta: seo({
-      title: "Calendar | KOFDYC",
+      title: "KOFDYC — Calendar",
       description:
         "Liturgical calendar and upcoming events of the Koforidua Diocesan Youth Council.",
       path: "/calendar",
@@ -55,6 +56,7 @@ export const Route = createFileRoute("/calendar")({
       year: Number(search.year) || now.getFullYear(),
       month: Number(search.month) || now.getMonth() + 1,
       scope: search.scope as "diocese" | "deanery" | "parish" | undefined,
+      view: search.view as "grid" | "list" | undefined,
     }
   },
   loaderDeps: ({ search }) => search,
@@ -72,15 +74,14 @@ export const Route = createFileRoute("/calendar")({
 
 function CalendarPage() {
   const { events, feastDays } = Route.useLoaderData()
-  const { year, month, scope } = Route.useSearch()
+  const { year, month, scope, view } = Route.useSearch()
   const navigate = Route.useNavigate()
-  const [viewMode, setViewMode] = useState<"grid" | "list">(
-    typeof window !== "undefined" && window.innerWidth < 768 ? "list" : "grid"
-  )
 
-  useEffect(() => {
-    if (window.innerWidth < 768) setViewMode("list")
-  }, [])
+  const effectiveView = view ?? (
+    typeof window !== "undefined" && window.innerWidth < 768 ? "list" : "grid"
+  ) as "grid" | "list"
+
+  const [viewMode, setViewMode] = useState<"grid" | "list">(effectiveView)
 
   const y = year ?? new Date().getFullYear()
   const m = month ?? new Date().getMonth() + 1
@@ -114,7 +115,7 @@ function CalendarPage() {
     let newYear = y
     if (newMonth < 1) { newMonth = 12; newYear-- }
     if (newMonth > 12) { newMonth = 1; newYear++ }
-    navigate({ search: { year: newYear, month: newMonth, scope } })
+    navigate({ search: (prev) => ({ ...prev, year: newYear, month: newMonth }) })
   }
 
   const allItems = [
@@ -148,7 +149,7 @@ function CalendarPage() {
             <Select
               value={scope ?? "all"}
               onValueChange={(v) =>
-                navigate({ search: { year: y, month: m, scope: v === "all" ? undefined : v as "diocese" | "deanery" | "parish" } })
+                navigate({ search: (prev) => ({ ...prev, scope: v === "all" ? undefined : v as "diocese" | "deanery" | "parish" }) })
               }
             >
               <SelectTrigger className="w-[120px] sm:w-[140px]">
@@ -162,17 +163,23 @@ function CalendarPage() {
               </SelectContent>
             </Select>
             <Button
-              variant={viewMode === "grid" ? "default" : "outline"}
+              variant={effectiveView === "grid" ? "default" : "outline"}
               size="icon"
-              onClick={() => setViewMode("grid")}
+              onClick={() => {
+                setViewMode("grid")
+                navigate({ search: (prev) => ({ ...prev, view: "grid" }) })
+              }}
               className="hidden sm:inline-flex"
             >
               <Grid3X3 className="w-4 h-4" />
             </Button>
             <Button
-              variant={viewMode === "list" ? "default" : "outline"}
+              variant={effectiveView === "list" ? "default" : "outline"}
               size="icon"
-              onClick={() => setViewMode("list")}
+              onClick={() => {
+                setViewMode("list")
+                navigate({ search: (prev) => ({ ...prev, view: "list" }) })
+              }}
             >
               <List className="w-4 h-4" />
             </Button>

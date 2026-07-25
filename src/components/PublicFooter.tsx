@@ -70,7 +70,7 @@ export function PublicFooter() {
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="size-3.5 shrink-0" />
-                <span>+233 XXX XXX XXX</span>
+                <span>+233 342 0XXXXX</span>
               </li>
               <li className="flex items-center gap-2">
                 <Mail className="size-3.5 shrink-0" />

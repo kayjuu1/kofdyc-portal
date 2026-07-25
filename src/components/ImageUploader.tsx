@@ -43,6 +43,15 @@ export function ImageUploader({
     const filesToUpload = Array.from(fileList).slice(0, remaining)
     setError(null)
 
+    const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024
+    for (const file of filesToUpload) {
+      if (file.size > MAX_FILE_SIZE_BYTES) {
+        setError(`"${file.name}" exceeds the 5MB limit`)
+        if (inputRef.current) inputRef.current.value = ""
+        return
+      }
+    }
+
     if (validateFile) {
       for (const file of filesToUpload) {
         const validationError = await validateFile(file)

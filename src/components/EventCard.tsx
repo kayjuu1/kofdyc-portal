@@ -1,8 +1,10 @@
+import { Link } from "@tanstack/react-router"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { MapPin, Clock } from "lucide-react"
 
 interface EventCardProps {
+  id: number
   title: string
   eventType: string
   startAt: string
@@ -11,6 +13,7 @@ interface EventCardProps {
 }
 
 export function EventCard({
+  id,
   title,
   eventType,
   startAt,
@@ -24,10 +27,9 @@ export function EventCard({
     minute: "2-digit",
   })
 
-  return (
-    <Card className="group border-border/50 transition-all hover:border-primary/20 hover:shadow-md">
+  const content = (
+    <Card className="group cursor-pointer border-border/50 transition-all hover:border-primary/20 hover:shadow-md">
       <CardContent className="flex gap-4 p-4">
-        {/* Date block */}
         <div className="flex size-14 shrink-0 flex-col items-center justify-center rounded-lg bg-primary/5 text-primary">
           <span className="text-[10px] font-semibold uppercase tracking-wider">{month}</span>
           <span className="text-xl font-bold leading-none">{day}</span>
@@ -55,5 +57,11 @@ export function EventCard({
         </div>
       </CardContent>
     </Card>
+  )
+
+  return (
+    <Link to="/events/$id" params={{ id: String(id) }}>
+      {content}
+    </Link>
   )
 }

@@ -1,7 +1,6 @@
-import { HeadContent, Outlet, Scripts, createRootRoute, useRouterState } from '@tanstack/react-router'
+import { HeadContent, Outlet, Scripts, createRootRoute } from '@tanstack/react-router'
+import { Suspense } from 'react'
 import { Toaster } from 'sonner'
-import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
-import { TanStackDevtools } from '@tanstack/react-devtools'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { TooltipProvider } from '@/components/ui/tooltip'
 
@@ -9,6 +8,14 @@ import appCss from '../styles.css?url'
 import { seo, BRAND_COLOR, SITE_NAME } from '@/lib/seo'
 
 const queryClient = new QueryClient()
+
+function LoadingBar() {
+  return (
+    <div className="fixed top-0 left-0 right-0 z-[100] h-0.5 bg-primary/20">
+      <div className="h-full w-2/5 animate-pulse rounded-r-full bg-primary" />
+    </div>
+  )
+}
 
 export const Route = createRootRoute({
   head: () => ({
@@ -64,13 +71,18 @@ export const Route = createRootRoute({
         href: '/manifest.json',
       },
     ],
+    scripts: [
+      {
+        type: 'text/javascript',
+        children: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches&&!matchMedia('(prefers-reduced-motion:reduce)').matches))document.documentElement.classList.add('dark')}catch(e){}})();if('serviceWorker'in navigator){navigator.serviceWorker.register('/sw.js').catch(function(){})}`,
+      },
+    ],
   }),
   component: RootDocument,
+  pendingComponent: LoadingBar,
 })
 
 function RootDocument() {
-  const isLoading = false // loading indicator deferred — relies on Suspense
-
   return (
     <QueryClientProvider client={queryClient}>
       <html lang="en">
@@ -78,32 +90,13 @@ function RootDocument() {
           <HeadContent />
         </head>
         <body suppressHydrationWarning>
-          {isLoading ? (
-            <div className="fixed top-0 left-0 right-0 z-[100] h-0.5 bg-primary/20">
-              <div className="h-full w-2/5 animate-pulse rounded-r-full bg-primary" />
-            </div>
-          ) : null}
-          <TooltipProvider>
-            <Outlet />
-          </TooltipProvider>
+          <Suspense fallback={<LoadingBar />}>
+            <TooltipProvider>
+              <Outlet />
+            </TooltipProvider>
+          </Suspense>
           <Toaster richColors position="top-right" />
-          <TanStackDevtools
-            config={{
-              position: 'bottom-right',
-            }}
-            plugins={[
-              {
-                name: 'Tanstack Router',
-                render: <TanStackRouterDevtoolsPanel />,
-              },
-            ]}
-          />
           <Scripts />
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `try{if(localStorage.getItem('theme')==='dark'||(!localStorage.getItem('theme')&&matchMedia('(prefers-color-scheme:dark)').matches))document.documentElement.classList.add('dark')}catch(e){}if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{})}`,
-            }}
-          />
         </body>
       </html>
     </QueryClientProvider>

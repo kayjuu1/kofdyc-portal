@@ -1,6 +1,5 @@
 import { createFileRoute, Link, redirect, useRouter } from "@tanstack/react-router"
 import { getSession } from "@/functions/get-user"
-import { seedAdminUser } from "@/functions/seed-admin-user"
 import { authClient } from "@/lib/auth-client"
 import { useState, useEffect, useRef } from "react"
 import { Eye, EyeOff, ArrowLeft, Loader2 } from "lucide-react"
@@ -30,7 +29,6 @@ function DashboardLoginPage() {
   const [error, setError] = useState("")
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({})
   const [loading, setLoading] = useState(false)
-  const [seedStatus, setSeedStatus] = useState("")
   const errorTimerRef = useRef<ReturnType<typeof setTimeout>>()
 
   const errorMessages: Record<string, string> = {
@@ -59,18 +57,6 @@ function DashboardLoginPage() {
     if (!password) errors.password = "Password is required"
     setFieldErrors(errors)
     return Object.keys(errors).length === 0
-  }
-
-  async function handleSeed() {
-    setSeedStatus("Seeding...")
-    const result = await seedAdminUser()
-    if (result.success) {
-      setSeedStatus("Admin seeded! Use admin@dyckoforidua.org / admin123")
-    } else if (result.isDuplicate) {
-      setSeedStatus("Admin already exists")
-    } else {
-      setSeedStatus(`Seed failed: ${result.error}`)
-    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -251,15 +237,6 @@ function DashboardLoginPage() {
               </form>
             </CardContent>
           </Card>
-
-          {import.meta.env.DEV && (
-            <div className="mt-6 text-center space-y-2">
-              <Button variant="outline" size="sm" onClick={handleSeed}>
-                Seed Admin User
-              </Button>
-              {seedStatus && <p className="text-xs text-muted-foreground">{seedStatus}</p>}
-            </div>
-          )}
 
           <p className="text-xs text-muted-foreground text-center mt-6 lg:hidden">
             Catholic Diocese of Koforidua &copy; 2026

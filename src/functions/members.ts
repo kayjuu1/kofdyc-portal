@@ -123,6 +123,11 @@ export const createUser = createServerFn({ method: "POST" })
       await db.update(user)
         .set({
           role: data.role,
+          // An authenticated manageAdminUsers holder creating the account is
+          // itself the verification. Without this, requireEmailVerification
+          // would block the new admin from signing in until they click a
+          // Resend email.
+          emailVerified: true,
           ...(data.phone ? { phone: data.phone } : {}),
           ...(data.parishId ? { parishId: data.parishId } : {}),
         })

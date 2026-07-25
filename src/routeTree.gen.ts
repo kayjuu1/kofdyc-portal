@@ -31,7 +31,6 @@ import { Route as DashboardResetPasswordRouteImport } from './routes/dashboard/r
 import { Route as DashboardLoginRouteImport } from './routes/dashboard/login'
 import { Route as DashboardForgotPasswordRouteImport } from './routes/dashboard/forgot-password'
 import { Route as ApiUploadRouteImport } from './routes/api/upload'
-import { Route as AuthInitAdminRouteImport } from './routes/_auth/init-admin'
 import { Route as EventsIdIndexRouteImport } from './routes/events/$id/index'
 import { Route as AppDashboardIndexRouteImport } from './routes/_app/dashboard/index'
 import { Route as EventsIdCancelRouteImport } from './routes/events/$id/cancel'
@@ -168,11 +167,6 @@ const DashboardForgotPasswordRoute = DashboardForgotPasswordRouteImport.update({
 const ApiUploadRoute = ApiUploadRouteImport.update({
   id: '/api/upload',
   path: '/api/upload',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthInitAdminRoute = AuthInitAdminRouteImport.update({
-  id: '/_auth/init-admin',
-  path: '/init-admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EventsIdIndexRoute = EventsIdIndexRouteImport.update({
@@ -339,7 +333,6 @@ export interface FileRoutesByFullPath {
   '/executive': typeof ExecutiveRoute
   '/pastoral-letters': typeof PastoralLettersRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/init-admin': typeof AuthInitAdminRoute
   '/api/upload': typeof ApiUploadRoute
   '/dashboard/forgot-password': typeof DashboardForgotPasswordRoute
   '/dashboard/login': typeof DashboardLoginRoute
@@ -391,7 +384,6 @@ export interface FileRoutesByTo {
   '/executive': typeof ExecutiveRoute
   '/pastoral-letters': typeof PastoralLettersRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/init-admin': typeof AuthInitAdminRoute
   '/api/upload': typeof ApiUploadRoute
   '/dashboard/forgot-password': typeof DashboardForgotPasswordRoute
   '/dashboard/login': typeof DashboardLoginRoute
@@ -444,7 +436,6 @@ export interface FileRoutesById {
   '/executive': typeof ExecutiveRoute
   '/pastoral-letters': typeof PastoralLettersRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/_auth/init-admin': typeof AuthInitAdminRoute
   '/api/upload': typeof ApiUploadRoute
   '/dashboard/forgot-password': typeof DashboardForgotPasswordRoute
   '/dashboard/login': typeof DashboardLoginRoute
@@ -498,7 +489,6 @@ export interface FileRouteTypes {
     | '/executive'
     | '/pastoral-letters'
     | '/sitemap.xml'
-    | '/init-admin'
     | '/api/upload'
     | '/dashboard/forgot-password'
     | '/dashboard/login'
@@ -550,7 +540,6 @@ export interface FileRouteTypes {
     | '/executive'
     | '/pastoral-letters'
     | '/sitemap.xml'
-    | '/init-admin'
     | '/api/upload'
     | '/dashboard/forgot-password'
     | '/dashboard/login'
@@ -602,7 +591,6 @@ export interface FileRouteTypes {
     | '/executive'
     | '/pastoral-letters'
     | '/sitemap.xml'
-    | '/_auth/init-admin'
     | '/api/upload'
     | '/dashboard/forgot-password'
     | '/dashboard/login'
@@ -656,7 +644,6 @@ export interface RootRouteChildren {
   ExecutiveRoute: typeof ExecutiveRoute
   PastoralLettersRoute: typeof PastoralLettersRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
-  AuthInitAdminRoute: typeof AuthInitAdminRoute
   ApiUploadRoute: typeof ApiUploadRoute
   DashboardForgotPasswordRoute: typeof DashboardForgotPasswordRoute
   DashboardLoginRoute: typeof DashboardLoginRoute
@@ -833,13 +820,6 @@ declare module '@tanstack/react-router' {
       path: '/api/upload'
       fullPath: '/api/upload'
       preLoaderRoute: typeof ApiUploadRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_auth/init-admin': {
-      id: '/_auth/init-admin'
-      path: '/init-admin'
-      fullPath: '/init-admin'
-      preLoaderRoute: typeof AuthInitAdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/events/$id/': {
@@ -1117,7 +1097,6 @@ const rootRouteChildren: RootRouteChildren = {
   ExecutiveRoute: ExecutiveRoute,
   PastoralLettersRoute: PastoralLettersRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
-  AuthInitAdminRoute: AuthInitAdminRoute,
   ApiUploadRoute: ApiUploadRoute,
   DashboardForgotPasswordRoute: DashboardForgotPasswordRoute,
   DashboardLoginRoute: DashboardLoginRoute,

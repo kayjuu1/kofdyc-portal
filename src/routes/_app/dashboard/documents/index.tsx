@@ -105,7 +105,8 @@ function DocumentsPage() {
   const handleDownload = async (id: number) => {
     try {
       const result = await getDocumentDownloadUrl({ data: { id } })
-      window.open(result.url, "_blank")
+      const win = window.open(result.url, "_blank")
+      if (!win) window.location.href = result.url
     } catch {
       toast.error("Failed to generate download link")
     }

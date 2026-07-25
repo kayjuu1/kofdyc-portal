@@ -31,7 +31,7 @@ import { seo, seoLinks } from "@/lib/seo"
 export const Route = createFileRoute("/news/")({
   head: () => ({
     meta: seo({
-      title: "News | KOFDYC",
+      title: "KOFDYC — News",
       description:
         "Latest news and stories from the Koforidua Diocesan Youth Council — diocesan, deanery, and parish updates.",
       path: "/news",

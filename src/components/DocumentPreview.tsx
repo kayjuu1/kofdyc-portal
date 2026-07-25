@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Download, Loader2, FileText, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -29,7 +29,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 }
 
 export function DocumentPreview({ open, onOpenChange, document }: DocumentPreviewProps) {
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
   const [signedUrl, setSignedUrl] = useState<string | null>(null)
 
@@ -60,11 +60,11 @@ export function DocumentPreview({ open, onOpenChange, document }: DocumentPrevie
     }
   }
 
-  const handlePreview = () => {
-    if (!signedUrl && !error) {
+  useEffect(() => {
+    if (open && document && !signedUrl && !error && !loading) {
       getPreviewUrl()
     }
-  }
+  }, [open])
 
   const renderViewer = () => {
     if (loading) {
@@ -167,14 +167,6 @@ export function DocumentPreview({ open, onOpenChange, document }: DocumentPrevie
             )}
           </div>
         </DialogHeader>
-
-        {!loading && !error && !signedUrl && (
-          <div className="mb-4">
-            <Button onClick={handlePreview}>
-              Preview Document
-            </Button>
-          </div>
-        )}
 
         {renderViewer()}
       </DialogContent>

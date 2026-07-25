@@ -14,6 +14,7 @@
 		"cf-typegen": "wrangler types",
 		"drizzle:generate": "drizzle-kit generate",
 		"drizzle:studio": "drizzle-kit studio",
+		"seed:admin": "bun run scripts/seed-admin.ts",
 		"migrate:local": "wrangler d1 migrations apply kofdyc-portal --local",
 		"migrate:prod": "drizzle-kit push --config=drizzle.config.prod.ts",
 		"generate-pwa-assets": "pwa-assets-generator",

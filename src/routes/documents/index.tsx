@@ -47,7 +47,7 @@ import { seo, seoLinks } from "@/lib/seo"
 export const Route = createFileRoute("/documents/")({
   head: () => ({
     meta: seo({
-      title: "Documents | KOFDYC",
+      title: "KOFDYC — Documents",
       description:
         "Pastoral documents, guidelines, and resources from the Koforidua Diocesan Youth Council.",
       path: "/documents",
@@ -219,9 +219,11 @@ function DocumentsPage() {
                       <Button variant="outline" size="sm" onClick={async () => {
                         try {
                           const { url } = await getDocumentDownloadUrl({ data: { id: doc.id } })
-                          window.open(url, "_blank")
+                          const win = window.open(url, "_blank")
+                          if (!win) window.location.href = url
                         } catch {
-                          window.open(doc.fileUrl, "_blank")
+                          const win = window.open(doc.fileUrl, "_blank")
+                          if (!win) window.location.href = doc.fileUrl
                         }
                       }}>
                         <Download className="w-4 h-4 sm:mr-1" />

@@ -31,7 +31,7 @@ import { seo, seoLinks } from "@/lib/seo"
 export const Route = createFileRoute("/pastoral-letters")({
   head: () => ({
     meta: seo({
-      title: "Pastoral Letters | KOFDYC",
+      title: "KOFDYC — Pastoral Letters",
       description:
         "Pastoral letters and communiqués from the chaplaincy of the Koforidua Diocesan Youth Council.",
       path: "/pastoral-letters",
